@@ -1,0 +1,1166 @@
+---
+title: "OV organoids (Maria Vias, Brenton group)"
+author: "L Morrill"
+date: "2019"
+output:
+    html_document:
+        number_sections: true
+        theme: cosmo
+        toc: true
+        toc_float: true
+---
+This code seeks to explain how do organoids from patients reflect the generality of OV patients. We do clustering of patients and organoids and see where organoids fall -- based on signatures, and also based on raw CN profiles.
+
+
+**To do**: Create the new britroc OV exposures using the new code that Ruben has provided and the new absolute copy number segments that he has provided too.
+
+**To do** only use samples
+
+# Considerations
+- From conversation with Geoff 20200129, we will be getting different absolute copy number files (and their corresponding exposures) because the method of purity/ploidy inference has been improved.
+- OV-US and OV-AU are both ICGC
+- version of the TCGA etc signatures: the new exposures (sent by Ruben on late November) I just have for TCGA, but this is because the ASCAT segments have been modified differently, and it shouldn't make a difference for non-SNP array.
+- version of the organoid signatures: I am using version "organoid_exposures_Aug21.rds"
+
+
+Changes in signatures extraction (from Ruben)
+- removing a big from one the features: the first segment was not counted, whih  is not too important for OV
+- the pre-processing of CN segments (only applicable to SNP array)
+
+The previous data are:
+
+- 132 patients (BriTROC-1) using low-cost shallow whole-genome sequencing (sWGS; 0.1×)
+- 112 dWGS HGSOC cases from the Pan-Cancer Analysis of Whole Genomes (PCAWG)
+- 415 HGSOC cases with SNP array and whole-exome sequencing data from The Cancer Genome Atlas (TCGA)
+
+
+BriTROC: there are the original BriTROC segments (from manuscript) and new BriTROC segments (called BriTROC 2, here, but it's not the BriTROC-2 cohort! made by Ruben).
+
+<!-- **To do**: for (1) signatures, and (2) CN profiles, do (1) clustering, (2) PCA (i.e. 4 plots). -->
+
+
+```{r, knitr_opts, echo=FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+
+```{r, short_functions, echo=FALSE}
+give_short_names = function(i){
+  paste0(strsplit(i, split = '-')[[1]][1:3], collapse='-')
+}
+```
+
+```{r, libraries,message=FALSE, cache=FALSE, echo=FALSE}
+library(grid)
+library(gridExtra)
+library(dendextend)
+library(ggrepel)
+library(cowplot)
+library(compositions)
+library(CompSign)
+library(QDNAseq)
+library(Biobase)
+library(dplyr)
+source("../../../../CDA_in_Cancer/code/functions/meretricious/pretty_plots/prettySignatures.R")
+source("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/main_functions.R")
+```
+
+
+# Loading data
+
+## Data from organoids
+
+```{r,fig.height=2.5,message=FALSE, echo=FALSE,warning=FALSE}
+#x <- read.table("../data/organoids_signature_exposuresDom.csv", sep = ',', header = T)
+first_version <- FALSE
+x <- readRDS("../data/organoid_exposures_Aug21.rds")
+
+if(first_version){
+  org <- x[,-1]
+}else{
+  org <- x
+}
+org <- as(org, 'matrix')
+rownames(org) <- paste0('Sample ', 1:nrow(org))
+
+createBarplot(org, remove_labels = TRUE, order_labels = names(sort(org[,1]))) + 
+  ggtitle('Exposures for the organoids')
+
+# org_nonnormalised <- org
+# org <- sweep(org, 1, rowSums(org), '/')
+# createBarplot(org, remove_labels = TRUE, order_labels = names(sort(org[,1]))) + 
+#   ggtitle('Exposures for the organoids')
+```
+
+### Data from Nat Gen paper
+
+```{r, natgen_data,include=FALSE}
+load("../../../../CDA_in_Cancer/data/Robj/image_NatGen_rmd.RData")
+
+natgen = natgen_metadata = natgen = list()
+
+natgen[[1]] <- as.matrix(sig_data_unorm[,1:7])
+natgen_metadata[[1]] <- sig_data_unorm[,8:ncol(sig_data_unorm)]
+
+natgen[[2]] <- readRDS("../data/Export-matrix_OV_Sigs_on_TCGA-OV_12112019.rds")
+natgen_metadata[[2]] <- cbind.data.frame(study=rep('Updated TCGA', nrow(natgen[[2]])), age=NA, age.cat=NA, stringsAsFactors = FALSE, row.names=rownames(natgen[[2]]))
+```
+
+Only keep TCGA samples which are of good enough quality
+```{r, natgen_data2, echo=FALSE}
+summary_ascat = read.table("../data/summary.ascatTCGA.penalty70.txt", header = TRUE, stringsAsFactors = FALSE)
+good_tcga = summary_ascat$name[summary_ascat$dCIN]
+good_tcga = good_tcga[!is.na(good_tcga)]
+
+## natgen 1
+natgen[[1]][grepl('TCGA', rownames(natgen[[1]])),][ !(sapply(rownames(natgen[[1]])[grepl('TCGA', rownames(natgen[[1]]))], give_short_names) %in% good_tcga),] <- NA
+natgen[[1]] = natgen[[1]][!apply(natgen[[1]], 1, function(rw) all(is.na(rw))),]
+natgen_metadata[[1]][grepl('TCGA', rownames(natgen_metadata[[1]])),][ !(sapply(rownames(natgen_metadata[[1]])[grepl('TCGA', rownames(natgen_metadata[[1]]))], give_short_names) %in% good_tcga),] <- NA
+natgen_metadata[[1]] = natgen_metadata[[1]][!apply(natgen_metadata[[1]], 1, function(rw) all(is.na(rw))),]
+
+## updated signatures. no samples which didn't make the cut should be included here to start with
+natgen[[2]][grepl('TCGA', rownames(natgen[[2]])),][ !(sapply(rownames(natgen[[2]])[grepl('TCGA', rownames(natgen[[2]]))], give_short_names) %in% good_tcga),] <- NA
+natgen[[2]] = natgen[[2]][!apply(natgen[[2]], 1, function(rw) all(is.na(rw))),]
+natgen[[2]] = rbind(natgen[[2]], natgen[[1]][!grepl('TCGA', rownames( natgen[[1]])),])
+natgen_metadata[[2]][grepl('TCGA', rownames(natgen_metadata[[2]])),][ !(sapply(rownames(natgen_metadata[[2]])[grepl('TCGA', rownames(natgen_metadata[[2]]))], give_short_names) %in% good_tcga),] <- NA
+natgen_metadata[[2]] = natgen_metadata[[2]][!apply(natgen_metadata[[2]], 1, function(rw) all(is.na(rw))),]
+natgen_metadata[[2]] = rbind(natgen_metadata[[2]], natgen_metadata[[1]][!grepl('TCGA', rownames( natgen[[1]])),])
+```
+
+### Number of zeros in exposures
+I have added the (previous) exposures from BriTROC and ICGC to this as well. This makes the organoids and the TCGA exposures sample, and leaves the other in the periphery of the PCA. I suspect this is due to the number of **zero exposures**, which are imputated using the robust analyses that I am using here:
+
+```{r, zeros, echo=FALSE}
+cat('The percentage of zeros in every cohort is:\n')
+lapply(c(organoids=list(unlist(org)),
+         split(x = natgen[[1]], f = factor(natgen_metadata[[1]]$study)),
+         split(x = natgen[[2]], f = factor(natgen_metadata[[2]]$study))),
+       function(i) paste0(signif(sum(i==0)/length(i)*100, 5), '%'))
+```
+
+### Reading in segments data
+```{r, folder_natgen, echo=FALSE}
+folder_natgen = "../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/manuscript_Rmarkdown/data/"
+folder_natgen_mod = "../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50_mod//manuscript_Rmarkdown/data/"
+```
+
+```{r, load_profiles, echo=FALSE}
+BriTROC_absolute_copynumber = readRDS("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/manuscript_Rmarkdown/data/BriTROC_absolute_copynumber.rds")
+BriTROC2_CN_features = readRDS("../data/6_TCGA_Signatures_on_BRITROC/0_BRITROC_absolute_CN.rds")
+```
+
+
+```{r, extractCopynumberFeatures_BriTROC, echo=FALSE}
+# BriTROC_CN_features = extractCopynumberFeatures(BriTROC_absolute_copynumber)
+```
+```{r, segments_BriTROC_save, echo=FALSE}
+# saveRDS(BriTROC_CN_features, "../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50_mod/manuscript_Rmarkdown/data/BriTROC_CN_features.rds")
+```
+
+
+```{r, extractCopynumberFeatures_organoids, echo=FALSE}
+organoids_absolute_copynumber = readRDS(paste0("../data/", "organoid_absolute_CN.rds"))
+organoids_CN_features = extractCopynumberFeatures(organoids_absolute_copynumber)
+```
+
+```{r, segments_BriTROC_load, echo=FALSE}
+BriTROC_CN_features = readRDS("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50_mod/manuscript_Rmarkdown/data/BriTROC_CN_features.rds")
+```
+
+```{r, renormalise, echo=FALSE}
+## Normalisation is not done in such a way that rows add up to 1. Re-normalising
+natgen[[1]] <- sweep(natgen[[1]], 1, rowSums(natgen[[1]]), '/')
+natgen[[2]] <- sweep(natgen[[2]], 1, rowSums(natgen[[2]]), '/')
+```
+
+
+We have now (with the latest exposures) lost some TCGA samples for which the ASCAT solutions were not satisfactory.
+
+```{r, echo=FALSE, cache=FALSE}
+## Only selecting those which are TCGA
+num_of_previous_not_in_current = sum(is.na((match(sapply(rownames(natgen_metadata[[1]]), function(i) paste0(strsplit(i, split = '-')[[1]][1:3], collapse='-') ),
+      rownames(natgen_metadata[[2]])))))
+num_of_current_not_in_previous = sum(is.na(match(rownames(natgen[[2]])[grep('TCGA', rownames(natgen[[2]]))],
+      sapply(rownames(natgen[[1]])[grep('TCGA', rownames(natgen[[1]]))],
+             give_short_names ))))
+
+num_of_previous_not_in_current = sum(is.na(match(sapply(rownames(natgen[[1]])[grep('TCGA', rownames(natgen[[1]]))], give_short_names),
+      sapply(rownames(natgen[[2]])[grep('TCGA', rownames(natgen[[2]]))], give_short_names ))))
+
+num_exposures_tcga_previous = length(rownames(natgen[[1]])[grep('TCGA', rownames(natgen[[1]]))]) ## Natgen exposures
+num_exposures_tcga_current = length(rownames(natgen[[2]])[grep('TCGA', rownames(natgen[[2]]))]) ## new, from Ruben
+
+## samples in previous which are not in current
+# rownames(natgen_metadata[[1]])[(is.na((match(sapply(rownames(natgen_metadata[[1]]), function(i) paste0(strsplit(i, split = '-')[[1]][1:3], collapse='-') ),
+#       rownames(natgen_metadata[[2]])))))]
+# 
+# rownames(natgen_metadata[[1]])[(is.na(match(rownames(natgen[[2]])[grep('TCGA', rownames(natgen[[2]]))],
+#       sapply(rownames(natgen[[1]])[grep('TCGA', rownames(natgen[[1]]))],
+#              give_short_names ))))]
+
+```
+
+
+- The number of organoids is `r dim(x)[1]`
+- The number of TCGA samples in the previous (published) cohort was `r {num_exposures_tcga_previous}`.
+- The number of TCGA samples in the current (Ruben's) cohort is `r {num_exposures_tcga_current}`.
+- The number of TCGA samples found in the previous cohort but not in the current is `r {num_of_previous_not_in_current}`.
+- The number of TCGA samples found in the current cohort but not in the previous is `r {num_of_current_not_in_previous}`.
+
+<!-- In the file ComparisonExposures there are only 27 samples which are not found in the newest version but that are found in the Nat Gen version. -->
+
+```{r, eval=TRUE}
+which_natgen = 1
+```
+
+
+In the new exposures S7 has relatively increased and S3 has relatively decreased.
+```{r, eval=TRUE, include=TRUE, warning=FALSE, fig.width=12, echo=FALSE}
+# natgen_barplt1 <- createBarplot((natgen[[1]][grepl('TCGA', rownames(natgen[[1]])),]), remove_labels = TRUE, verbatim = FALSE)+
+#   ggtitle('Previous TCGA exposures')+theme(legend.position = "bottom")
+# natgen_barplt2 <- createBarplot(natgen[[2]][grepl('TCGA', rownames(natgen[[1]])),], remove_labels = TRUE, verbatim = FALSE)+
+#   ggtitle('Current TCGA exposures')+theme(legend.position = "bottom")
+# grid.arrange(natgen_barplt1, natgen_barplt2, ncol=2)
+```
+
+```{r, barplots_per_study,echo=FALSE,message=FALSE,warning=FALSE, eval=TRUE, include=FALSE}
+natgen_barplt_perstudy <- list()
+for(i in 1:length(unique(natgen_metadata[[which_natgen]]$study))){
+  natgen_barplt_perstudy[[i]] <- createBarplot(natgen[[which_natgen]][natgen_metadata[[which_natgen]]$study == unique(natgen_metadata[[which_natgen]]$study)[i],],
+                                  remove_labels = TRUE)+
+    ggtitle(paste0('Re-normalised\n', unique(natgen_metadata[[which_natgen]]$study)[i] ))
+}
+plot_grid(plotlist=natgen_barplt_perstudy)
+```
+
+
+
+# PCA
+For compositional data, in the book Analysing compositional data with R they say that PCA should be done on clr-transformed data. Zeroes are an issue if we use clr using all samples. The robust clr is implemented in the package compositions and deals with this problem by doing the geometric mean over only non-zero values, and setting the clr of a part which is zero to zero.
+
+```{r, cache=FALSE, eval=TRUE, include=FALSE}
+org_barplot <- createBarplot(org, remove_labels = TRUE, order_labels = names(sort(org[,1]))) + 
+  ggtitle('Exposures for the organoids')
+no1_natgen <- natgen_barplt1 <- createBarplot(natgen[[which_natgen]], remove_labels = TRUE,
+                                order_labels = rownames(natgen[[which_natgen]])[(order(natgen[[which_natgen]][,1]))]) +
+  ggtitle('Original')
+gridExtra::grid.arrange(org_barplot, no1_natgen)
+```
+
+The plot done with (biplot(princomp(acomp(x)))) is the same as plotting princomp(as(clr(x), 'matrix'))
+
+```{r, clr,include=FALSE,eval=TRUE}
+clr_vec <- function(x){
+  log(x) - mean(log(x))
+}
+clr_mat <- function(X){
+  .res <- t(apply(X, 1, clr_vec))
+  stopifnot(dim(.res) == dim(X))
+  .res
+}
+
+org_clr <- clr_mat(org)
+org_clr_robustzeroes <- as(compositions::clr(org), 'matrix')
+rownames(org_clr_robustzeroes) <- rownames(org_clr) <- paste0('Organoid ', rownames(org_clr))
+```
+
+
+```{r, cols,include=FALSE, eval=TRUE}
+n <- 60
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unique(unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals))))
+
+```
+
+
+## Projecting
+
+```{r, princomp,echo=FALSE, eval=TRUE, fig.height=8}
+
+pca_from_projection = prcomp_all = list()
+for(which_natgen in 1:2){
+  prcomp_all[[which_natgen]] <- princomp(as(clr(natgen[[which_natgen]]), 'matrix'))
+  
+  df_prcomp_exposures <- data.frame(prcomp_all[[which_natgen]]$scores[,1:2], study=natgen_metadata[[which_natgen]]$study, labels=NA)
+  df_prcomp_exposures_org <- data.frame(predict(prcomp_all[[which_natgen]], (org_clr_robustzeroes))[,1:2], 'Organoid', rownames(org))
+  colnames(df_prcomp_exposures_org) <- c('Comp.1', 'Comp.2', 'study', 'labels')
+  df_prcomp_exposures <- rbind(df_prcomp_exposures, df_prcomp_exposures_org)
+  df_prcomp_exposures$labels <- gsub('Sample ', '', df_prcomp_exposures$labels) ##here
+  
+  myColors <- col_vector[1:length(unique(df_prcomp_exposures$study))]
+  names(myColors) <- unique(df_prcomp_exposures$study)
+  #ggthemr('flat dark')
+  #ggthemr_reset()
+  # set_swatch(myColors)
+  
+  var_explained1 <- (prcomp_all[[which_natgen]]$sdev**2)/sum(prcomp_all[[which_natgen]]$sdev**2)
+  
+  pca_from_projection[[which_natgen]] = ( ggplot(df_prcomp_exposures, aes(x=Comp.1, y=Comp.2, col=study))+
+    geom_point() +
+    geom_label_repel(aes(label=labels))+
+    ggtitle(paste0("PCA of both datasets with projection, dataset #", which_natgen))+
+    labs(x=paste0('PC1 (', round(var_explained1[1], 2)*100, '%)'),
+         y=paste0('PC2 (', round(var_explained1[2], 2)*100, '%)'))+
+    theme_bw())
+}
+
+pca_from_projection[[3]]= ggplot(df_prcomp_exposures[grepl('TCGA|Organoid', rownames(df_prcomp_exposures)),],
+                                 aes(x=Comp.1, y=Comp.2, col=study))+
+    geom_point() +
+    geom_label_repel(aes(label=labels))+
+    ggtitle(paste0("PCA of both datasets with projection, dataset # (only TCGA)", which_natgen))+
+    labs(x=paste0('PC1 (', round(var_explained1[1], 2)*100, '%)'),
+         y=paste0('PC2 (', round(var_explained1[2], 2)*100, '%)'))+
+    theme_bw()
+
+
+grid.arrange(pca_from_projection[[1]]+theme(legend.position = 'bottom'),
+             pca_from_projection[[2]]+theme(legend.position = 'bottom'),
+             pca_from_projection[[3]]+theme(legend.position = 'bottom'),
+             ncol=2)
+
+#  scale_color_discrete(myColors)
+
+# plot(prcomp_all$scores[,1:2], col=factor(natgen_metadata$study), pch=4)
+# points(t(prcomp_all$loadings %*% t(org))[,1:2], pch=19, col='red')
+## just to point out that they are the same
+
+```
+
+
+### What is different in these 'underrepresented' samples?
+
+Conclusion: it seems as though it's signature 3, the relative abundance of which is never high in organoid samples.
+
+I am comparing
+
+- the barplots of the exposures
+
+- CLR (centered log-ratio) of signature 3 is high in the underrepresented samples
+
+- the ratio of the sums of different signatures, e.g. the ratio of 1+3+5 vs 2+4+6+7.
+
+- ILR (isometric log-ratio) when splitting the dataset into s3 and all other signatures. It is the log-ratio of the exposure to signature 3 and the geometric mean of all other exposures.
+
+```{r, underrepresented, fig.height=6, echo=FALSE, eval=TRUE}
+selected_underrepresented_right <- natgen[[which_natgen]][which(df_prcomp_exposures$Comp.1 > max(df_prcomp_exposures[df_prcomp_exposures$study == 'Organoid','Comp.1'])),]
+selected_underrepresented_left <- natgen[[which_natgen]][which(df_prcomp_exposures$Comp.1 < min(df_prcomp_exposures[df_prcomp_exposures$study == 'Organoid','Comp.1'])),]
+grid.arrange(createBarplot(as(selected_underrepresented_right, 'matrix'), remove_labels = TRUE)+ggtitle('Underrepresented (right)'),
+             createBarplot(as(selected_underrepresented_left, 'matrix'), remove_labels = TRUE)+ggtitle('Underrepresented (left)'),
+             createBarplot(org, remove_labels = TRUE)+ggtitle('Organoids'))
+dev.off()
+
+
+```
+
+
+### Loadings
+
+Looking at the loadings. In particular, looking for components in the first and second PC
+
+Respectively, using the first and the second batch of signatures.
+```{r, loadings, fig.height=3, echo=FALSE, eval=TRUE}
+par(mfrow=c(1,2))
+for(i in 1:2){
+  barplot(prcomp_all[[1]]$loadings[,i], main='Loadings of the\nfirst principal component')
+  barplot(prcomp_all[[1]]$loadings[,i], main='Loadings of the\nsecond principal component')
+}
+```
+
+
+Signatures 3 and 6 seem to be quite important for the underrepresented groups
+
+
+
+
+## Creating a new PCA
+
+We have two sets of exposures for the TCGA:
+
+- the ones from the paper
+- the ones which are, theoretically, better defined (there was a small bug in the code, and we are not taking into account normal segments, I believe)
+
+Therefore, the problems are
+
+- We don't have ICGC or BriTROC for these new exposures (Ruben will try tro do that soon)
+- The results we get are slightly different
+- The samples are not exactly the same ones: in general, we have some ~100 samples which didn't appear in the nature genetics paper but which we do have now, and we have lost fewer (~27) in the new exposures, probably because they didn't have enough events.
+
+The results are basically the same
+
+```{r, princomp_clr,include=TRUE,eval=TRUE,echo=FALSE}
+
+## input matrix is the already clr-transformed matrix
+createPCA_fromscratch <- function(input_matrix, annotation, annotation2, return_df=FALSE, labels_active=TRUE){
+  prcomp_all_clr <- princomp(input_matrix)
+
+  df_prcomp_exposures_clr <- data.frame(prcomp_all_clr$scores[,1:2],
+                                        study=annotation,
+                                        bool_any_zeroes=annotation2,
+                                        labels=rownames(input_matrix))
+  df_prcomp_exposures_clr$labels[!grepl('Sample', df_prcomp_exposures_clr$labels)] <- NA
+  df_prcomp_exposures_clr[,'labels'] <- gsub("Organoid Sample ", "", df_prcomp_exposures_clr$labels)
+  df_prcomp_exposures_clr[,'labels'] <- gsub("Sample ", "", df_prcomp_exposures_clr$labels)
+  var_explained2 <- (prcomp_all_clr$sdev**2)/sum(prcomp_all_clr$sdev**2)
+  
+  if(return_df){
+    df_prcomp_exposures_clr
+  }else{
+    if(labels_active){
+      ggplot(df_prcomp_exposures_clr, aes(x=Comp.1, y=Comp.2, col=interaction(bool_any_zeroes, study), label=labels))+ geom_point() + geom_label_repel()+
+        labs(x=paste0('PC1 (', round(var_explained2[1], 2)*100, '%)'),
+             y=paste0('PC2 (', round(var_explained2[2], 2)*100, '%)'))
+    }else{
+      ggplot(df_prcomp_exposures_clr, aes(x=Comp.1, y=Comp.2, col=interaction(bool_any_zeroes, study)))+ geom_point() +
+        labs(x=paste0('PC1 (', round(var_explained2[1], 2)*100, '%)'),
+             y=paste0('PC2 (', round(var_explained2[2], 2)*100, '%)'))
+    }
+  }
+}
+```
+
+The colour of the labels shows whether there is any zero exposure in the vector of exposures of the sample.
+```{r, princomp_clr_implementation, eval=TRUE, dependson=c('princomp_clr'), warning=FALSE, echo=FALSE}
+pca_from_scratch = org_clr_robustzeroes = natgen_clr = list()
+for(which_natgen in 1:3){
+  
+  if(which_natgen %in% 1:2){
+    natgen_clr[[which_natgen]] <- as(clr(natgen[[which_natgen]]), 'matrix') ##clr_mat(natgen[[which_natgen]], )
+    org_clr_robustzeroes[[which_natgen]] <- as(compositions::clr(org), 'matrix')
+    
+    pca_from_scratch[[which_natgen]] = (createPCA_fromscratch(input_matrix = rbind(natgen_clr[[which_natgen]],org_clr_robustzeroes[[which_natgen]]),
+                          annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                          annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))+
+      ggtitle('PCA created from scratch with robust zeroes'))+theme_bw()
+  }else if(which_natgen == 3){
+    ## We are using the old exposures, but only for TCGA, so that we can compare the PCA to the only-TCGA PCA of the new exposures
+    natgen_clr[[which_natgen]] <- as(clr(natgen[[1]]), 'matrix')
+    org_clr_robustzeroes[[which_natgen]] <- as(compositions::clr(org), 'matrix')
+    
+    subset = natgen_metadata[[1]]$study == 'TCGA'
+    pca_from_scratch[[3]] = (createPCA_fromscratch(input_matrix = rbind(natgen_clr[[which_natgen]][subset,],org_clr_robustzeroes[[which_natgen]]),
+                          annotation = c(natgen_metadata[[1]]$study[subset], rep('Organoid', nrow(org_clr))),
+                          annotation2 = c(rep(FALSE, dim(natgen_metadata[[1]])[1])[subset], unlist(apply(org, 1, function(i) any(i == 0)))))+
+      ggtitle('PCA created from scratch with robust zeroes'))+theme_bw()
+  }else{
+    stop('Incorrect which_natgen')
+  }
+}
+```
+
+```{r, princomp_clr_implementation2, eval=TRUE, dependson=c('princomp_clr', 'princomp_clr_implementation'), warning=FALSE, echo=FALSE}
+pca_from_scratch[[1]]+theme(legend.position = 'bottom')
+grid.arrange(pca_from_scratch[[2]]+theme(legend.position = 'bottom'), pca_from_scratch[[3]]+theme(legend.position = 'bottom'), ncol=2)
+```
+
+What we can see is that the exposures from the new exposures are much more distributed everywhere in the first two components of the PCA, but in fact given that the variance explained by the principle components in the previous dataset is much larger, it migth be that they are in fact explaining the same.
+
+Pseudocounts analysis (not shown)
+
+The lower the pseudocount, the more the organoid samples are left out of the PCA of all other samples.
+
+That is because there is quite a good representation of signature landscapes in the NatGen samples, so
+
+that anything with more non-zero exposures is likely to be represented
+
+```{r, which_natgen_specify}
+which_natgen = 1
+```
+
+
+```{r, pseucocount_PCA,include=FALSE,eval=TRUE,echo=FALSE,fig.height=8, dependson=c('princomp_clr_implementation', 'which_natgen_specify')}
+plt_pc1 <- createPCA_fromscratch(input_matrix = rbind(natgen_clr[[which_natgen]],clr_mat(addPseudoCounts(org, 1e-7))),
+                                 annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                                 annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))+
+  ggtitle('PCA created from scratch with pseudocount of 1e-7')
+
+plt_pc2 <- createPCA_fromscratch(input_matrix = rbind(natgen_clr[[which_natgen]],clr_mat(addPseudoCounts(org, 1e-8))),
+                                 annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                                 annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))+
+  ggtitle('PCA created from scratch with pseudocount of 1e-8')
+
+plt_pc3 <- createPCA_fromscratch(input_matrix = rbind(natgen_clr[[which_natgen]],clr_mat(addPseudoCounts(org, 1e-10))),
+                                 annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                                 annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))+
+  ggtitle('PCA created from scratch with pseudocount of 1e-10')
+  
+grid.arrange(plt_pc1, plt_pc2, plt_pc3)
+```
+
+
+Exposures from Nat Gen don't have zeroes; for organoids many do.
+
+
+# Dendrograms
+
+## Dendrogram based on the signatures
+
+```{r, dendrogram_aitchisondistance_function,echo=FALSE, eval=TRUE, dependson=c('princomp_clr_implementation')}
+give_dendrogram <- function(which_natgen){
+  organoid_metadata <- cbind.data.frame(study=rep('organoids', nrow(org_clr_robustzeroes[[which_natgen]])), age=NA, age.cat=NA)
+  rownames(organoid_metadata) <- rownames(org_clr_robustzeroes[[which_natgen]])
+  all_metadata <- rbind(natgen_metadata[[which_natgen]], organoid_metadata)
+  all_clr <- rbind(natgen_clr[[which_natgen]], org_clr_robustzeroes[[which_natgen]])
+  rm_infinite <- apply(all_clr, 1, function(x) any(is.infinite(x)))
+  cat(which(rm_infinite), 'removed due to infinite values')
+  all_clr_clean <- all_clr[!rm_infinite,]
+  
+  which(rm_infinite)
+  #all_clr_clean <- all_clr_clean[c(1:2, grep( 'Organoid', rownames(all_clr_clean))),]
+  
+  dendro_all <- as.dendrogram(hclust(dist(all_clr_clean)))
+  levels_study <- levels(factor(all_metadata[labels(dendro_all),'study']))
+  levels_study
+  which_level_organoids <- which(grepl('organoids', levels_study))
+  cols <- rep(NA, length(levels_study))
+  colour_organoid = 'blue' #'#88E9A2'
+  cols[which_level_organoids] <- colour_organoid
+  if(which_natgen == 1){
+    cols[-which_level_organoids] <- c('#FFA07A', '#FA8072', '#E9967A', '#F08080')
+  }else if(which_natgen == 2){
+    cols[-which_level_organoids] <- c('#FFA07A')
+  }
+  labels_colors(dendro_all) <- cols[factor(all_metadata[labels(dendro_all),'study'])]
+  labels_org_bool <- labels_colors(dendro_all) == colour_organoid
+  labels(dendro_all)[labels_org_bool] <- rep('○', sum(labels_org_bool))#rep('●', sum(labels_org_bool))
+  labels(dendro_all)[!labels_org_bool] <- rep('•', sum(!labels_org_bool))
+  labels(dendro_all)[!labels_org_bool] <- rep(NA, sum(!labels_org_bool))
+  cex_labels <- rep(1, length(labels_org_bool))
+  cex_labels[labels_org_bool] <- 0.9
+  dendro_all <- set(dendro_all, "labels_cex", cex_labels)
+  table(labels(dendro_all))
+  plot(dendro_all, cex=0.4, cex.lab=4, main='Dendrogram based on the exposures\n(Aitchison distance)')
+}
+```
+
+```{r, dendrogram_aitchisondistance_implementation,echo=FALSE, eval=TRUE, dependson=c('dendrogram_aitchisondistance_function')}
+give_dendrogram(1)
+give_dendrogram(2)
+```
+
+# Analysis of CN profiles
+additional genomic data comparing the tumours to the organoids in terms of ploidy, number of rearrangements and any other things that you think could be relevant
+
+
+
+The number of segments can be taken eitehr from segsize (first column) or from copynumber (last column). This is just for PCAWG and TCGA! Not for BriTROC. Any idea why this is the case?
+
+** Note I am plotting this as the log!**
+
+```{r, nsegments_pcawg, echo=FALSE}
+pcawg_CN_features = readRDS(paste0(folder_natgen, "pcawg_CN_features.rds"))
+tcga_CN_features = readRDS(paste0(folder_natgen, "tcga_CN_features.rds"))
+
+## Distribution of the segment sizes
+# distribs_features = lapply(names(organoids_CN_features), function(name_it_features){
+#   give_joint_histogram(list(organoids=organoids_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+#                               unlist %>% as.numeric %>% log,
+#                             BriTROC=BriTROC_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+#                               unlist %>% as.numeric %>% log,
+#                             pcawg=pcawg_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+#                               unlist %>% as.numeric %>% log,
+#                             tcga=tcga_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+#                               unlist %>% as.numeric %>% log), no_colour=FALSE)+ggtitle(paste0(name_it_features, ' (log)'))+ guides(fill=FALSE)
+# })
+
+df_features =  lapply(names(organoids_CN_features), function(name_it_features){list(organoids=organoids_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+                              unlist %>% as.numeric %>% log,
+                            BriTROC=BriTROC_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+                              unlist %>% as.numeric %>% log,
+                            PCAWG=pcawg_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+                              unlist %>% as.numeric %>% log,
+                            TCGA=tcga_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
+                              unlist %>% as.numeric %>% log)})
+names(df_features) = c('Segment size', 'Number of breakpoints per 10Mb', 'Oscillating copy number', 'Number of breakpoints per chromosome arm', 'Changepoint', 'Copy number of segment')
+
+## Distribution of the segment sizes
+distribs_features = lapply(names(df_features), function(name_it_features){
+  give_joint_histogram(df_features[[name_it_features]], no_colour=FALSE)+ggtitle(paste0(name_it_features, ' (log)'))+ guides(fill=FALSE)
+})
+
+
+```
+
+```{r, nsegments_pcawg_plot, dependson=c('nsegments_pcawg'), fig.width=12, fig.height=9, warning=FALSE, echo=FALSE, message=FALSE}
+grid.arrange(distribs_features[[1]], distribs_features[[2]],
+             distribs_features[[3]], distribs_features[[4]],
+             distribs_features[[5]], distribs_features[[6]], ncol=3)
+
+pdf("figures/feature_distributions.pdf", width = 14, height = 10)
+grid.arrange(distribs_features[[1]], distribs_features[[2]],
+             distribs_features[[3]], distribs_features[[4]],
+             distribs_features[[5]], distribs_features[[6]], ncol=3)
+dev.off()
+```
+
+
+## Number of segments; Poisson and NegBin GLM
+TL;DR with a negative binomial model, which is much more appropriate in this setting than a Poisson, there is no difference in the distributions of organoids and non-organodis when it comes to **number of segments**.
+
+```{r, modelling_number_of_segments, echo=FALSE}
+
+## poisson test
+number_of_segments = list(organoids=organoids_CN_features[[1]] %>% group_by(ID) %>%
+                           group_map( ~ nrow(.x)) %>% unlist,
+                          BriTROC=BriTROC_CN_features[[1]] %>% group_by(ID) %>%
+                            group_map( ~ nrow(.x)) %>% unlist,
+                          BriTROC2=BriTROC2_CN_features %>% group_by(sample) %>% group_map( ~ nrow(.x)) %>% unlist,
+                          pcawg=pcawg_CN_features[[1]] %>% group_by(ID) %>%
+                            group_map( ~ nrow(.x)) %>% unlist,
+                          tcga=tcga_CN_features[[1]] %>% group_by(ID) %>%
+                            group_map( ~ nrow(.x)) %>% unlist)
+
+# poisson.test()
+
+glm_poisson_length = cbind.data.frame(length=unlist(number_of_segments), names=rep(names(number_of_segments), sapply(number_of_segments, length)))
+glm_poisson_length[,'bool'] = as.numeric(glm_poisson_length$names == 'organoids')
+
+reduced = glm(formula = length ~ 1, family = "poisson", data = glm_poisson_length)
+full = glm(formula = length ~ bool, family = "poisson", data = glm_poisson_length)
+
+res_LRT = anova(reduced, full, test = "LRT")
+res_LRT
+
+## Negative binomial
+reduced_nb = glm.nb(formula = length ~ 1, data = glm_poisson_length)
+full_nb = glm.nb(formula = length ~ bool, data = glm_poisson_length)
+res_LRT_nb = anova(reduced_nb, full_nb, test = "LRT")
+res_LRT_nb
+
+# but in fact when using negative binomial this is no longer the case
+```
+
+Unfortunately the scaling factor has to do with the width of the bins in the histogram.
+```{r, plotting_poisson_fit, echo=FALSE, dependson=c('modelling_number_of_segments')}
+list_all_nsegments = list(organoids=organoids_CN_features[[1]] %>% group_by(ID) %>%
+                           group_map( ~ nrow(.x)) %>% unlist,
+                          BriTROC=BriTROC_CN_features[[1]] %>% group_by(ID) %>%
+                            group_map( ~ nrow(.x)) %>% unlist,
+                          pcawg=pcawg_CN_features[[1]] %>% group_by(ID) %>%
+                            group_map( ~ nrow(.x)) %>% unlist,
+                          tcga=tcga_CN_features[[1]] %>% group_by(ID) %>%
+                            group_map( ~ nrow(.x)) %>% unlist)
+
+## Plot together with values
+sequence_dpois = seq(min(unlist(number_of_segments)), max(unlist(number_of_segments)), by = 2)
+# plot(scaling_factor*dpois(x = sequence_dpois, lambda = reduced$fitted.values[1]))
+
+data_poisson = do.call('rbind.data.frame', lapply(c('BriTROC', 'organoids', 'pcawg', 'tcga'), function(i){
+  scaling_factor = length(list_all_nsegments[[i]])
+  extra_scaling_factor = (max(list_all_nsegments[[i]])-min(list_all_nsegments[[i]]))/30 ## we would need to know the number of pixels per unit
+  extra_scaling_factor = 9
+  cbind.data.frame(value=sequence_dpois,
+                                    count=scaling_factor*extra_scaling_factor*dpois(x = sequence_dpois, lambda = reduced$fitted.values[1]), L1=i)}))
+        
+data_NB = do.call('rbind.data.frame', lapply(c('BriTROC', 'organoids', 'pcawg', 'tcga'), function(i){
+  scaling_factor = length(list_all_nsegments[[i]])
+  extra_scaling_factor = (max(list_all_nsegments[[i]])-min(list_all_nsegments[[i]]))/30 ## we would need to know the number of pixels per unit
+  extra_scaling_factor = 50
+  cbind.data.frame(value=sequence_dpois,
+                   count=scaling_factor*extra_scaling_factor*dnbinom(x = sequence_dpois, mu = unique(fitted(reduced_nb)), size = reduced_nb$theta, log = FALSE),
+                   L1=i)}))
+
+
+give_joint_histogram(list_all_nsegments, bins=30)+ggtitle('Number of segments')+
+  geom_line(data = data_poisson, aes(x=value, y=count))+
+  geom_line(data = data_NB, aes(x=value, y=count), col='red')+
+  ggtitle('Observed number of segments and Poisson (black) and Negative Binomial (red) model')+
+  theme(legend.position = "bottom")
+
+```
+
+```{r, fig.height=3, echo=FALSE}
+ggplot(reshape2::melt(list(unlist(number_of_segments[-1]), number_of_segments[1])),
+       aes(x=value, fill=L1, group=L1, col=L1), alpha=0.2)+ stat_bin(geom="step", bins = 30)+
+  facet_wrap(.~L1, nrow=1, scales='free_y')+ggtitle('Comparison on non-organoids (left) and organoids (right)')
+```
+
+This seems to suggest that they do belong to different poissons.
+
+## Ploidy
+To get the ploidy, I just have to compute the weighted average of the copy number segments (this is computed from the absolute copy number profiles objects, since they specify, for each segment, its length and its ploidy).
+
+Use getSegTable to get the segments from this Biobase file
+
+```{r, get_segtables, echo=FALSE}
+source("../../../../CDA_in_Cancer/nongit/BriTROC-cnsignatures-109beb2204d7/helper_functions.R")
+segtables_BriTROC_absolute_copynumber = lapply(sampleNames(BriTROC_absolute_copynumber), function(samplename) getSegTable(BriTROC_absolute_copynumber[,samplename]))
+segtables_organoids_absolute_copynumber = lapply(sampleNames(organoids_absolute_copynumber), function(samplename) getSegTable(organoids_absolute_copynumber[,samplename]))
+
+TCGA_absolute_copynumber = readRDS("../data/combined.ascat.segments.filt.rds")
+## we only want the ovarian ones
+## select the TCGA samples which are in the subset in which we are interested (the ones that passed QC and that are only OV)
+TCGA_absolute_copynumber = TCGA_absolute_copynumber[TCGA_absolute_copynumber$sample %in% rownames(natgen[[2]]),]
+segtables_TCGA_absolute_copynumber = lapply(as.character(sort(unique(TCGA_absolute_copynumber$sample))), function(samplename) TCGA_absolute_copynumber[TCGA_absolute_copynumber$sample == samplename,])
+segtables_TCGA_absolute_copynumber = lapply(segtables_TCGA_absolute_copynumber, function(i) i[,1:(ncol(i)-1)]) ## removing sample name
+
+## we only want the ovarian ones
+ICGC_absolute_copynumber_AU = readRDS("../data/CN_Calls_ABSOLUTE_PCAWG/OV-AU.segments.raw.rds")
+ICGC_absolute_copynumber_US = readRDS("../data/CN_Calls_ABSOLUTE_PCAWG/OV-US.segments.raw.rds")
+ICGC_absolute_copynumber_AU = ICGC_absolute_copynumber_AU[,c('sample', 'chr', 'startpos', 'endpos', 'segVal')]
+ICGC_absolute_copynumber_US = ICGC_absolute_copynumber_US[,c('sample', 'chr', 'startpos', 'endpos', 'segVal')]
+segtables_ICGC_absolute_copynumber_AU = lapply(sort(unique(ICGC_absolute_copynumber_AU$sample)),
+                                            function(samplename) ICGC_absolute_copynumber_AU[ICGC_absolute_copynumber_AU$sample == samplename,])
+segtables_ICGC_absolute_copynumber_US = lapply(sort(unique(ICGC_absolute_copynumber_US$sample)),
+                                            function(samplename) ICGC_absolute_copynumber_US[ICGC_absolute_copynumber_US$sample == samplename,])
+
+## for ICGC, remove the samples row and put it in the rows
+segtables_ICGC_absolute_copynumber_US = lapply(segtables_ICGC_absolute_copynumber_US, function(i){
+  rownames(i) = i$samples
+  i = i[,-1]
+  i})
+segtables_ICGC_absolute_copynumber_AU = lapply(segtables_ICGC_absolute_copynumber_AU, function(i){
+  rownames(i) = i$samples
+  i = i[,-1]
+  i})
+```
+
+
+```{r, get_segtables2, echo=FALSE, warning=FALSE}
+### Make numeric
+segtables_BriTROC_absolute_copynumber <- lapply(segtables_BriTROC_absolute_copynumber, function(segtab) apply(segtab, 2, as.numeric)) ## convert to numeric matrices
+segtables_organoids_absolute_copynumber <- lapply(segtables_organoids_absolute_copynumber, function(segtab) apply(segtab, 2, as.numeric)) ## convert to numeric matrices
+segtables_ICGC_absolute_copynumber_AU <- lapply(segtables_ICGC_absolute_copynumber_AU, function(segtab) apply(segtab, 2, as.numeric)) ## convert to numeric matrices
+segtables_ICGC_absolute_copynumber_US <- lapply(segtables_ICGC_absolute_copynumber_US, function(segtab) apply(segtab, 2, as.numeric)) ## convert to numeric matrices
+segtables_TCGA_absolute_copynumber <- lapply(segtables_TCGA_absolute_copynumber, function(segtab) apply(segtab, 2, as.numeric)) ## convert to numeric matrices
+
+### remove sex chromosomes from any downstream analysis
+segtables_TCGA_absolute_copynumber = lapply(segtables_TCGA_absolute_copynumber, function(i) i[!(is.na(i[,1])),])
+segtables_ICGC_absolute_copynumber_US = lapply(segtables_ICGC_absolute_copynumber_US, function(i) i[!(is.na(i[,1])),])
+segtables_ICGC_absolute_copynumber_AU = lapply(segtables_ICGC_absolute_copynumber_AU, function(i) i[!(is.na(i[,1])),])
+
+## check that there are no
+cat('Check that there are no sex chromosomes included anywhere')
+sapply(list(segtables_TCGA_absolute_copynumber, segtables_ICGC_absolute_copynumber_US, segtables_ICGC_absolute_copynumber_AU,
+            segtables_organoids_absolute_copynumber, segtables_BriTROC_absolute_copynumber),
+       function(list_segments) all(sapply(list_segments, function(i) sum(apply(i, 2, is.na))) == 0) )
+
+```
+
+```{r, getploidy, dependson=c('get_segtables', 'get_segtables2'), echo=FALSE}
+give_ploidy = function(segtab){ 
+  .lengths = apply(segtab, 1, function(rw) rw[3]-rw[2])
+  sum(segtab[,4]*.lengths/sum(.lengths))
+}
+ploidy_ICGC_US = sapply(segtables_ICGC_absolute_copynumber_US, give_ploidy)
+ploidy_ICGC_AU = sapply(segtables_ICGC_absolute_copynumber_AU, give_ploidy)
+ploidy_TCGA = sapply(segtables_TCGA_absolute_copynumber, give_ploidy)
+ploidy_BriTROC = sapply(segtables_BriTROC_absolute_copynumber, give_ploidy)
+ploidy_organoids = sapply(segtables_organoids_absolute_copynumber, give_ploidy)
+```
+
+Ploidy is not normally distributed and it's right-skewed. Moreover, the distribution is bimodal: I guess there are genomes in which there is a clear amplification and genomes which are more or less normal, so centered around 2.
+
+```{r, ploidy_plots, dependson=c('getploidy'), echo=FALSE}
+grid.arrange(give_joint_histogram(list(organoids=ploidy_organoids, ICGC_US=ploidy_ICGC_US, ICGC_AU=ploidy_ICGC_AU, TCGA_OV=ploidy_TCGA, BriTROC=ploidy_BriTROC))+
+  ggtitle('Ploidy')+theme(legend.position = "bottom")+geom_vline(xintercept = 2)+geom_vline(xintercept = 1),
+  give_joint_histogram(lapply(list(organoids=ploidy_organoids, ICGC_US=ploidy_ICGC_US, ICGC_AU=ploidy_ICGC_AU, TCGA_OV=ploidy_TCGA, BriTROC=ploidy_BriTROC), log))+theme(legend.position = "bottom")+geom_vline(xintercept = log(2))+ggtitle('Logged ploidy')+geom_vline(xintercept = log(1)), ncol=2)
+
+```
+
+- The ploidy in the BriTROC cohort is `r {mean(ploidy_BriTROC)}` $\pm$ `r {mean(ploidy_BriTROC)}` (sd).
+- The ploidy in the TCGA cohort (AU) is `r {mean(ploidy_TCGA)}` $\pm$ `r {mean(ploidy_TCGA)}` (sd).
+- The ploidy in the ICGC cohort (AU) is `r {mean(ploidy_ICGC_AU)}` $\pm$ `r {mean(ploidy_ICGC_AU)}` (sd).
+- The ploidy in the ICGC cohort (US) is `r {mean(ploidy_ICGC_US)}` $\pm$ `r {mean(ploidy_ICGC_US)}` (sd).
+- The ploidy in the whole ICGC cohort is `r {mean(c(ploidy_ICGC_US, ploidy_ICGC_AU))}` $\pm$ `r {mean(c(ploidy_ICGC_US, ploidy_ICGC_AU))}` (sd).
+- The ploidy in the **organoid** cohort is `r {mean(ploidy_organoids)}` $\pm$ `r {mean(ploidy_organoids)}` (sd).
+
+
+I am also using a robust linear regression, but I don't think this is suitable either.
+
+```{r, test_ploidy}
+t.test(log(ploidy_organoids), log(ploidy_BriTROC))
+MASS::rlm(ploidy~group,
+         data=cbind.data.frame(ploidy=c(ploidy_organoids, ploidy_BriTROC), group=c(rep(1,length(ploidy_organoids)), rep(2, length(ploidy_BriTROC)))))
+```
+
+
+<!-- ### PCA based on the CN profiles -->
+
+<!-- ### Dendrogram based on the CN profiles -->
+
+<!-- # Comments -->
+
+<!-- ## Handling of zeroes and robust zeroes -->
+
+<!-- The exposures for organoids have some zero values, which is not the case for -->
+
+<!-- the ones from Nature Genetics. I could either use the clr in its natural sense so that -->
+
+<!-- more than half the exposures are Inf/NaN, or use the robust zeroes approach from the -->
+
+<!-- package compositions. -->
+
+<!-- Here I have used robust zeroes. -->
+
+
+<!-- Below are the samples we would use if we didn't (because they contain some zero). -->
+
+```{r, echo=FALSE, eval=TRUE, include=FALSE}
+# all_clr_nonrobust <- rbind(natgen_clr, org_clr)
+# rm_infinite_nonrobust <- apply(all_clr_nonrobust, 1, function(x) any(is.infinite(x)))
+# cat(paste0(names(which(rm_infinite_nonrobust)), collapse = ', '), 'removed due to infinite values')
+# 
+# apply(org, 1, function(x) sum(x == 0)/nrow(org))
+# table(unlist(apply(org, 1, function(x) which(x == 0))))
+```
+
+
+
+```{r, echo=FALSE, eval=TRUE, include=FALSE}
+# image(cov(sweep(natgen[,-7], 1, natgen[,7], '/')))
+```
+
+
+
+<!-- Missing in compositions: check this section of the compositions package -->
+
+<!-- ILR is with imputation -->
+
+
+<!-- Patterns of missing signatures: 100, 101, 110, … etc -->
+
+
+<!-- - Ilr on pseudo count means that you do a clustering on missing data -->
+
+<!-- - Logistic SVD with the dichotomised matrix is the way to go! -->
+
+<!-- - Signal is picked up when you dichotomise it, not with normal irl, which totally misses it -->
+
+
+<!-- There is a laplace prior on zeroes for the Lasso -->
+
+
+<!-- To do: -->
+
+<!-- - Get ratings of signatures from Geoff -->
+
+<!-- - See what sort of dats patterns there are -->
+
+<!-- It’s problematic not to have any zero when you are doing the dichotomised approach -->
+
+
+<!-- dichot <- apply(org, 2, function(i) i == 0) -->
+
+<!-- dichot <- apply(dichot, 2, as.numeric) -->
+
+<!-- rownames(dichot) <- rownames(org); colnames(dichot) <- colnames(org) -->
+
+<!-- pheatmap(dichot, cluster_rows = FALSE, cluster_cols = FALSE) -->
+
+
+
+<!-- # Exploratory analyses that didn't make it to the paper -->
+
+<!-- <!--                            #############                            -->
+<!-- <!--                            # beginning #                            -->
+<!-- <!--                            #############                            -->
+<!-- ## ALR and CLR -->
+
+<!-- The *ALR* is the additive log-ratio transformation, where we divide each element by one of the other elements, and then take the log -->
+
+<!-- (equivalently, subtract the log of one of the parts to all other logs): -->
+
+<!-- $$alr(x)_n= \Bigg(\log\Big(\frac{x_1}{x_n}\Big),\ \log\Big(\frac{x_2}{x_n}\Big), \, ..., \ \log\Big(\frac{x_{n-1}}{x_n}\Big)\Bigg) $$ -->
+
+<!-- Boxplots for the alr of  -->
+
+<!-- (1) right underrepresented samples -->
+
+<!-- (2) left underrepresented samples -->
+
+<!-- (3) all samples (i.e., non-organoid) including those in (1) and (2) -->
+
+
+```{r, underrepresented_both_boxplot, fig.height=6, echo=FALSE, eval=TRUE, include=FALSE}
+# par(mfrow=c(2,3))
+# for(i in 2:7){
+#   boxplot(log(selected_underrepresented_right[,i]/selected_underrepresented_right[,1]),
+#           log(selected_underrepresented_left[,i]/selected_underrepresented_left[,1]),
+#           log(natgen[,i]/natgen[,1]), names = c('underrepresented right',
+#                                                                           'underrepresented left',
+#                                                                           'all Natgen'),
+#           main=paste0('ALR signature ', i, ' (wrt signature 1)'))
+# }
+
+melt_alr <- melt(lapply(2:7, function(i) list(underrepresented_right=log(selected_underrepresented_right[,i]/selected_underrepresented_right[,1]),
+                                  underrepresented_left=log(selected_underrepresented_left[,i]/selected_underrepresented_left[,1]),
+                                  all_Natgen=log(natgen[[which_natgen]][,i]/natgen[[which_natgen]][,1]),
+                                  organoids=tomatrix(alr(org, ivar = 1))[,i-1])))
+melt_alr$L2 <- factor(melt_alr$L2,  levels=c('underrepresented_right',
+                     'underrepresented_left',
+                     'all_Natgen', 'organoids'))
+melt_alr$L1 <- melt_alr$L1+1
+ggplot(melt_alr, aes(x=L2, y=value))+geom_boxplot()+facet_wrap(.~L1)+theme_light()+
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))+ ggtitle('ALR with respect to signature 1')
+
+```
+
+
+<!-- This is with the *CLR* (centered log-ratio transformation): -->
+
+<!--  <!-- $$clr(x)_n= \Bigg(\log\Big(\frac{x_1}{\textrm{gm}(x)}\Big),\ \log\Big(\frac{x_2}{\textrm{gm}(x)}\Big), \, ..., \ \log\Big(\frac{x_n}{\textrm{gm}(x)}\Big)\Bigg) $$ -->
+
+
+<!-- where $\textrm{gm}(x)$ is the geometric mean. -->
+
+<!-- Same order: -->
+
+<!-- (1) right underrepresented samples -->
+
+<!-- (2) left underrepresented samples -->
+
+<!-- (3) all samples (i.e., non-organoid) including those in (1) and (2) -->
+
+```{r, underrepresented2, fig.height=6, echo=FALSE, eval=TRUE, include=FALSE}
+# ## is it signature 3?
+# # par(mfrow=c(2,4))
+# # for(i in 1:7){
+# #   boxplot(clr_mat(selected_underrepresented_right)[,i],
+# #           clr_mat(selected_underrepresented_left)[,i],
+# #           org_clr_robustzeroes, main=paste0('CLR of signature ', i))
+# # }
+# melt_clr <- melt(lapply(1:7, function(i) list(underrepresented_right=clr_mat(selected_underrepresented_right)[,i],
+#                                               underrepresented_left=clr_mat(selected_underrepresented_left)[,i],
+#                                               all_Natgen=natgen_clr[,i],
+#                                               organoids=org_clr_robustzeroes[,i])))
+# melt_clr[melt_clr$L1 %in% c(4, 6, 7),'grouping'] <- 'group 1'
+# melt_clr[melt_clr$L1 %in% c(1, 3, 5),'grouping'] <- 'group 2'
+# melt_clr$L2 <- factor(melt_clr$L2,  levels=c('underrepresented_right',
+#                                              'underrepresented_left',
+#                                              'all_Natgen', 'organoids'))
+# ggplot(melt_clr, aes(x=L2, y=value, col=grouping))+geom_boxplot()+facet_wrap(.~L1)+theme_light()+
+#   theme(axis.text.x = element_text(angle = 30, hjust = 1))+ ggtitle('CLR for each of the signatures')
+```
+<!-- The colouring is based on some apparent patterns. -->
+
+<!--                            #######                            -->
+<!--                            # end #                            -->
+<!--                            #######                            -->
+
+
+<!--                            #############                            -->
+<!--                            # beginning #                            -->
+<!--                            #############                            -->
+
+<!-- ## PCA of subcompositions -->
+
+```{r, subcomposition_pca, eval=FALSE, echo=FALSE, include=FALSE}
+apply(org, 2, function(i) sum(i == 0))
+
+subcomp_minus <- list()
+rm_subcomp <- list()
+subcomp_minus[['4']] <- clr_mat(close_data(rbind(natgen[[which_natgen]],org)[,-4]))
+subcomp_minus[['1']] <- clr_mat(close_data(rbind(natgen[[which_natgen]],org)[,-1]))
+
+for(i in names(subcomp_minus)){
+  rm_subcomp[[i]] <- apply(apply(subcomp_minus[[i]], 1, is.infinite), 2, any)
+  subcomp_minus[[i]] <- subcomp_minus[[i]][!rm_subcomp[[i]],]
+}
+
+grid.arrange(
+createPCA_fromscratch(input_matrix = subcomp_minus[['4']],
+                      annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr)))[!rm_subcomp[['4']]],
+                      annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0))))[!rm_subcomp[['4']]])+
+  ggtitle('PCA created from scratch with a subcomposition (no 4)')+theme_bw(),
+createPCA_fromscratch(input_matrix = subcomp_minus[['1']],
+                      annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr)))[!rm_subcomp[['1']]],
+                      annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0))))[!rm_subcomp[['1']]])+
+  ggtitle('PCA created from scratch with a subcomposition (no 1)')+theme_bw(), ncol=2)
+
+```
+
+<!-- Conclusion: the PCA from this subcomposition is very similar to the PCA of all signatures made with robust zeroes. -->
+
+
+```{r, raw_pca, eval=TRUE, include=FALSE}
+## A plot showing what are the characteristic compositions on each side of the PCA
+## raw pca, with no compositional aspect
+raw_pca_df <- createPCA_fromscratch(input_matrix = rbind(natgen[[which_natgen]],org),
+                                    annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                                    annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))),
+                                    return_df = TRUE)
+## see what the vertices are
+extreme_cases <- rbind(rbind(natgen[[which_natgen]],org)[which.min(raw_pca_df$Comp.2),],
+       rbind(natgen[[which_natgen]],org)[which.max(raw_pca_df$Comp.2),],
+       rbind(natgen[[which_natgen]],org)[which.min(raw_pca_df$Comp.1),])
+rownames(extreme_cases) <- paste0('Extreme sample ', 1:3)
+createBarplot(extreme_cases, remove_labels = TRUE)
+bpextreme1 <- createBarplot(t(as.matrix(extreme_cases[1,])), remove_labels = TRUE)
+bpextreme2 <- createBarplot(t(as.matrix(extreme_cases[2,])), remove_labels = TRUE)
+bpextreme3 <- createBarplot(t(as.matrix(extreme_cases[3,])), remove_labels = TRUE)
+pca_raw <- createPCA_fromscratch(input_matrix = rbind(natgen[[which_natgen]],org),
+                      annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                      annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))), labels_active = FALSE)
+  ggtitle('PCA created from scratch without any transformation')
+
+blankPanel<-grid::grid.rect(gp=grid::gpar(col="white"))
+grid.arrange(blankPanel, bpextreme2, bpextreme3, pca_raw, blankPanel, bpextreme1, ncol=2)
+```
+<!--                            #######                            -->
+<!--                            # end #                            -->
+<!--                            #######                            -->
+
+<!--                            #############                            -->
+<!--                            # beginning #                            -->
+<!--                            #############                            -->
+
+<!-- ## Amalgamation -->
+
+<!-- Here I am amalgamating, i.e. adding together exposures -->
+
+<!-- Boxplots for the amalgamated ratios: e.g. the first one is the ratio between 1 and 2+3+...+7. Note the ratio for 3 (second plot). -->
+
+<!-- The boxplots are (1) underrepresented samples (those further to the right, i.e. first principal component larger than the rightmost organoid sample) (subset of (2)), (2) all Nature Genetics samples, (3) organoid samples. -->
+
+```{r, underrepresented_amalgamation, fig.height=5, echo=FALSE, eval=TRUE, include=FALSE}
+## amalgamating: everything against s3
+## actually I should use the one from the package
+# amalgamate <- function(subset, which_to_amalgamate){
+#   keep <- subset[,!(1:ncol(subset) %in% which_to_amalgamate)]
+#   keep_colnames <- colnames(subset)[which(!(1:ncol(subset) %in% which_to_amalgamate))]
+#   notkeep_colnames <- colnames(subset)[which((1:ncol(subset) %in% which_to_amalgamate))]
+#   .tmp <- cbind( keep, rowSums(subset[,which_to_amalgamate]))
+#   colnames(.tmp) <- c(keep_colnames,
+#                       paste0(notkeep_colnames, collapse='+')) 
+#   .tmp
+# }
+
+ratio_amalgamation <- function(subset, which_to_amalgamate){
+  .tmp_amalgamation <- amalgamate(subset, which_to_amalgamate)
+  .tmp_amalgamation[,1]/.tmp_amalgamation[,2]
+}
+
+boxplot_amalgamation <- function(partition){
+  # boxplot(log(ratio_amalgamation(selected_underrepresented_right, partition)),
+  #         log(ratio_amalgamation(selected_underrepresented_left, partition)),
+  #         log(ratio_amalgamation(natgen, partition)),
+  #         log(ratio_amalgamation(org, partition)),
+  #         names = c("underrepresented right", "underrepresented left", "all natgen", "organoids"),
+  #         main=paste0(paste0((1:7)[!((1:7) %in% partition)], collapse="+"), " | all others"))
+  
+  .title <- paste0('[ ', paste0((1:7)[!((1:7) %in% partition)], collapse="+"), " | all others ]")
+  .tmp_ratios <- melt(list(underrepresented_right=log(ratio_amalgamation(selected_underrepresented_right, partition)),
+                                                underrepresented_left=log(ratio_amalgamation(selected_underrepresented_left, partition)),
+                                                all_Natgen=log(ratio_amalgamation(natgen[[which_natgen]], partition)),
+                                                organoids=log(ratio_amalgamation(org, partition))))
+  .tmp_ratios$L1 <- factor(.tmp_ratios$L1,  levels=c('underrepresented_right',
+                                               'underrepresented_left',
+                                               'all_Natgen', 'organoids'))
+  ggplot(.tmp_ratios, aes(x=L1, y=value))+geom_boxplot()+theme_light()+
+    theme(axis.text.x = element_text(angle = 30, hjust = 1))+ ggtitle(paste0('Ratio for partitioning ', .title))
+}
+
+```
+
+```{r, warning=FALSE, echo=FALSE, eval=TRUE, include=FALSE}
+par(mfrow=c(1,1))
+boxplot_amalgamation(c(1:7)[-c(5, 3)])
+```
+<!--                            #######                            -->
+<!--                            # end #                            -->
+<!--                            #######                            -->
+
+
+
+<!--                            #############                            -->
+<!--                            # beginning #                            -->
+<!--                            #############                            -->
+```{r, warning=FALSE, echo=FALSE, eval=TRUE, include=FALSE}
+## building an ilr where the first split is between 3 and everything else
+ilr_3 <- ilr(x = rbind(natgen[[which_natgen]], org),
+    V = gsi.buildilrBase(W = t(matrix(c(1, 1, -1, 1, 1, 1, 1,
+                                      -1, 1 ,0, 1, 1, 1, 1,
+                                      0, -1, 0, -1, 1, 1, 1,
+                                      0, 0, 0, 0,  -1, 1, 1,
+                                      0, 0, 0, 0,  0, -1, 1,
+                                      0, 0, 0, 0,  0, 0, -1), ncol = 7, byrow = TRUE))))
+
+ilr_split <- melt(split(ilr_3[,1], f = as.factor(c(natgen_metadata$study, rep('Organoid', dim(org)[1])))))
+ggplot(ilr_split, aes(x=value, col=L1))+geom_density()+ggtitle('ILR of s3 vs all others')
+
+```
+<!--                            #######                            -->
+<!--                            # end #                            -->
+<!--                            #######                            -->
+
+
+<!--                            #############                            -->
+<!--                            # beginning #                            -->
+<!--                            #############                            -->
+
+<!-- ## Alternative transformations -->
+
+<!-- Alternative transformations might deal better with zeroes. -->
+
+<!-- 3## Tsagris, Preston, and Wood (2011) -->
+
+<!-- Alternative transformation of the data following section 3.2 from [this paper](https://www.tandfonline.com/doi/full/10.1080/01621459.2014.990563#aHR0cHM6Ly93d3cudGFuZGZvbmxpbmUuY29tL2RvaS9wZGYvMTAuMTA4MC8wMTYyMTQ1OS4yMDE0Ljk5MDU2Mz9uZWVkQWNjZXNzPXRydWVAQEAw) -->
+
+
+```{r, alt_transformation,echo=FALSE, eval=TRUE, include=FALSE}
+tsagris_transformation <- function(u, alpha){
+  ## u is a compositional vector
+  ## alpha is a scalar
+  p <- length(u)
+  1/alpha*( (u**alpha) / (1/p)*(u**alpha) - rep(1,p))
+}
+
+tsagris_transformation_matrix <- function(U, alpha){
+  t(apply(U, 1, tsagris_transformation, alpha))
+}
+
+# Umat <- MCMCpack::rdirichlet(10, rep(1,4))
+# tsagris_transformation_matrix(Umat, alpha=1.03)
+# tsagris_transformation(Umat[1,], alpha=1.03)
+
+createPCA_fromscratch(input_matrix = tsagris_transformation_matrix(rbind(natgen[[which_natgen]],org), alpha = .8),
+                      annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                      annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))+
+  ggtitle('PCA created from scratch with tsagris transformation, alpha=.8')
+
+createPCA_fromscratch(input_matrix = tsagris_transformation_matrix(rbind(natgen[[which_natgen]],org), alpha = 1.03),
+                                 annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                                 annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))+
+  ggtitle('PCA created from scratch with tsagris transformation, alpha=1.03')
+
+createPCA_fromscratch(input_matrix = tsagris_transformation_matrix(rbind(natgen[[which_natgen]],org), alpha = 1.2),
+                      annotation = c(natgen_metadata[[which_natgen]]$study, rep('Organoid', nrow(org_clr))),
+                      annotation2 = c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))+
+  ggtitle('PCA created from scratch with tsagris transformation, alpha=1.2')
+
+# image(cov(sweep(natgen[,-7], 1, natgen[,7], '/')))
+```
+<!--                            #######                            -->
+<!--                            # end #                            -->
+<!--                            #######                            -->
+
+
+<!--                            #############                            -->
+<!--                            # beginning #                            -->
+<!--                            #############                            -->
+
+<!-- ## CLR pairs -->
+
+```{r, clr_pairs,echo=FALSE, eval=TRUE, include=FALSE}
+# clr_rbind <- list()
+# clr_rbind[[1]] <- rbind(natgen_clr,clr(org))
+# clr_rbind[[2]] <- rbind(natgen_clr,clr_mat(addPseudoCounts(org, 1e-4)))
+# clr_rbind[[3]] <- rbind(natgen_clr,clr_mat(addPseudoCounts(org, 1e-7)))
+# 
+# for(i in 1:3){
+#   pairs(clr_rbind[[i]], col=c("#4a1d96", "#22ae6b")[factor(c(rep(1, nrow(natgen_clr)),
+#                               c(rep(2, nrow(org)))))],
+#         pch=c(15, 2)[as.factor(c(rep(FALSE, dim(natgen_metadata[[which_natgen]])[1]), unlist(apply(org, 1, function(i) any(i == 0)))))],
+#         main='clr pairs')
+# }
+```
+<!--                            #######                            -->
+<!--                            # end #                            -->
+<!--                            #######                            -->
+
+
+```{r, ploidy}
+names(ploidy_organoids) = colnames(organoids_absolute_copynumber)
+cbind(Ploidy=sort(ploidy_organoids))
+```

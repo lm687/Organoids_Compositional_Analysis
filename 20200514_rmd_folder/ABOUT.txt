@@ -1,0 +1,3 @@
+20200122_Vias-Brenton-Organoids.html is the notebook file that contains all the figures and text. It has to be downloaded and then opened using a web browser (firefox, google chrome, etc.)
+
+To find the individual figures that you might be interested in, they are inside the folder 20200122_Vias-Brenton-Organoids_files

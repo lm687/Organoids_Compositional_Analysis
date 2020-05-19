@@ -1,0 +1,65 @@
+---
+title: "Comparison of TCGA exposures between old (NatGen) and current method"
+author: "L Morrill"
+date: "2019"
+output:
+    html_document:
+        number_sections: true
+        theme: simplex
+        toc: true
+        toc_float: true
+---
+
+This file has been created from the R script with the same name
+
+```{r, libraries,message=FALSE}
+library(ggrepel)
+#library(cowplot)
+library(compositions)
+#library(CompSign)
+source("../../../../../CDA_in_Cancer/code/functions/meretricious/pretty_plots/prettySignatures.R")
+```
+
+
+Comparison of the old exposures (from Nat Gen) and the new ones defined by Ruben, where the ASCAT segmentation has been changed, and normal segments have been removed.
+
+```{r, natgen_data,include=TRUE}
+
+load("../../../../../CDA_in_Cancer/data/Robj/image_NatGen_rmd.RData")
+natgen <- as.matrix(sig_data_unorm[,1:7])
+## Normalisation is not done in such a way that rows add up to 1. Re-normalising
+natgen_renormalised <- sweep(natgen, 1, rowSums(natgen), '/')
+
+new_exposures <- readRDS("../../data/Export-matrix_OV_Sigs_on_TCGA-OV_12112019.rds")
+```
+
+
+```{r, match,include=TRUE}
+natgen_renormalised <- natgen_renormalised[grep('TCGA', rownames(natgen_renormalised)),]
+rownames(natgen_renormalised) <- sapply(rownames(natgen_renormalised), function(i) paste0(strsplit(i, '-')[[1]][1:3], collapse = '-'))
+mtch <- match(rownames(new_exposures), rownames(natgen_renormalised))
+melt_comparison <- (melt(list(new_exposures, natgen_renormalised[mtch,])))
+melt_comparison <- melt_comparison[!is.na(melt_comparison$Var1),]
+melt_comparison[which(duplicated(melt_comparison[,c(1,2,4)])),]
+melt_comparison <- dcast(melt_comparison, Var1+Var2~L1, value.var = 'value')
+colnames(melt_comparison)[3:4] <- c('NewExposures', 'OldExposures')
+```
+
+Do we have all the data? In the 2020 document it looks like I am missing some data.
+```{r, missing_data}
+ sum(!(rownames(natgen_renormalised) %in% rownames(new_exposures)))
+ sum(!(rownames(new_exposures) %in% rownames(natgen_renormalised)))
+ 
+rownames(new_exposures)[!(rownames(new_exposures) %in% rownames(natgen_renormalised))]
+ 
+dim(natgen_renormalised)
+dim(new_exposures)
+```
+
+
+```{r, scatterplot,include=TRUE}
+ggplot(melt_comparison, aes(x=NewExposures, y=OldExposures))+geom_point()+facet_wrap(.~Var2, scales = "free", nrow=2)+
+  geom_abline(intercept = 0, slope = 1)
+```
+
+
