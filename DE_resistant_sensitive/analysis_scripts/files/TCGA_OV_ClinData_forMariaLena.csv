@@ -1,0 +1,380 @@
+id,sample.submitter_id,SampleID,patient.bcr_patient_barcode,patient.days_to_birth,patient.age_at_initial_pathologic_diagnosis,patient.days_to_death,patient.days_to_last_followup,patient.vital_status,patient.ethnicity,patient.histological_type,patient.neoplasm_histologic_grade,patient.follow_ups.follow_up.primary_therapy_outcome_success
+00bc9dff-d999-46ab-8d32-d6fb794d527f,TCGA-13-1507-01A,TCGA-13-1507,tcga-13-1507,-28445,77,NA,145,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+035349ef-55ec-4b88-8305-2847d6b6182a,TCGA-61-1910-01A,TCGA-61-1910,tcga-61-1910,-20779,56,NA,1127,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+035a4b53-84b3-4c27-9bb3-a880e112207b,TCGA-25-2042-01A,TCGA-25-2042,tcga-25-2042,-22127,60,396,396,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+03d68b4f-8418-494c-a886-a5e849bb1348,TCGA-24-2298-01A,TCGA-24-2298,tcga-24-2298,-20453,55,1620,1620,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+0433e32a-ab20-4fa2-ab3d-556c7891e6d5,TCGA-04-1341-01A,TCGA-04-1341,tcga-04-1341,-31215,85,NA,33,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+048627c9-33d6-446b-b9a0-f254d2d5d48a,TCGA-20-1686-01A,TCGA-20-1686,tcga-20-1686,-27588,75,NA,89,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+04a40917-633c-48eb-be1d-cc0b0b4efd30,TCGA-24-0982-01A,TCGA-24-0982,tcga-24-0982,-28201,77,679,679,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+057d832a-c0c7-4335-80ee-4e9b626abc29,TCGA-04-1357-01A,TCGA-04-1357,tcga-04-1357,-18999,52,NA,NA,alive,NA,serous cystadenocarcinoma,g3,NA
+06a54225-762c-4371-a94e-7836cbde6613,TCGA-36-1580-01A,TCGA-36-1580,tcga-36-1580,-29992,82,737,737,dead,NA,serous cystadenocarcinoma,g3,NA
+07994c98-bf61-40d8-93d8-cb24250e408b,TCGA-13-1405-01A,TCGA-13-1405,tcga-13-1405,-18218,49,NA,224,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+0b71f5fc-6b46-497c-87a2-76c89bc34727,TCGA-25-1321-01A,TCGA-25-1321,tcga-25-1321,-23987,65,1033,1033,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+0c21604d-54bb-4b15-bcfa-a1e20d1e2156,TCGA-30-1892-01A,TCGA-30-1892,tcga-30-1892,-19256,52,1484,1484,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+0ce7805a-f215-4470-869a-021b77fe10cc,TCGA-30-1857-01A,TCGA-30-1857,tcga-30-1857,-23689,64,8,8,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+0d4a061d-25f1-4715-9b9e-5ee879a2465a,TCGA-61-1741-01A,TCGA-61-1741,tcga-61-1741,-27762,76,1024,1024,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+0f2ef2fa-cf6e-4d03-a648-ccd9fdf8b8c5,TCGA-13-0727-01A,TCGA-13-0727,tcga-13-0727,-26185,71,462,462,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+0f6025df-28f8-4b73-bc53-5d35f39e686b,TCGA-04-1542-01A,TCGA-04-1542,tcga-04-1542,-19263,52,2561,NA,dead,NA,serous cystadenocarcinoma,g2,complete remission/response
+0f6a4813-5da3-483e-8237-db82b79b97d8,TCGA-24-1603-01A,TCGA-24-1603,tcga-24-1603,-19681,53,2742,2742,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+0fe70a8a-da0e-443e-a430-718c304b2541,TCGA-23-1116-01A,TCGA-23-1116,tcga-23-1116,-30464,83,NA,139,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+103d151d-2c67-4b4f-aade-8afbd106146f,TCGA-61-1918-01A,TCGA-61-1918,tcga-61-1918,-16689,45,479,479,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+12993d63-aa97-40d6-a48b-c0d38725ed12,TCGA-25-1316-01A,TCGA-25-1316,tcga-25-1316,-20331,55,1279,1126,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+1480554d-8579-4146-93ba-a7b23b8c9a5b,TCGA-24-2027-01A,TCGA-24-2027,tcga-24-2027,-18835,51,3337,3337,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+14e66fbb-a92a-459e-bbff-e7909c519d28,TCGA-24-1428-01A,TCGA-24-1428,tcga-24-1428,-18306,50,NA,529,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+1529e2b7-8203-48d8-9b9a-f22af739e83a,TCGA-13-0724-01A,TCGA-13-0724,tcga-13-0724,-26342,72,83,83,dead,hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+1560ba5a-c252-43aa-a5e3-cac2764469cc,TCGA-09-2056-01B,TCGA-09-2056,tcga-09-2056,-22864,62,NA,379,alive,hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+1688f4c9-ec1a-48f5-8fe3-ad8e90bb21b7,TCGA-13-1408-01A,TCGA-13-1408,tcga-13-1408,-21635,59,NA,180,alive,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+1707cf82-ab14-42eb-8230-3fe385ebb513,TCGA-13-1404-01A,TCGA-13-1404,tcga-13-1404,-17784,48,NA,201,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+174517fa-47e7-454e-a113-976d473d03e6,TCGA-13-0720-01A,TCGA-13-0720,tcga-13-0720,-17799,48,1355,1355,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+1846edbe-a1c9-4433-8e18-a8b7fb663972,TCGA-61-1907-01A,TCGA-61-1907,tcga-61-1907,-23204,63,NA,952,alive,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+18863638-3369-4ca3-bc0f-a251448259b3,TCGA-30-1860-01A,TCGA-30-1860,tcga-30-1860,-21406,58,1366,1366,dead,hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+18e670ba-466c-4591-aa62-8258e37656be,TCGA-23-1110-01A,TCGA-23-1110,tcga-23-1110,-15383,42,NA,1658,alive,hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+1a9eb55c-2725-4357-a8b2-97515418c60d,TCGA-23-1809-01A,TCGA-23-1809,tcga-23-1809,-23111,63,NA,16,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+1ac7e64a-05ad-49cd-afad-c96415618475,TCGA-13-0765-01A,TCGA-13-0765,tcga-13-0765,-18574,50,NA,869,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+1bd104aa-80a0-43fc-bbdf-c0341c0279f5,TCGA-29-1761-01A,TCGA-29-1761,tcga-29-1761,-29337,80,528,517,dead,NA,serous cystadenocarcinoma,g3,stable disease
+1c07df73-e470-4755-a183-30eed2d08ea3,TCGA-13-0924-01A,TCGA-13-0924,tcga-13-0924,-16670,45,NA,185,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+1c710ed8-4e82-48ce-a559-71a5c790c2e5,TCGA-13-1411-01A,TCGA-13-1411,tcga-13-1411,-29874,81,NA,128,alive,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+1c841b7f-f124-4882-b91d-f26e041ad944,TCGA-61-2012-01A,TCGA-61-2012,tcga-61-2012,-29830,81,NA,932,alive,not hispanic or latino,serous cystadenocarcinoma,g2,NA
+1d534ab0-4e5f-4463-b2b5-96ae2e4b9ce1,TCGA-57-1584-01A,TCGA-57-1584,tcga-57-1584,-17263,47,NA,643,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+2022fda5-3d7c-45c5-a5e6-3519073219e5,TCGA-24-1435-01A,TCGA-24-1435,tcga-24-1435,-21107,57,1324,1324,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+21cefa4e-6d67-4d9e-a74b-6239a18679d7,TCGA-24-1550-01A,TCGA-24-1550,tcga-24-1550,-18049,49,1249,1249,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+225d939f-fe81-4075-930f-5265dd75ef85,TCGA-36-1581-01A,TCGA-36-1581,tcga-36-1581,-23272,63,NA,751,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+228f601c-b657-479b-bcf4-f25bb2c823e4,TCGA-61-2097-01A,TCGA-61-2097,tcga-61-2097,-25961,71,NA,1844,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+238992db-6a59-4110-aebe-e8083109554a,TCGA-61-2088-01A,TCGA-61-2088,tcga-61-2088,-18770,51,NA,145,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+23bebeda-8b5f-498b-88a7-550154a54801,TCGA-61-2092-01A,TCGA-61-2092,tcga-61-2092,-21072,57,NA,1573,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+23dfce3d-1352-489b-b8dc-99acf159f92b,TCGA-23-1123-01A,TCGA-23-1123,tcga-23-1123,-21552,59,1018,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+2443c89f-0c03-4194-9c2d-e98e79191ae0,TCGA-24-2254-01A,TCGA-24-2254,tcga-24-2254,-24407,66,1736,1736,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+2566bd4b-ec4f-497a-b8d3-f7081339395f,TCGA-13-0766-01A,TCGA-13-0766,tcga-13-0766,-15571,42,NA,651,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+27c2f6c6-68a5-40dc-b649-70e8ac9352c7,TCGA-23-1023-01A,TCGA-23-1023,tcga-23-1023,-23826,65,NA,1233,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+27e07fa1-44f5-4956-9518-a61b29ee93b1,TCGA-24-2035-01A,TCGA-24-2035,tcga-24-2035,-23855,65,857,857,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+28b17bd0-672a-4a73-a821-1b5ed7b79fcc,TCGA-30-1853-01A,TCGA-30-1853,tcga-30-1853,-21404,58,1103,1103,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+2bb52f35-936f-4ade-a288-0c85101314b3,TCGA-20-1687-01A,TCGA-20-1687,tcga-20-1687,-16961,46,NA,81,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+2c4a6c98-bbc3-49e0-8d79-9bba6a01072b,TCGA-13-1510-01A,TCGA-13-1510,tcga-13-1510,-22708,62,NA,78,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+2ca8f455-9f97-4742-9263-ac902600042e,TCGA-24-1474-01A,TCGA-24-1474,tcga-24-1474,-20902,57,676,676,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+2d28a9f4-b95d-47b8-ba4c-918692c6b902,TCGA-10-0937-01A,TCGA-10-0937,tcga-10-0937,-16222,44,608,460,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+2d721dd7-07cc-4b25-ba34-7a4ec0968f16,TCGA-24-1464-01A,TCGA-24-1464,tcga-24-1464,-25874,70,379,379,dead,NA,serous cystadenocarcinoma,g3,NA
+2dc9a586-30ad-4b6e-abbc-5b850e8b8d82,TCGA-04-1651-01A,TCGA-04-1651,tcga-04-1651,-19628,53,1102,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+2dd5b4a6-8c22-4fc3-a5ef-a8133ba86520,TCGA-23-1114-01B,TCGA-23-1114,tcga-23-1114,-20409,55,2089,2089,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+2e5423de-4c4c-4b74-a476-9071c4e046d8,TCGA-31-1944-01A,TCGA-31-1944,tcga-31-1944,-17207,47,NA,1386,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+2f496741-845e-4cdf-839e-030d1b533d8b,TCGA-10-0938-01A,TCGA-10-0938,tcga-10-0938,-29558,80,636,604,dead,NA,serous cystadenocarcinoma,g3,progressive disease
+2fcc3c22-92d9-4844-aa02-d50d8f273b1e,TCGA-61-2008-01A,TCGA-61-2008,tcga-61-2008,-14791,40,NA,932,alive,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+310e2052-8e80-473e-875b-78b402853a66,TCGA-29-2427-01A,TCGA-29-2427,tcga-29-2427,-21940,60,NA,1900,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+311ec972-11c4-407c-bcda-9c27c9e287f3,TCGA-25-1315-01A,TCGA-25-1315,tcga-25-1315,-18263,50,1583,1553,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+31831810-0208-41bb-bb5a-4cc6d5661f2d,TCGA-13-1511-01A,TCGA-13-1511,tcga-13-1511,-19258,52,NA,119,alive,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+31ec16d9-c67b-4521-b020-6970103f90af,TCGA-23-1024-01A,TCGA-23-1024,tcga-23-1024,-19052,52,NA,468,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+321a266d-b0d2-4800-a0ab-1368692e4677,TCGA-57-1582-01A,TCGA-57-1582,tcga-57-1582,NA,50,731,731,dead,NA,serous cystadenocarcinoma,g3,progressive disease
+3267ca00-0daf-4ae8-94f2-830745e6d036,TCGA-13-0725-01A,TCGA-13-0725,tcga-13-0725,-16086,44,377,377,dead,hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+329ae6b7-3f35-4fb8-bf04-25b179fdfc5c,TCGA-24-1604-01A,TCGA-24-1604,tcga-24-1604,-24471,66,2688,2688,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+33d38713-3b68-4a83-ab14-01f8577b5ee5,TCGA-13-0923-01A,TCGA-13-0923,tcga-13-0923,-27081,74,NA,195,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+3405c4ca-2a4d-46df-87ce-bc23a0c79d64,TCGA-09-1667-01C,TCGA-09-1667,tcga-09-1667,-22306,61,NA,1882,alive,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+34f2c391-c521-42d7-be4e-1050a3380d08,TCGA-25-1313-01A,TCGA-25-1313,tcga-25-1313,-22982,62,820,820,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+37947dd8-72b2-493a-bc4b-d45699c04389,TCGA-09-1673-01A,TCGA-09-1673,tcga-09-1673,-18599,50,NA,92,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+3850d46d-d195-4c11-8d1c-9efbad5b9df1,TCGA-29-1690-01A,TCGA-29-1690,tcga-29-1690,-24319,66,1448,1360,dead,NA,serous cystadenocarcinoma,g2,NA
+390042c0-b512-444c-a86d-ab441205b370,TCGA-24-2033-01A,TCGA-24-2033,tcga-24-2033,-31977,87,562,562,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+39aa4fef-1f7e-4855-87a3-c000f744d45c,TCGA-25-2409-01A,TCGA-25-2409,tcga-25-2409,-26267,71,821,821,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+3b82236e-b055-4d10-acb4-b5a5992a1261,TCGA-29-1770-01A,TCGA-29-1770,tcga-29-1770,-20015,54,NA,741,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+3c254d85-ac52-455c-8821-8ddb920a8765,TCGA-31-1953-01A,TCGA-31-1953,tcga-31-1953,-19064,52,NA,204,alive,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+3d49df57-8228-4934-925e-191cf7ce6f53,TCGA-09-2044-01B,TCGA-09-2044,tcga-09-2044,-28231,77,NA,186,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+3d9c2046-d2b1-4a09-b92d-273bacf9da6c,TCGA-59-2350-01A,TCGA-59-2350,tcga-59-2350,NA,44,679,NA,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+3fb670e2-3446-410e-83ba-c083d71bf204,TCGA-29-1783-01A,TCGA-29-1783,tcga-29-1783,-21284,58,NA,220,alive,NA,serous cystadenocarcinoma,g3,NA
+404db5ef-a2b5-4c2c-b238-854588e7083a,TCGA-24-1563-01A,TCGA-24-1563,tcga-24-1563,-24274,66,1451,1451,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+42eb61ce-cf22-411d-861c-9245948cc474,TCGA-24-1431-01A,TCGA-24-1431,tcga-24-1431,-24758,67,567,583,dead,NA,serous cystadenocarcinoma,g3,NA
+432b9546-2211-4769-bd8d-fd8fde45f9cd,TCGA-13-1488-01A,TCGA-13-1488,tcga-13-1488,-21726,59,2154,2154,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+4342050d-43d1-4943-835a-450036ae644c,TCGA-VG-A8LO-01A,TCGA-VG-A8LO,tcga-vg-a8lo,-20274,55,24,NA,dead,not hispanic or latino,serous cystadenocarcinoma,gb,NA
+43a5f50f-5e71-4e6f-b0b6-9a20b754ecb5,TCGA-29-1705-01A,TCGA-29-1705,tcga-29-1705,-17530,47,555,555,dead,NA,serous cystadenocarcinoma,g2,complete remission/response
+43d99dae-a1da-4dfb-8eb1-59a3917d069e,TCGA-23-1118-01A,TCGA-23-1118,tcga-23-1118,-16471,45,NA,2616,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+44b78a11-dfad-46f5-a203-599dc26ff876,TCGA-57-1585-01A,TCGA-57-1585,tcga-57-1585,-20862,57,53,53,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+44bbb0d1-5a73-490b-a0f9-e7047720a1c4,TCGA-29-1777-01A,TCGA-29-1777,tcga-29-1777,-17356,47,NA,374,alive,NA,serous cystadenocarcinoma,g2,progressive disease
+451c9c6d-f062-4ca2-8459-efed929bd305,TCGA-25-1628-01A,TCGA-25-1628,tcga-25-1628,-24488,67,627,627,dead,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+4551bd05-feb3-44d8-97c6-5523391bbfc2,TCGA-29-1691-01A,TCGA-29-1691,tcga-29-1691,-18664,51,1470,1435,dead,NA,serous cystadenocarcinoma,g2,complete remission/response
+4580703f-a98b-429c-b29e-c81fb9c86b4f,TCGA-29-1763-01A,TCGA-29-1763,tcga-29-1763,-16021,43,NA,2032,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+45a97e88-7139-4eb8-b659-2d9e3beda744,TCGA-13-0714-01A,TCGA-13-0714,tcga-13-0714,-20109,55,189,189,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+45cdd029-59c8-4470-a9de-9f7955c4c340,TCGA-24-2026-01A,TCGA-24-2026,tcga-24-2026,-29050,79,1059,1059,dead,NA,serous cystadenocarcinoma,g3,NA
+46330b58-7097-4e16-89a6-de61277e2ff4,TCGA-13-1509-01A,TCGA-13-1509,tcga-13-1509,-23481,64,NA,127,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+469769fc-b712-4bbd-9814-f93552acb600,TCGA-25-1631-01A,TCGA-25-1631,tcga-25-1631,-26687,73,9,9,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+46cc57be-b388-45da-b753-8522a9d5c847,TCGA-13-0797-01A,TCGA-13-0797,tcga-13-0797,-18051,49,NA,265,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+47ffccad-ba4f-412e-ac62-4b4a30a55473,TCGA-04-1365-01A,TCGA-04-1365,tcga-04-1365,-31925,87,NA,2329,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+4809258e-9835-49f4-92c1-09f97fcecebd,TCGA-24-1558-01A,TCGA-24-1558,tcga-24-1558,-27004,73,594,594,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+48c976e0-46f8-470b-bc36-981ea0c6106c,TCGA-24-1562-01A,TCGA-24-1562,tcga-24-1562,-24747,67,1384,1384,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+4958b9d4-59fa-49e4-a849-1b777452f6d2,TCGA-25-2400-01A,TCGA-25-2400,tcga-25-2400,-27789,76,1278,1278,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+49e52b73-9259-410c-8bb8-9541aa34f9b3,TCGA-10-0933-01A,TCGA-10-0933,tcga-10-0933,-28433,77,446,356,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+4b47a430-8624-4b2d-99f6-23d61c58d423,TCGA-24-2036-01A,TCGA-24-2036,tcga-24-2036,-18582,50,1947,1947,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+4b83b0f5-4fc7-4a3a-a090-3ce497fb1af4,TCGA-25-2393-01A,TCGA-25-2393,tcga-25-2393,-29585,81,1157,1157,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+4ca576a9-7f21-44b3-adff-14ae0ddc9723,TCGA-13-1485-01A,TCGA-13-1485,tcga-13-1485,-17642,48,629,629,dead,not hispanic or latino,serous cystadenocarcinoma,g2,partial remission/response
+4cdb5722-3759-4337-9f8c-f0ad35542157,TCGA-31-1951-01A,TCGA-31-1951,tcga-31-1951,-21352,58,NA,684,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+4dec595e-82fe-49ab-a318-e72ae78d3b28,TCGA-30-1861-01A,TCGA-30-1861,tcga-30-1861,-27103,74,1058,1058,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+4e37723e-008b-4397-8287-e95bf5f8c04a,TCGA-13-0920-01A,TCGA-13-0920,tcga-13-0920,-24064,65,NA,420,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+4ee41786-e711-4e20-8a02-66034e1228f8,TCGA-09-2045-01A,TCGA-09-2045,tcga-09-2045,-18285,50,1069,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g2,stable disease
+545d6fda-0a55-4204-adb2-055015ace467,TCGA-57-1586-01A,TCGA-57-1586,tcga-57-1586,-24304,66,NA,679,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+54868d06-58d9-4afe-8b34-f249eefeba76,TCGA-61-2113-01A,TCGA-61-2113,tcga-61-2113,-19722,53,676,676,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+5523cb49-46a9-48f0-9fe3-90d34d2fac3e,TCGA-13-0800-01A,TCGA-13-0800,tcga-13-0800,-19087,52,NA,247,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+55bc25ed-d04d-4240-bc10-1262d10944ff,TCGA-23-1029-01B,TCGA-23-1029,tcga-23-1029,-16889,46,NA,268,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+55e3c546-cc91-4032-bd2d-dfd44e6e93fe,TCGA-36-1577-01A,TCGA-36-1577,tcga-36-1577,-15804,43,NA,783,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+560d56bc-35ee-4361-b2d3-be361a0c6de9,TCGA-24-1846-01A,TCGA-24-1846,tcga-24-1846,-16534,45,NA,133,alive,NA,serous cystadenocarcinoma,g3,NA
+567ced20-00cf-46f4-8bb8-a8553eba7f4b,TCGA-24-1417-01A,TCGA-24-1417,tcga-24-1417,-19775,54,NA,238,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+570518e9-12de-4cde-87db-9b7eb3c0858b,TCGA-09-1669-01A,TCGA-09-1669,tcga-09-1669,-20052,54,NA,928,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+57b7e54d-d9ee-4a6c-a906-c3b8b41f02a3,TCGA-23-1120-01A,TCGA-23-1120,tcga-23-1120,-22148,60,NA,130,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+581b0bcf-a7e5-44ec-818a-9193a0565095,TCGA-09-2053-01C,TCGA-09-2053,tcga-09-2053,-26433,72,NA,1209,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+5844b51c-a8d9-4d2e-9b95-74d71e089291,TCGA-24-1427-01A,TCGA-24-1427,tcga-24-1427,-21423,58,NA,147,alive,NA,serous cystadenocarcinoma,g3,partial remission/response
+58aa1725-a45f-4424-b0a3-37eacfb4acb4,TCGA-61-2000-01A,TCGA-61-2000,tcga-61-2000,-24723,67,NA,441,alive,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+5a38be76-b217-4ee2-9eee-b97683d5d8b2,TCGA-23-1030-01A,TCGA-23-1030,tcga-23-1030,-23416,64,NA,886,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+5a968ee8-0c54-47ec-8da7-0a615951a0c7,TCGA-13-0887-01A,TCGA-13-0887,tcga-13-0887,-15669,42,2028,2028,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+5ab29210-930e-4f81-b9d0-49b934e54e89,TCGA-25-1877-01A,TCGA-25-1877,tcga-25-1877,-29615,81,730,549,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+5b330499-64c3-459d-a051-48ab0662f8e5,TCGA-OY-A56Q-01A,TCGA-OY-A56Q,tcga-oy-a56q,-28623,78,NA,190,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+5bbc766c-877e-4112-bb80-ff6f2aaeb389,TCGA-24-1924-01A,TCGA-24-1924,tcga-24-1924,-23801,65,919,919,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+5bc23348-57f9-4929-a90b-a557696ca955,TCGA-24-2262-01A,TCGA-24-2262,tcga-24-2262,-20861,57,11,11,dead,NA,serous cystadenocarcinoma,g3,NA
+5c34d866-c659-4df9-88ae-146c1a4462d9,TCGA-13-1499-01A,TCGA-13-1499,tcga-13-1499,-20668,56,NA,1168,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+5c82be6c-b892-4dea-8b79-5a220f244af7,TCGA-04-1343-01A,TCGA-04-1343,tcga-04-1343,-26428,72,361,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+5cd1c12c-bbb8-4425-9f3c-5fd210e5aa11,TCGA-24-1104-01A,TCGA-24-1104,tcga-24-1104,-20527,56,1933,1933,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+5d4f90e8-24df-4db3-a3b7-1c4972d36459,TCGA-25-1627-01A,TCGA-25-1627,tcga-25-1627,-26784,73,394,11,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+5e57bd1d-f38d-447d-9d7c-1fa1c5a2ecaa,TCGA-29-1697-01A,TCGA-29-1697,tcga-29-1697,-22933,62,949,949,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+60853163-f939-4a8c-b300-e0d3c24b2eb7,TCGA-23-1022-01A,TCGA-23-1022,tcga-23-1022,-24798,67,1511,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+60fc45dd-0bbf-4f15-a474-be17c294362a,TCGA-61-1728-01A,TCGA-61-1728,tcga-61-1728,-21582,59,NA,848,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+6317f5f6-ade0-4999-b7a8-9140650a916d,TCGA-59-2351-01A,TCGA-59-2351,tcga-59-2351,NA,51,NA,3532,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+63381694-16d0-4c7a-b2d3-313480e112f8,TCGA-24-1567-01A,TCGA-24-1567,tcga-24-1567,-19843,54,524,524,dead,NA,serous cystadenocarcinoma,g3,NA
+63b9e55c-6ece-4c96-b22e-8f439197b1be,TCGA-04-1356-01A,TCGA-04-1356,tcga-04-1356,-22855,62,1499,NA,dead,hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+644e21d7-13c5-4239-bacd-ccdca695d7c4,TCGA-29-1766-01A,TCGA-29-1766,tcga-29-1766,-27359,74,1199,1190,dead,NA,serous cystadenocarcinoma,g2,progressive disease
+64b2ee7c-f463-4775-9584-63c4aa8297ee,TCGA-13-1506-01A,TCGA-13-1506,tcga-13-1506,-16734,45,NA,134,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+65517e82-3d69-4e81-87c2-69bef989c1c7,TCGA-31-1950-01A,TCGA-31-1950,tcga-31-1950,-28100,76,NA,571,alive,not hispanic or latino,serous cystadenocarcinoma,g2,partial remission/response
+65bad43d-4b38-439b-a126-19cb19a6671b,TCGA-09-2054-01A,TCGA-09-2054,tcga-09-2054,-21285,58,637,637,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+65eb41ea-b829-49d4-8c68-5db21c758755,TCGA-24-1847-01A,TCGA-24-1847,tcga-24-1847,-16529,45,NA,343,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+66099894-b6d2-42a4-8805-c3bc5d038ca5,TCGA-WR-A838-01A,TCGA-WR-A838,tcga-wr-a838,-26418,72,NA,245,alive,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+66e03a86-2fc7-4fc7-bba4-d69d2612abb9,TCGA-59-2352-01A,TCGA-59-2352,tcga-59-2352,NA,78,286,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+6726428c-c4ac-4228-8a46-83a4aafc0685,TCGA-59-2348-01A,TCGA-59-2348,tcga-59-2348,NA,59,NA,5481,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+67270205-5ba8-414f-b5d8-b162e5b27db8,TCGA-13-0901-01B,TCGA-13-0901,tcga-13-0901,-15333,41,NA,589,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+674f762b-05d1-4541-bf0a-b295f04817a5,TCGA-61-1738-01A,TCGA-61-1738,tcga-61-1738,-21965,60,1089,1089,dead,NA,serous cystadenocarcinoma,g3,progressive disease
+6795735e-e8ff-4c8a-9149-7e25e24f7cce,TCGA-29-1776-01A,TCGA-29-1776,tcga-29-1776,-23016,63,NA,360,alive,NA,serous cystadenocarcinoma,g3,stable disease
+680d5d0b-6e57-4f84-b388-7f9b0838a776,TCGA-61-1736-01B,TCGA-61-1736,tcga-61-1736,-16613,45,1484,1484,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+6880a21b-3185-4fed-aac5-1fc3d848bae3,TCGA-13-0888-01A,TCGA-13-0888,tcga-13-0888,-28498,78,NA,2141,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+68bbdba2-5999-430c-9474-7a71b91f98a9,TCGA-13-0911-01A,TCGA-13-0911,tcga-13-0911,-20276,55,NA,843,alive,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+690313b2-1a61-4afe-90f7-5ea96a84ebab,TCGA-61-2003-01A,TCGA-61-2003,tcga-61-2003,-19605,53,NA,122,alive,not hispanic or latino,serous cystadenocarcinoma,g2,progressive disease
+691ec8c8-17b3-4c26-83f6-bd76817d9238,TCGA-13-0885-01A,TCGA-13-0885,tcga-13-0885,-25763,70,NA,2780,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+6975eca1-fe2a-49ff-963f-14adfcd74fed,TCGA-13-0768-01A,TCGA-13-0768,tcga-13-0768,-26999,73,NA,257,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+69984aa4-8e6b-4f1c-9e6e-af774a4cbfd3,TCGA-13-1403-01A,TCGA-13-1403,tcga-13-1403,-17697,48,NA,331,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+6a32a1a2-2b31-4cb1-b8ce-032d4cbad587,TCGA-09-0369-01A,TCGA-09-0369,tcga-09-0369,-20705,56,1082,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+6c0d0bfc-2cc8-4800-ae7d-957497b0d241,TCGA-10-0936-01A,TCGA-10-0936,tcga-10-0936,-25454,69,1123,1089,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+6c9ecca1-a836-4d3c-9229-6baf15817289,TCGA-57-1994-01A,TCGA-57-1994,tcga-57-1994,-23062,63,NA,761,alive,NA,serous cystadenocarcinoma,NA,NA
+6ca72b27-692e-44da-a045-e9d47319f46d,TCGA-20-0987-01A,TCGA-20-0987,tcga-20-0987,-22287,61,701,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+6cabdb21-403a-46a7-9a9e-3bcd7c1cd681,TCGA-04-1536-01A,TCGA-04-1536,tcga-04-1536,-21939,60,885,NA,dead,NA,serous cystadenocarcinoma,g3,NA
+6d936414-f24d-4cfb-874e-0c8c6dfc3a1d,TCGA-25-1633-01A,TCGA-25-1633,tcga-25-1633,-23407,64,1891,1843,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+6dbafc46-d850-47f4-a9ee-8f30b3f06260,TCGA-23-2078-01A,TCGA-23-2078,tcga-23-2078,-24223,66,NA,2661,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+6eafaa3f-20a3-4846-a1bb-f96ecbf6a8c8,TCGA-29-2428-01A,TCGA-29-2428,tcga-29-2428,-21392,58,NA,1372,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+6efcccbe-e06b-48cd-8b4d-7bf6f6082e3f,TCGA-29-1774-01A,TCGA-29-1774,tcga-29-1774,-29991,82,NA,527,alive,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+6fd7d5c0-54d3-430f-8371-5a8ad9a17340,TCGA-29-1711-01A,TCGA-29-1711,tcga-29-1711,-16485,45,NA,1053,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+70603898-1188-4ee8-9b85-2cb1bdc23fe7,TCGA-25-1626-01A,TCGA-25-1626,tcga-25-1626,-23932,65,518,481,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+70a2a8cb-c46a-4122-83a5-05b1fb24dfaa,TCGA-13-1512-01A,TCGA-13-1512,tcga-13-1512,-18134,49,NA,94,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+717ca3c0-0b0e-4cf3-af34-15d0fbfd7f68,TCGA-24-1471-01A,TCGA-24-1471,tcga-24-1471,-22081,60,NA,36,alive,NA,serous cystadenocarcinoma,g3,NA
+725a5a9a-8d85-4256-8851-301c3d696cc1,TCGA-13-A5FT-01A,TCGA-13-A5FT,tcga-13-a5ft,-24743,67,NA,1296,alive,NA,serous cystadenocarcinoma,g3,NA
+7269ee11-c643-4b55-b1a4-e682037a0b54,TCGA-25-1317-01A,TCGA-25-1317,tcga-25-1317,-24199,66,61,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+7294abba-fc68-4799-94fd-f46fc3852cb6,TCGA-57-1583-01A,TCGA-57-1583,tcga-57-1583,-21167,57,346,346,dead,NA,serous cystadenocarcinoma,g3,NA
+73749b1b-78d9-46f6-ae7f-27ac7fcc2a5a,TCGA-24-1551-01A,TCGA-24-1551,tcga-24-1551,-19661,53,1579,1579,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+7386e1ca-deec-48de-8d64-b6be72f6f3ae,TCGA-13-0762-01A,TCGA-13-0762,tcga-13-0762,-23960,65,NA,981,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+73d0bedb-e27b-47c3-bd1d-ce984f2fa430,TCGA-13-1489-02A,TCGA-13-1489,tcga-13-1489,-25768,70,NA,2521,alive,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+749e9e26-eb75-4681-b039-6966e911ae7a,TCGA-25-1328-01A,TCGA-25-1328,tcga-25-1328,-13911,38,2009,1979,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+7508650c-8a1f-40e1-ae61-b669ccabc83e,TCGA-29-1688-01A,TCGA-29-1688,tcga-29-1688,-14574,39,2400,2400,dead,NA,serous cystadenocarcinoma,g2,stable disease
+750f8926-4361-4a92-8c72-59c82baad867,TCGA-30-1862-01A,TCGA-30-1862,tcga-30-1862,-23895,65,186,186,dead,not hispanic or latino,serous cystadenocarcinoma,g2,NA
+7525f3b0-b416-49d5-b839-40eaee3a42e4,TCGA-25-1326-01A,TCGA-25-1326,tcga-25-1326,-22339,61,1249,945,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+75551f95-070b-4a63-b45e-f906f612b8fb,TCGA-24-1843-01A,TCGA-24-1843,tcga-24-1843,-24469,66,NA,106,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+769c5f60-fdf1-49b1-bba3-7f4a3ef1f9a8,TCGA-29-1701-01A,TCGA-29-1701,tcga-29-1701,-20737,56,515,514,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+76d8c21d-81b4-4c87-994e-2ccca5326f79,TCGA-25-2404-01A,TCGA-25-2404,tcga-25-2404,-14184,38,883,883,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+772794b0-853a-428a-9ea6-0816baee5240,TCGA-24-1425-01A,TCGA-24-1425,tcga-24-1425,-16764,45,NA,181,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+776adc23-7d40-4c1a-94df-7a2ce6188db6,TCGA-04-1331-01A,TCGA-04-1331,tcga-04-1331,-28848,78,1336,1224,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+787405d2-849f-4438-b166-2dc0ed327b86,TCGA-24-1413-01A,TCGA-24-1413,tcga-24-1413,-18846,51,NA,192,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+78b94b66-0ac1-4a6b-af93-53d557d40406,TCGA-61-2104-01A,TCGA-61-2104,tcga-61-2104,-19432,53,NA,2338,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+78ca2bc4-e7af-4625-8b0f-276b95f4a4c4,TCGA-36-1568-01A,TCGA-36-1568,tcga-36-1568,-19311,52,NA,875,alive,NA,serous cystadenocarcinoma,g3,partial remission/response
+793878b7-cdbc-4492-a3fb-b5de9dadeddd,TCGA-24-1928-01A,TCGA-24-1928,tcga-24-1928,-28126,77,336,336,dead,NA,serous cystadenocarcinoma,g3,progressive disease
+797612c6-79cf-4ae8-a2a9-68f9bb4d263d,TCGA-29-2425-01A,TCGA-29-2425,tcga-29-2425,-22089,60,NA,1977,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+7a38fc20-11bf-4347-bc2f-bf597957d6e0,TCGA-23-1119-01A,TCGA-23-1119,tcga-23-1119,-23686,64,NA,3953,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+7a63ea75-9c44-4c96-9325-1d0cca52e4c4,TCGA-23-1107-01A,TCGA-23-1107,tcga-23-1107,-21561,59,9,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+7b4eb1bc-48a4-403f-8b11-1fd8019aa829,TCGA-24-1565-01A,TCGA-24-1565,tcga-24-1565,-27048,74,312,312,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+7c8ea118-fbce-4dc9-803d-1b6e30d06704,TCGA-10-0931-01A,TCGA-10-0931,tcga-10-0931,-16262,44,1000,982,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+7ce010cb-4875-4206-8e87-38fe4f554917,TCGA-13-1495-01A,TCGA-13-1495,tcga-13-1495,-22046,60,NA,1498,alive,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+7dfc5429-a50c-43ec-b7db-14b9bcd0aacf,TCGA-29-1785-01A,TCGA-29-1785,tcga-29-1785,-20417,55,1104,1053,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+7fb590f3-2504-435f-b18b-c46c3de83181,TCGA-29-1707-02A,TCGA-29-1707,tcga-29-1707,-15017,41,NA,1277,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+7ff1b14a-1ca7-4efb-9e95-74c37dcbb425,TCGA-13-0913-02A,TCGA-13-0913,tcga-13-0913,-19573,53,NA,912,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+818f08fc-f7a3-418e-9554-468fd246a916,TCGA-59-2355-01A,TCGA-59-2355,tcga-59-2355,NA,58,65,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+824f26d9-bb67-44e0-a6a4-81f218054873,TCGA-04-1648-01A,TCGA-04-1648,tcga-04-1648,-21113,57,871,NA,dead,NA,serous cystadenocarcinoma,g2,NA
+82e1c15b-77f7-47c6-ad9f-d8d3cc980ffd,TCGA-25-1870-01A,TCGA-25-1870,tcga-25-1870,-21550,59,455,455,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+842def11-251c-4dfa-a87c-d49869f4b99d,TCGA-24-1467-01A,TCGA-24-1467,tcga-24-1467,-18652,51,3224,3224,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+8488d9c6-a7c9-4f7f-8212-68c8902b8d6c,TCGA-09-2051-01A,TCGA-09-2051,tcga-09-2051,-15650,42,NA,1919,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+85fbab0e-e8d3-4471-aa33-31d5833ec240,TCGA-24-1422-01A,TCGA-24-1422,tcga-24-1422,-30234,82,23,23,dead,NA,serous cystadenocarcinoma,g3,NA
+861c25e4-022f-4e03-919d-cbb5fa26d4d3,TCGA-13-1496-01A,TCGA-13-1496,tcga-13-1496,-23993,65,129,129,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+869f80f4-0901-460c-a1a0-317ddb0219e3,TCGA-24-1930-01A,TCGA-24-1930,tcga-24-1930,-19387,53,2467,2467,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+86e97a45-76bb-4c76-8799-d705242c29d5,TCGA-24-2290-01A,TCGA-24-2290,tcga-24-2290,-20530,56,1102,1102,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+870f8b40-9a34-4024-b40e-f76c27d42ee6,TCGA-24-2023-01A,TCGA-24-2023,tcga-24-2023,-19901,54,1364,1364,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+874a58d2-25b6-441e-94ef-458771c2b9b2,TCGA-13-1501-01A,TCGA-13-1501,tcga-13-1501,-18393,50,NA,999,alive,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+89dc013b-099f-4167-88bf-a2a4d97236fd,TCGA-09-2048-01A,TCGA-09-2048,tcga-09-2048,-23043,63,138,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+8a94ff47-144a-4a1a-8346-60fa0517d0f3,TCGA-24-1560-01A,TCGA-24-1560,tcga-24-1560,-18671,51,1341,1341,dead,NA,serous cystadenocarcinoma,g4,complete remission/response
+8ad5f01a-8870-4997-8ce4-c9eec4747112,TCGA-29-1696-01A,TCGA-29-1696,tcga-29-1696,-15818,43,1032,1025,dead,NA,serous cystadenocarcinoma,g2,partial remission/response
+8bc92137-5cc8-4b7e-9882-91300a662648,TCGA-13-1487-01A,TCGA-13-1487,tcga-13-1487,-27176,74,681,681,dead,not hispanic or latino,serous cystadenocarcinoma,gx,complete remission/response
+8d0f8abc-c04b-4962-b2f9-1c40d1c4c713,TCGA-61-2111-01A,TCGA-61-2111,tcga-61-2111,-22517,61,NA,3825,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+8e40d064-2527-452f-8559-514bf5620501,TCGA-24-1434-01A,TCGA-24-1434,tcga-24-1434,-21810,59,568,568,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+8fb1bf2a-709c-4408-b10e-4e13316de1ce,TCGA-23-1109-01A,TCGA-23-1109,tcga-23-1109,-23002,62,1562,1562,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+8fb9e8df-469b-4340-8cfe-81715cabc493,TCGA-23-1122-01A,TCGA-23-1122,tcga-23-1122,-19537,53,1189,NA,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+92e62438-437b-46aa-a44d-16eb28a87de2,TCGA-09-0364-01A,TCGA-09-0364,tcga-09-0364,-29262,80,887,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+936ff453-f781-467a-a53e-97e10f5c46d6,TCGA-24-2293-01A,TCGA-24-2293,tcga-24-2293,-17235,47,506,506,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+9390eaf2-e059-4481-94c1-1b752e619975,TCGA-61-1911-01A,TCGA-61-1911,tcga-61-1911,-20144,55,NA,1293,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+946d33d9-8cb0-4d7e-9fd3-0a8648518e37,TCGA-24-1845-01A,TCGA-24-1845,tcga-24-1845,-15599,42,NA,116,alive,NA,serous cystadenocarcinoma,g3,NA
+95149472-6ca4-43a0-b543-e9996c42f723,TCGA-29-1695-01A,TCGA-29-1695,tcga-29-1695,-22895,62,1229,NA,dead,NA,serous cystadenocarcinoma,g2,NA
+9550d42d-da72-4868-af21-092068d6fc6d,TCGA-24-2297-01A,TCGA-24-2297,tcga-24-2297,-20487,56,1699,1699,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+96091213-41a1-40b9-8e7b-297ed5742a60,TCGA-13-0893-01B,TCGA-13-0893,tcga-13-0893,-17573,48,1319,1319,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+964aae89-2112-4793-bc60-b31dc21ab70d,TCGA-13-0886-01A,TCGA-13-0886,tcga-13-0886,-24724,67,NA,2259,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+96dcad2e-bc49-49fa-844c-50041ce8728a,TCGA-13-1410-01A,TCGA-13-1410,tcga-13-1410,-20950,57,NA,143,alive,not hispanic or latino,serous cystadenocarcinoma,gx,complete remission/response
+972bc42b-75ee-4707-8b48-f37d10c5043c,TCGA-13-1483-01A,TCGA-13-1483,tcga-13-1483,-22342,61,895,895,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+982202b5-2000-4dcf-b4e3-9b6be43fa50f,TCGA-29-1693-01A,TCGA-29-1693,tcga-29-1693,-26300,72,NA,3096,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+98d68a27-7017-4b56-859c-5009aaaae371,TCGA-13-0804-01A,TCGA-13-0804,tcga-13-0804,-27021,73,1073,1073,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+995f39e1-207a-4ae2-b044-27a708c61a2f,TCGA-25-1635-01A,TCGA-25-1635,tcga-25-1635,-26200,71,1583,1558,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+998315d3-a800-463d-a25f-23679485642c,TCGA-29-2414-01A,TCGA-29-2414,tcga-29-2414,-27417,75,2621,2621,dead,NA,serous cystadenocarcinoma,g2,complete remission/response
+9a50e40d-2803-46cb-9887-d54d3a09f1a6,TCGA-13-0900-01B,TCGA-13-0900,tcga-13-0900,-21698,59,NA,1736,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+9b44a053-e6cb-443d-92c4-1514c64f2ab3,TCGA-13-1505-01A,TCGA-13-1505,tcga-13-1505,-23238,63,NA,128,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+9b758f1a-94c2-41e1-b9be-e78b60ad4ea8,TCGA-29-1768-01A,TCGA-29-1768,tcga-29-1768,-18396,50,952,950,dead,NA,serous cystadenocarcinoma,g3,stable disease
+9bd664a4-e3b4-4c59-bb5b-ba6c4355b249,TCGA-25-1329-01A,TCGA-25-1329,tcga-25-1329,-28093,76,457,90,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+9c066f2f-f110-4d60-b60e-bd4c5346ac38,TCGA-24-1424-01A,TCGA-24-1424,tcga-24-1424,-24545,67,NA,183,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+9c19f0e6-c9ee-4516-8333-fbe4e5eb4eb7,TCGA-25-2399-01A,TCGA-25-2399,tcga-25-2399,-29373,80,608,608,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+9c2d4394-411d-4f12-b033-7d9b4c8ea430,TCGA-29-1769-01A,TCGA-29-1769,tcga-29-1769,-14754,40,NA,699,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+9c48e058-3b95-4be8-9939-93de97fc6403,TCGA-25-2392-01A,TCGA-25-2392,tcga-25-2392,-27667,75,31,31,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+9ec661a4-5c62-49e5-836d-4fd07bc37015,TCGA-61-1995-01A,TCGA-61-1995,tcga-61-1995,-16016,43,NA,61,alive,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+9f8f10ec-5cbb-4284-a41d-46b158e9ff3e,TCGA-24-1470-01A,TCGA-24-1470,tcga-24-1470,-20007,54,NA,105,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+a0765b46-5fbb-49d0-b8aa-682486927d0f,TCGA-61-2102-01A,TCGA-61-2102,tcga-61-2102,-27256,74,197,197,dead,NA,serous cystadenocarcinoma,g3,NA
+a0cb1ab4-56e1-408e-943a-fdc6f9d1f036,TCGA-57-1993-01A,TCGA-57-1993,tcga-57-1993,-20498,56,NA,763,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+a12332f0-a812-4379-b46c-e714b63f43bc,TCGA-24-2289-01A,TCGA-24-2289,tcga-24-2289,-25191,68,2049,2049,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+a1a8fc1d-e8a6-4e82-b698-4ba4fbb3247d,TCGA-61-1724-01A,TCGA-61-1724,tcga-61-1724,-17168,47,637,637,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+a1bacdbd-60f6-472f-b4a8-bcfec0250279,TCGA-5X-AA5U-01A,TCGA-5X-AA5U,tcga-5x-aa5u,-22438,61,NA,277,alive,NA,serous cystadenocarcinoma,gx,complete remission/response
+a22d2bf8-30bd-40d9-9030-13eea0707c1c,TCGA-29-1781-01A,TCGA-29-1781,tcga-29-1781,-25404,69,NA,255,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+a2d8e28d-0371-4421-8ca4-4629a8cc7b72,TCGA-24-1557-01A,TCGA-24-1557,tcga-24-1557,-17943,49,1213,1213,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+a4425c8c-63bf-489c-9d2c-4e951e3181a9,TCGA-23-1026-01B,TCGA-23-1026,tcga-23-1026,-16442,45,NA,816,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+a44b3f46-1c43-4fe3-85bc-a371a9c1a324,TCGA-24-1469-01A,TCGA-24-1469,tcga-24-1469,-25937,71,NA,277,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+a4545555-bb38-4346-8dd6-ce45dd0950bd,TCGA-29-1703-01A,TCGA-29-1703,tcga-29-1703,-20622,56,1815,1815,dead,NA,serous cystadenocarcinoma,g2,complete remission/response
+a522b6f3-0869-4568-977d-11e283e3a6dd,TCGA-61-2101-01A,TCGA-61-2101,tcga-61-2101,-20287,55,1688,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g2,partial remission/response
+a5da29f5-78d7-4fbe-a771-5ecde4a7d201,TCGA-24-1426-01A,TCGA-24-1426,tcga-24-1426,-15949,43,NA,163,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+a6901cf4-d678-4816-b071-58bd614c3477,TCGA-13-1497-01A,TCGA-13-1497,tcga-13-1497,-17528,47,NA,1652,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+a845d3b0-206a-4966-9845-1b4b562d672e,TCGA-29-1762-01A,TCGA-29-1762,tcga-29-1762,-21879,59,2634,2606,dead,NA,serous cystadenocarcinoma,g2,complete remission/response
+a8b95cad-f709-4e4f-9923-8d23daeb5b30,TCGA-23-2084-01A,TCGA-23-2084,tcga-23-2084,-16493,45,1516,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+aa0bedc4-7870-4501-9fea-072c8ec35501,TCGA-61-2009-01A,TCGA-61-2009,tcga-61-2009,-23772,65,NA,1212,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+aab022a8-5b6b-4ee1-9b68-f321e7e73a3c,TCGA-24-2267-01A,TCGA-24-2267,tcga-24-2267,-21293,58,1446,1446,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+ab80f5df-afd7-44c4-9b61-1c1c6cad0a5f,TCGA-36-1574-01A,TCGA-36-1574,tcga-36-1574,-17847,48,NA,686,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+ac0f9a42-de6f-4afa-af27-8763348b1974,TCGA-61-1900-01A,TCGA-61-1900,tcga-61-1900,-18963,51,NA,176,alive,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+ac6a0145-0b78-4ce9-bdba-cccdc5a6a63d,TCGA-24-1103-01A,TCGA-24-1103,tcga-24-1103,-18583,50,1646,1646,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+ae0eca41-64be-4feb-9ad9-20386f39a66d,TCGA-24-2261-01A,TCGA-24-2261,tcga-24-2261,-27897,76,24,24,dead,NA,serous cystadenocarcinoma,g3,NA
+af511f8c-d5bf-4dcf-a388-b070ff91774e,TCGA-29-2414-02A,TCGA-29-2414,tcga-29-2414,-27417,75,2621,2621,dead,NA,serous cystadenocarcinoma,g2,complete remission/response
+af6d5688-bd48-452a-8be7-3b90b0d85c25,TCGA-61-2098-01A,TCGA-61-2098,tcga-61-2098,-22876,62,NA,1993,alive,NA,serous cystadenocarcinoma,g2,complete remission/response
+af770e08-ef4f-42be-93aa-538848e8a8ac,TCGA-04-1362-01A,TCGA-04-1362,tcga-04-1362,-21745,59,1348,NA,dead,NA,serous cystadenocarcinoma,g3,NA
+b02459dd-1f1d-4a66-a5d0-e8fd2d0dbc68,TCGA-24-1923-01A,TCGA-24-1923,tcga-24-1923,-18628,51,690,690,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+b15f7d4e-fafa-499e-b3ae-b895571687bf,TCGA-31-1959-01A,TCGA-31-1959,tcga-31-1959,-18247,49,NA,67,alive,not hispanic or latino,serous cystadenocarcinoma,g2,NA
+b18de6ad-4e03-4cdf-98c4-c469f1c646b2,TCGA-13-0726-01A,TCGA-13-0726,tcga-13-0726,-20134,55,949,946,dead,not hispanic or latino,serous cystadenocarcinoma,gx,complete remission/response
+b23df492-673b-44fd-82b2-eee19e3ca4df,TCGA-25-2391-01A,TCGA-25-2391,tcga-25-2391,-20939,57,1492,1492,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+b24f3c34-beb3-47be-b52c-d8d4dc285999,TCGA-13-0916-01A,TCGA-13-0916,tcga-13-0916,-18189,49,NA,644,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+b3de7d12-4dd1-43b7-9423-ba92d1494772,TCGA-13-2060-01A,TCGA-13-2060,tcga-13-2060,-18635,51,NA,262,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+b44b0d52-562a-476a-a607-a7148d128359,TCGA-24-0979-01A,TCGA-24-0979,tcga-24-0979,-19595,53,1264,1264,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+b4533fab-5f7b-417a-8455-99fcb6f277b1,TCGA-31-1956-01A,TCGA-31-1956,tcga-31-1956,-22100,60,NA,1342,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+b457553f-19e4-49e3-b52c-163873b1c6b5,TCGA-31-1946-01A,TCGA-31-1946,tcga-31-1946,-11146,30,NA,918,alive,NA,serous cystadenocarcinoma,g3,NA
+b57b0e7e-36bc-4aa3-9ddb-356adf541747,TCGA-61-2008-02A,TCGA-61-2008,tcga-61-2008,-14791,40,NA,932,alive,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+b7c1da28-59e1-4867-b5af-93ad1f8f72a0,TCGA-13-0891-01A,TCGA-13-0891,tcga-13-0891,-26886,73,NA,2099,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+b81aa496-dcc1-4725-9ea2-33477c2afb23,TCGA-04-1655-01A,TCGA-04-1655,tcga-04-1655,-17988,49,1380,NA,dead,NA,serous cystadenocarcinoma,g2,NA
+b84b9118-3a5a-41c0-bc25-0d83c7a82655,TCGA-13-0883-01A,TCGA-13-0883,tcga-13-0883,-22395,61,2097,2097,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+b920a03b-c2b0-4f87-b185-5ac7fbfe2573,TCGA-13-0905-01B,TCGA-13-0905,tcga-13-0905,-18757,51,NA,1455,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+b9238220-b705-4009-b730-cca59803728d,TCGA-25-1318-01A,TCGA-25-1318,tcga-25-1318,-19755,54,1064,1064,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+baf3f97c-0feb-4623-affc-d0f3fe44c570,TCGA-09-0367-01A,TCGA-09-0367,tcga-09-0367,-24473,67,547,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+bbb4e8fd-bc98-457f-b9d6-2ecaf870145b,TCGA-23-1111-01A,TCGA-23-1111,tcga-23-1111,-23171,63,NA,98,alive,NA,serous cystadenocarcinoma,g3,NA
+bc2cade8-7717-4469-a5fa-3d3a8907d1bf,TCGA-61-1737-01A,TCGA-61-1737,tcga-61-1737,-15515,42,NA,1364,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+bc6dab72-dc5a-4ca6-aef3-f7242fa8e329,TCGA-13-0795-01A,TCGA-13-0795,tcga-13-0795,-24403,66,NA,596,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+be260015-b33d-4f36-a66e-598214fcc4d8,TCGA-23-1027-01A,TCGA-23-1027,tcga-23-1027,-17588,48,976,966,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+be659073-2a57-48ba-afd8-4ed6cc7699a3,TCGA-13-1492-01A,TCGA-13-1492,tcga-13-1492,-24332,66,NA,2237,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+be8e6614-d088-48a0-8875-deb6ce6bb293,TCGA-25-1320-01A,TCGA-25-1320,tcga-25-1320,-24018,65,1155,1124,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+bed9afc1-0329-499f-a159-fb7bc0c61b55,TCGA-25-1322-01A,TCGA-25-1322,tcga-25-1322,-22646,62,91,91,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+bfc4d15f-747b-4702-a000-4536f0422de6,TCGA-09-1659-01B,TCGA-09-1659,tcga-09-1659,-18733,51,304,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+c2bbd6b8-02be-49ff-a5e5-6e5dd2cd2af6,TCGA-36-1571-01A,TCGA-36-1571,tcga-36-1571,-19608,53,695,695,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+c2c4a273-40e1-42eb-b610-8eec20dee7db,TCGA-09-1668-01B,TCGA-09-1668,tcga-09-1668,-20972,57,NA,1684,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+c433b3b4-a8a6-4c33-96c7-b0558efc1f07,TCGA-24-1416-01A,TCGA-24-1416,tcga-24-1416,-12772,34,NA,194,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+c44d4c5c-b855-4e82-bd90-0f4b6c0e0015,TCGA-29-1778-01A,TCGA-29-1778,tcga-29-1778,-28147,77,NA,454,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+c45ee2dd-90cf-4234-af0c-7b554197d407,TCGA-13-1477-01A,TCGA-13-1477,tcga-13-1477,-18111,49,1662,1662,dead,not hispanic or latino,serous cystadenocarcinoma,g2,progressive disease
+c475e830-8cfe-4083-b019-9f6035d5c1fe,TCGA-25-1323-01A,TCGA-25-1323,tcga-25-1323,-26602,72,395,365,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+c479c96a-d88e-463a-9d8c-06059378cf38,TCGA-09-1661-01B,TCGA-09-1661,tcga-09-1661,-27486,75,1169,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+c6f0c082-488a-4065-9cbf-35b54c61198e,TCGA-30-1866-01A,TCGA-30-1866,tcga-30-1866,-22562,61,1114,1114,dead,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+c9cd12a4-b4b3-416e-9046-9c06dd884547,TCGA-24-1423-01A,TCGA-24-1423,tcga-24-1423,-22281,61,NA,190,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+cafbe8e0-e615-4d17-88be-7fef215e5ece,TCGA-10-0927-01A,TCGA-10-0927,tcga-10-0927,-23982,65,2490,2478,dead,hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+cc2594ae-895e-4e1d-acf7-82f344672107,TCGA-61-1914-01A,TCGA-61-1914,tcga-61-1914,-23850,65,NA,1722,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+cce1ef9f-8f6e-48a9-985a-6c65ec81a072,TCGA-61-1725-01A,TCGA-61-1725,tcga-61-1725,-14782,40,NA,956,alive,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+cd32019f-e6e5-4cf9-a4b4-d38dfdfc0f0a,TCGA-24-1418-01A,TCGA-24-1418,tcga-24-1418,-24842,68,NA,243,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+cf531e95-2758-4657-a6ea-aae42cf1f9d8,TCGA-20-0991-01A,TCGA-20-0991,tcga-20-0991,-28694,78,NA,797,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+cff3c50e-a10c-428f-b7c1-01b2b78a4e26,TCGA-04-1519-01A,TCGA-04-1519,tcga-04-1519,-17671,48,NA,NA,NA,NA,serous cystadenocarcinoma,g3,NA
+d0994a08-f214-4306-a88c-4bd12fd8e721,TCGA-13-0730-01A,TCGA-13-0730,tcga-13-0730,-26086,71,542,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+d1851dc4-4ec2-4884-b81a-45a835ffef5d,TCGA-29-1694-01A,TCGA-29-1694,tcga-29-1694,-16523,45,1187,NA,dead,NA,serous cystadenocarcinoma,gx,stable disease
+d1eac399-b52d-4bf3-a70b-08070987f1d3,TCGA-25-1319-01A,TCGA-25-1319,tcga-25-1319,-26786,73,1977,1977,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+d1eb06e4-aea6-474f-9e01-52bb9fe7ff27,TCGA-09-1662-01A,TCGA-09-1662,tcga-09-1662,-21246,58,2717,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+d234796d-722c-45e8-9449-8d65c994aea3,TCGA-61-2110-01A,TCGA-61-2110,tcga-61-2110,-20718,56,1354,1354,dead,not hispanic or latino,serous cystadenocarcinoma,NA,progressive disease
+d34f8892-6ddb-4f10-b2f7-e81a8482bd30,TCGA-13-1498-01A,TCGA-13-1498,tcga-13-1498,-26820,73,NA,1144,alive,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+d45044c2-2d62-41dd-9a61-68d5ab6a1f6d,TCGA-04-1514-01A,TCGA-04-1514,tcga-04-1514,-16725,45,1720,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+d541dcaf-c368-4e9e-9cf1-9c34309654cb,TCGA-61-1919-01A,TCGA-61-1919,tcga-61-1919,-21199,58,1161,1161,dead,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+d6123f3e-38e2-4da4-8739-883c46108eff,TCGA-24-2281-01A,TCGA-24-2281,tcga-24-2281,-25019,68,NA,1357,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+d65480c7-8ef0-4535-bd00-1f86a1d5deac,TCGA-24-1544-01A,TCGA-24-1544,tcga-24-1544,-26141,71,820,820,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+d7b702c1-de1f-4341-9329-7931e1384da8,TCGA-24-0966-01A,TCGA-24-0966,tcga-24-0966,-28529,78,NA,232,alive,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+d8303621-de49-49b5-8bb1-9ce7e368fbf2,TCGA-59-2363-01A,TCGA-59-2363,tcga-59-2363,NA,40,NA,165,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+d861c6c3-4a79-472b-a950-b9440367a66a,TCGA-13-0908-01B,TCGA-13-0908,tcga-13-0908,-21422,58,NA,1364,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+d952565a-b10c-460e-ae19-099da5f3ce0c,TCGA-24-1546-01A,TCGA-24-1546,tcga-24-1546,-17130,46,1955,1955,dead,NA,serous cystadenocarcinoma,g3,NA
+da33a57d-2ade-476b-b72e-985a87833210,TCGA-24-1430-01A,TCGA-24-1430,tcga-24-1430,-24939,68,863,863,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+da8fcd97-0fa1-42d5-b0db-e16cecb7d4d8,TCGA-36-1569-01A,TCGA-36-1569,tcga-36-1569,-19151,52,NA,885,alive,NA,serous cystadenocarcinoma,g3,partial remission/response
+dcce8c4c-ee88-4c50-86f9-51bb2a291e41,TCGA-23-1113-01A,TCGA-23-1113,tcga-23-1113,-17791,48,949,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+dceb254b-34f5-4ef7-85e4-fd5d5212499b,TCGA-36-1576-01A,TCGA-36-1576,tcga-36-1576,-27778,76,NA,915,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+dd9bc896-11ad-4156-9fd2-e85be97507e4,TCGA-09-1670-01A,TCGA-09-1670,tcga-09-1670,-21147,57,NA,547,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+de003ee5-3625-4d68-94d9-b7bb1d4a77f7,TCGA-61-1721-01A,TCGA-61-1721,tcga-61-1721,-13894,38,NA,338,alive,not hispanic or latino,serous cystadenocarcinoma,g1,complete remission/response
+de7e5b42-8601-4108-a1bf-9e8eb8d38a20,TCGA-24-1844-01A,TCGA-24-1844,tcga-24-1844,-23542,64,NA,113,alive,NA,serous cystadenocarcinoma,g3,NA
+de92051d-c3f8-49ad-bce9-ca748c6fdd09,TCGA-24-2020-01A,TCGA-24-2020,tcga-24-2020,-24682,67,4624,4624,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+e0235689-b4c0-4e36-b3ba-34488d2b10cf,TCGA-09-1665-01B,TCGA-09-1665,tcga-09-1665,-27010,73,1266,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+e054a3b7-04e9-473e-a1d8-1c8358aade6b,TCGA-36-1570-01A,TCGA-36-1570,tcga-36-1570,-17956,49,NA,655,alive,NA,serous cystadenocarcinoma,g3,partial remission/response
+e09d9ae2-b5b5-47ac-8d22-f10d7c3066d1,TCGA-23-1028-01A,TCGA-23-1028,tcga-23-1028,-16018,43,NA,1503,alive,hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+e0e2ad9d-357f-4f7d-8b5d-ca58ac76bf0b,TCGA-13-1407-01A,TCGA-13-1407,tcga-13-1407,-18896,51,NA,184,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+e0e57a01-9217-402c-95c8-09843fd2585e,TCGA-24-1105-01A,TCGA-24-1105,tcga-24-1105,-13187,36,1442,1442,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+e134072f-d381-4be0-9456-6aa576e669a3,TCGA-20-1683-01A,TCGA-20-1683,tcga-20-1683,-24006,65,NA,772,alive,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+e15cbbfd-bf51-41da-847d-cd75da5a59a4,TCGA-30-1714-01A,TCGA-30-1714,tcga-30-1714,-25032,68,1158,1158,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+e2f515e9-b3d0-4f76-b7ce-9c732102b67c,TCGA-61-1733-01A,TCGA-61-1733,tcga-61-1733,-26180,71,NA,967,alive,NA,serous cystadenocarcinoma,g3,stable disease
+e3685cc2-6974-45c1-b2be-ddb406e9f3f9,TCGA-04-1350-01A,TCGA-04-1350,tcga-04-1350,-16942,46,1946,NA,dead,NA,serous cystadenocarcinoma,g3,stable disease
+e3ac7fed-eba6-457a-a802-72326ca3cf56,TCGA-25-1634-01A,TCGA-25-1634,tcga-25-1634,-27749,75,1091,1081,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+e3ff91e0-fb0b-4dc5-85f2-8771c773405d,TCGA-24-1552-01A,TCGA-24-1552,tcga-24-1552,-28129,77,1259,1259,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+e47fcf06-ebb9-4406-8a9d-53da70ffb467,TCGA-24-1842-01A,TCGA-24-1842,tcga-24-1842,-18227,49,NA,253,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+e56da01f-19fd-4532-bb05-56389af50078,TCGA-04-1332-01A,TCGA-04-1332,tcga-04-1332,-25786,70,1247,1247,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+e5b1b8b4-24fa-4e8d-b9c3-4d00406c2d79,TCGA-10-0928-01A,TCGA-10-0928,tcga-10-0928,-26066,71,563,563,dead,NA,serous cystadenocarcinoma,g3,NA
+e5c54353-53b2-43fd-ac97-85b0fed7961a,TCGA-25-1312-01A,TCGA-25-1312,tcga-25-1312,-25537,69,31,31,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+e6cf743a-97c4-4aaf-b825-bde4980d6d0a,TCGA-24-1549-01A,TCGA-24-1549,tcga-24-1549,-21432,58,1721,1721,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+e7a6c6fe-be01-4779-b066-b46c35f1d070,TCGA-24-2280-01A,TCGA-24-2280,tcga-24-2280,-27356,74,NA,2143,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+e82c71fa-c8fd-46f5-8dcc-e3fa253c4b9d,TCGA-04-1338-01A,TCGA-04-1338,tcga-04-1338,-28789,78,NA,1418,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+e8550e57-639a-43e1-b1a3-7f137ded2c6c,TCGA-59-2354-01A,TCGA-59-2354,tcga-59-2354,NA,63,1046,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,stable disease
+e9e2d846-6e5e-4004-864e-2decd039b8a8,TCGA-23-2077-01A,TCGA-23-2077,tcga-23-2077,-16552,45,NA,3525,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+e9ff3df6-7c3a-4da8-b65d-cb432d7ef680,TCGA-24-0970-01B,TCGA-24-0970,tcga-24-0970,-23276,63,354,354,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+ea103009-5c2a-4c16-af57-9d332936185a,TCGA-25-1623-01A,TCGA-25-1623,tcga-25-1623,-26060,71,565,565,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+eaf9ae41-e243-4c70-a59d-8303f2d42c38,TCGA-24-2288-01A,TCGA-24-2288,tcga-24-2288,-25831,70,25,25,dead,NA,serous cystadenocarcinoma,g3,NA
+ebffd3cf-6699-487a-a3cb-cd31221b2a5d,TCGA-13-0906-01A,TCGA-13-0906,tcga-13-0906,-18383,50,NA,1367,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+ec002c5e-6b5f-4918-9dba-fe4e1ff06a8e,TCGA-13-1409-01A,TCGA-13-1409,tcga-13-1409,-26836,73,NA,208,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+ec9d45db-4cd7-47d9-8762-1a73ddac872f,TCGA-25-2396-01A,TCGA-25-2396,tcga-25-2396,-26145,71,92,92,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+ed125963-e1e8-4ce4-b73d-1e49a3a2c9fa,TCGA-24-2024-01A,TCGA-24-2024,tcga-24-2024,-26476,72,1769,1769,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+ed74489c-fc44-4b33-87cc-7e83868216a0,TCGA-04-1364-01A,TCGA-04-1364,tcga-04-1364,-22294,61,1024,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+eda10edd-5495-48db-b2c0-54849ba9e8b1,TCGA-24-1553-01A,TCGA-24-1553,tcga-24-1553,-19393,53,1767,1767,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+ee330208-7bc7-4c3d-8cc1-6a8bb69d0e72,TCGA-23-1021-01B,TCGA-23-1021,tcga-23-1021,-16484,45,1446,1446,dead,not hispanic or latino,serous cystadenocarcinoma,g3,partial remission/response
+eec66dfc-7b0d-43b1-9695-4720830641f9,TCGA-24-2038-01A,TCGA-24-2038,tcga-24-2038,-24957,68,1354,1354,dead,NA,serous cystadenocarcinoma,gb,complete remission/response
+f06ab7ae-7352-44e0-a4f8-32a3ae2096ca,TCGA-30-1718-01A,TCGA-30-1718,tcga-30-1718,-16400,44,1579,1579,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+f07bad1a-30b7-4abc-8c39-14052edd0384,TCGA-25-1632-01A,TCGA-25-1632,tcga-25-1632,-24993,68,1799,1732,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+f0b11cc5-bc69-4e05-931b-444e4c01db2f,TCGA-24-1616-01A,TCGA-24-1616,tcga-24-1616,-20785,56,1163,1163,dead,NA,serous cystadenocarcinoma,g3,complete remission/response
+f16399c2-174e-482c-99b3-0874e8b923e9,TCGA-59-A5PD-01A,TCGA-59-A5PD,tcga-59-a5pd,-20263,55,624,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+f1a59bca-ac4b-404f-9091-093bcb00df05,TCGA-61-2002-01A,TCGA-61-2002,tcga-61-2002,-17115,46,NA,547,alive,not hispanic or latino,serous cystadenocarcinoma,g3,progressive disease
+f1c342c3-4ac2-4e04-9f9d-2cdc535a00e5,TCGA-24-1850-01A,TCGA-24-1850,tcga-24-1850,-26369,72,NA,168,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+f2a22294-e969-4a26-b19e-1370f0947174,TCGA-61-2109-01A,TCGA-61-2109,tcga-61-2109,-14900,40,629,629,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+f3ab6e3a-ac86-485e-abf3-b9d8164b078b,TCGA-04-1530-01A,TCGA-04-1530,tcga-04-1530,-25013,68,3622,NA,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+f3c624c2-1e98-4dec-b219-3e0ff500a065,TCGA-13-0897-01A,TCGA-13-0897,tcga-13-0897,-19894,54,NA,1748,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+f49bf2a4-f988-474c-a229-c0b25b18470a,TCGA-29-1784-01A,TCGA-29-1784,tcga-29-1784,-20210,55,NA,163,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
+f54a4cd6-4501-4285-89e4-9dc7c4ddc803,TCGA-09-1666-01A,TCGA-09-1666,tcga-09-1666,-21066,57,NA,1752,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+f6c8cc7c-1730-48e2-a2a7-4f6ef0e80938,TCGA-04-1361-01A,TCGA-04-1361,tcga-04-1361,-20860,57,NA,989,alive,NA,serous cystadenocarcinoma,g3,stable disease
+f6d3729d-8c3f-499b-9d56-1fcc75ffbb59,TCGA-29-A5NZ-01A,TCGA-29-A5NZ,tcga-29-a5nz,-24161,66,1088,NA,dead,NA,serous cystadenocarcinoma,g3,NA
+f706498f-ee95-4143-aeec-97b9b36f2c97,TCGA-25-2398-01A,TCGA-25-2398,tcga-25-2398,-26267,71,1369,1369,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+f814caf2-364a-47d4-b940-79ac50ba641f,TCGA-25-1630-01A,TCGA-25-1630,tcga-25-1630,-27006,73,1162,239,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+f9cf4c73-e8e6-4992-9dbd-88ba9f049ffc,TCGA-20-1682-01A,TCGA-20-1682,tcga-20-1682,-20583,56,NA,837,alive,not hispanic or latino,serous cystadenocarcinoma,gx,complete remission/response
+fa053e57-d734-4c2e-8038-44874029c246,TCGA-04-1347-01A,TCGA-04-1347,tcga-04-1347,-29695,81,NA,1919,alive,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+fb02a814-f9e0-42ee-b3a1-7d9beee939be,TCGA-13-1489-01A,TCGA-13-1489,tcga-13-1489,-25768,70,NA,2521,alive,not hispanic or latino,serous cystadenocarcinoma,g2,complete remission/response
+fb3b94a8-4b34-44cf-b4dc-2236b423c041,TCGA-24-0968-01A,TCGA-24-0968,tcga-24-0968,-21664,59,NA,598,dead,NA,serous cystadenocarcinoma,g3,partial remission/response
+fb796bbd-63d7-4148-a95c-7b5ec0f11a35,TCGA-25-2401-01A,TCGA-25-2401,tcga-25-2401,-23711,64,90,90,dead,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+fbb62773-9d22-428a-aea0-9c3da6c0f1e3,TCGA-24-2271-01A,TCGA-24-2271,tcga-24-2271,-20399,55,962,962,dead,NA,serous cystadenocarcinoma,g3,NA
+fc5e0141-13d5-4e22-8d0e-06807da55fb5,TCGA-30-1891-01A,TCGA-30-1891,tcga-30-1891,-22344,61,914,914,dead,not hispanic or latino,serous cystadenocarcinoma,g2,partial remission/response
+fd63ef7d-66f2-4eb8-8b5f-518bca900350,TCGA-09-0366-01A,TCGA-09-0366,tcga-09-0366,-20440,55,1757,NA,dead,NA,serous cystadenocarcinoma,g3,stable disease
+fe231cb1-4529-455c-93ea-50240194a8bb,TCGA-61-1998-01A,TCGA-61-1998,tcga-61-1998,-17855,48,NA,168,alive,not hispanic or latino,serous cystadenocarcinoma,g3,NA
+feb4ff14-7dcb-41a5-80d6-2df76d05e529,TCGA-29-1710-01A,TCGA-29-1710,tcga-29-1710,-19969,54,951,889,dead,NA,serous cystadenocarcinoma,g2,partial remission/response
+ff7edff0-bfb5-4520-b729-cc8faa3390ab,TCGA-13-0884-01B,TCGA-13-0884,tcga-13-0884,-14538,39,3260,3260,dead,not hispanic or latino,serous cystadenocarcinoma,g3,complete remission/response
+ffa69b9c-c03c-4f60-840a-8fa6a8814bb8,TCGA-24-1419-01A,TCGA-24-1419,tcga-24-1419,-22659,62,NA,239,alive,NA,serous cystadenocarcinoma,g3,complete remission/response
