@@ -237,13 +237,18 @@ pca_from_projection[['UpdatedExposures_onlyTCGA']]= ggplot(df_prcomp_exposures[[
     theme_bw()
 
 
-grid.arrange(pca_from_projection[['UpdatedExposures']]+theme(legend.position = 'bottom'),
+pca_all_clinical <- pca_from_projection[['UpdatedExposures']]+theme(legend.position = 'bottom')
+pca_tcga <- pca_from_projection[['UpdatedExposures_onlyTCGA']]+theme(legend.position = 'bottom')
+grid.arrange(pca_all_clinical,
              #pca_from_projection[[2]]+theme(legend.position = 'bottom'),
-             pca_from_projection[['UpdatedExposures_onlyTCGA']]+theme(legend.position = 'bottom'),
+             pca_tcga,
              ncol=2)
-
 ```
 
+```{r, pdf_pca, echo=FALSE}
+ggsave(filename = "figures/pca_all.pdf", plot = pca_all_clinical)
+ggsave(filename = "figures/pca_tcga.pdf", plot = pca_tcga)
+```
 
 ### What is different in these 'underrepresented' clinical samples?
 I.e., what type of signatures are not represented in the organoids?
@@ -337,11 +342,14 @@ plot_dendro = function(dendro_all, which_natgen){
 }
 ```
 
-```{r, dendrogram_aitchisondistance_implementation,echo=FALSE, eval=TRUE, dependson=c('dendrogram_aitchisondistance_function')}
+```{r, dendrogram_aitchisondistance_implementation,echo=FALSE, eval=TRUE, warning=FALSE, dependson=c('dendrogram_aitchisondistance_function')}
 
 dendro_UpdatedExposures = give_dendrogram('UpdatedExposures')
 plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures')
 
+pdf("figures/dendrogram.pdf", width = 5, height = 4)
+plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures')
+dev.off()
 ```
 
 ### What type of signatures appear on the branch with no organoids?
@@ -495,6 +503,7 @@ names(df_features) = c('Segment size', 'Number of breakpoints per 10Mb', 'Oscill
 distribs_features = lapply(names(df_features), function(name_it_features){
   give_joint_histogram(df_features[[name_it_features]], no_colour=FALSE)+ggtitle(paste0(name_it_features, ' (log)'))+ guides(fill=FALSE)
 })
+
 ```
 
 
@@ -760,6 +769,14 @@ plot_rank = function(df_rank){
 
 plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
 plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort))))+ggtitle("Ploidy")
+
+pdf("figures/rank_segments.pdf", width = 7, height = 4)
+plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
+dev.off()
+pdf("figures/rank_ploidy.pdf", width = 7, height = 4)
+plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort))))+ggtitle("Ploidy")
+dev.off()
+
 ```
 
 

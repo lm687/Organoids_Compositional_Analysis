@@ -2,9 +2,7 @@
 ## /home/bioinformatics/software/pipelines/rnaseq/rnaseq-3.0.current/R/runDEAnalysis.R 
 
 suppressMessages(library(optparse))
-suppressMessages(library(DESeq2))
-
-source("other_scripts/utilities.R")
+suppressMessages(library(rnaseqRpkg))
 
 parseCommandLine <- function() {
   parser <- OptionParser(description="Perform a differential binding analysis using DESeq2")
@@ -20,12 +18,7 @@ parseCommandLine <- function() {
   return(opts$options)
 }
 
-# opts = list()
-# opts$sampleSheet = "sample_sheet.csv"
-# samplesFN <- opts$sampleSheet
-# modelStr <- opts$model
-# countsFN <- opts$counts_raw
-# destination <- opts$deaObjectFile
+
 
 loadCountTable <- function(fn) {
   data <- read.csv(fn,row.names=1,header=TRUE,check.names=FALSE)
@@ -201,15 +194,13 @@ runDEanalysis <- function(model,samples,counts,refflat,geneNames,outputDir) {
   return(list(mat,summaries))
 }
 
+
 opts <- parseCommandLine()
 samplesFN <- opts$sampleSheet
 modelStr <- opts$model
-countsFN <- as.matrix(read.table(opts$counts_raw, sep = "\t", row.names = 1, header = TRUE))
+countsFN <- opts$counts_raw
 destination <- opts$deaObjectFile
 
-head(countsFN)
-
-deaObj <- runDEanalysis(samples=samplesFN,model=modelStr,counts=countsFN)
-# assign(modelStr,deaObj)
-# save(list=modelStr,file=destination)
-
+deaObj <- runDEAnalysis(sampleSheetFN = samplesFN, modelString = modelStr, countsFN=countsFN)
+assign(modelStr,deaObj)
+save(list=modelStr,file=destination)

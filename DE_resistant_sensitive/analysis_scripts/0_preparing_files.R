@@ -69,6 +69,8 @@ treatment = read.table("files/TCGA_OV_ClinData_forMariaLena.csv", sep = ",", hea
 # complete response VS progressive disease 
 treatment = treatment[(treatment$patient.follow_ups.follow_up.primary_therapy_outcome_success) %in% c("complete remission/response", "progressive disease"),]
 table(treatment$patient.follow_ups.follow_up.primary_therapy_outcome_success)
+treatment$patient.follow_ups.follow_up.primary_therapy_outcome_success[treatment$patient.follow_ups.follow_up.primary_therapy_outcome_success == "complete remission/response"] = "complete_remission_or_response"
+treatment$patient.follow_ups.follow_up.primary_therapy_outcome_success[treatment$patient.follow_ups.follow_up.primary_therapy_outcome_success == "progressive disease"] = "progressive_disease"
 counts_bind = counts_bind[,match(treatment$id, colnames(counts_bind))]
 stopifnot(treatment$id == colnames(counts_bind))
 
@@ -77,10 +79,6 @@ samples_df = data.frame(sample=treatment$id,
 write.table(samples_df,
 file = "files/sample_sheet.csv", quote = FALSE, sep = ",", row.names = FALSE)
 #sapply(counts, function(i) i[,1])
-write.table(counts_bind, file = "files/table_raw_counts.csv", quote = FALSE, sep = "\t", col.names = TRUE)
-
-fsamples=samples_df
-opts = list(); opts$counts_raw = counts
-model = "~response"
+write.table(counts_bind, file = "files/table_raw_counts.csv", quote = FALSE, sep = ",", col.names = TRUE)
 
 
