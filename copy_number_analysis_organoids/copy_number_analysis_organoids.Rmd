@@ -55,6 +55,7 @@ library(RColorBrewer)
 library(dplyr)
 library(tidyverse)
 library(MASS)
+library(pheatmap)
 source("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/main_functions.R")
 source("helper_functions.R")
 ```
@@ -318,7 +319,7 @@ give_dendrogram <- function(which_natgen){
   return(dendro_all)
 }
 
-plot_dendro = function(dendro_all, which_natgen){
+plot_dendro = function(dendro_all, which_natgen, which_label="Symbol"){
   levels_study <- levels(factor(all_metadata[[which_natgen]][labels(dendro_all),'study']))
   levels_study
   which_level_organoids <- which(grepl('organoids', levels_study))
@@ -332,9 +333,13 @@ plot_dendro = function(dendro_all, which_natgen){
   }
   labels_colors(dendro_all) <- cols[factor(all_metadata[[which_natgen]][labels(dendro_all),'study'])]
   labels_org_bool <- labels_colors(dendro_all) == colour_organoid
-  labels(dendro_all)[labels_org_bool] <- rep('○', sum(labels_org_bool))#rep('●', sum(labels_org_bool))
-  labels(dendro_all)[!labels_org_bool] <- rep('•', sum(!labels_org_bool))
-  labels(dendro_all)[!labels_org_bool] <- rep(NA, sum(!labels_org_bool))
+  if(which_label == "Symbol"){
+    labels(dendro_all)[labels_org_bool] <- rep('○', sum(labels_org_bool))#rep('●', sum(labels_org_bool))
+    labels(dendro_all)[!labels_org_bool] <- rep('•', sum(!labels_org_bool))
+    labels(dendro_all)[!labels_org_bool] <- rep(NA, sum(!labels_org_bool))
+  }else{
+    labels(dendro_all)[!labels_org_bool] <- rep(NA, sum(!labels_org_bool))
+  }
   cex_labels <- rep(1, length(labels_org_bool))
   cex_labels[labels_org_bool] <- 0.9
   dendro_all <- set(dendro_all, "labels_cex", cex_labels)
@@ -346,11 +351,31 @@ plot_dendro = function(dendro_all, which_natgen){
 
 dendro_UpdatedExposures = give_dendrogram('UpdatedExposures')
 plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures')
+plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures', which_label="not_symbol")
 
 pdf("figures/dendrogram.pdf", width = 5, height = 4)
 plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures')
 dev.off()
+
+pdf("figures/dendrogram_with_labels.pdf", width = 10, height = 8)
+par(mar=c(8,4,4,4))
+plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures', which_label="not_symbol")
+dev.off()
 ```
+
+```{r}
+labels(dendro_UpdatedExposures)[grep('Sample', labels(dendro_UpdatedExposures))]
+```
+
+### Heatmap of the samples in the dendrogram
+```{r}
+heatmap_dendrogam = pheatmap(t(all_natgen$UpdatedExposures[rownames(all_natgen$UpdatedExposures)[match(gsub("Organoid ", "", labels(dendro_UpdatedExposures)), rownames(all_natgen$UpdatedExposures))],]), cluster_rows = FALSE, cluster_cols = FALSE, show_colnames = FALSE)
+heatmap_dendrogam
+pdf("figures/heatmap_dendrogam.pdf")
+heatmap_dendrogam
+dev.off()
+```
+
 
 ### What type of signatures appear on the branch with no organoids?
 We are looking at the split plot below (i.e. the first split). We call 'underrepresented' the samples that fall on the right branch.
@@ -464,6 +489,7 @@ sum(apply(all_natgen$UpdatedExposures[!as.logical(df_logistic$bool_underrepresen
 
 ```
 
+
 # Analysis of CN profiles
 additional genomic data comparing the tumours to the organoids in terms of ploidy, number of rearrangements and any other things that you think could be relevant
 
@@ -473,7 +499,7 @@ pcawg_CN_features = readRDS("data/pcawg_CN_features.rds")
 tcga_CN_features = readRDS("data/tcga_CN_features.rds")
 
 BriTROC_absolute_copynumber = readRDS("data/BriTROC_absolute_copynumber.rds")
-BriTROC2_CN_features = readRDS("data/0_BRITROC_absolute_CN.rds")
+BriTROC2_CN_features = readRDS("data/6_TCGA_Signatures_on_BRITROC/0_BRITROC_absolute_CN.rds")
 
 organoids_absolute_copynumber = readRDS("data/organoid_absolute_CN.rds")
 organoids_CN_features = extractCopynumberFeatures(organoids_absolute_copynumber)
@@ -525,15 +551,20 @@ TL;DR with a negative binomial model, which is much more appropriate in this set
 ```{r, modelling_number_of_segments, echo=FALSE}
 
 ## poisson test
-number_of_segments = list(organoids=organoids_CN_features[[1]] %>% group_by(ID) %>%
-                           group_map( ~ nrow(.x)) %>% unlist,
-                          BriTROC=BriTROC_CN_features[[1]] %>% group_by(ID) %>%
-                            group_map( ~ nrow(.x)) %>% unlist,
-                          # BriTROC2=BriTROC2_CN_features %>% group_by(sample) %>% group_map( ~ nrow(.x)) %>% unlist,
-                          pcawg=pcawg_CN_features[[1]] %>% group_by(ID) %>%
-                            group_map( ~ nrow(.x)) %>% unlist,
-                          tcga=tcga_CN_features[[1]] %>% group_by(ID) %>%
-                            group_map( ~ nrow(.x)) %>% unlist)
+number_of_segments = list(organoids= table(organoids_CN_features[[1]]$ID),
+                            #organoids_CN_features[[1]] %>% group_by(ID) %>%
+                           #group_map( ~ nrow(.x)) %>% unlist,
+                          BriTROC=table(BriTROC_CN_features[[1]]$ID),
+                            #BriTROC_CN_features[[1]] %>% group_by(ID) %>%
+                            #group_map( ~ nrow(.x)) %>% unlist,
+                           # BriTROC2=table(BriTROC2_CN_features$sample),
+                            #BriTROC2_CN_features %>% group_by(sample) %>% group_map( ~ nrow(.x)) %>% unlist,
+                          pcawg=table(pcawg_CN_features[[1]]$ID),
+                            #pcawg_CN_features[[1]] %>% group_by(ID) %>%
+                            #group_map( ~ nrow(.x)) %>% unlist,
+                          tcga=table(tcga_CN_features[[1]]$ID))
+                            #tcga_CN_features[[1]] %>% group_by(ID) %>%
+                            #group_map( ~ nrow(.x)) %>% unlist)
 
 # poisson.test()
 
@@ -557,36 +588,36 @@ res_LRT_nb
 
 Unfortunately the scaling factor has to do with the width of the bins in the histogram.
 ```{r, plotting_poisson_fit, echo=FALSE, dependson=c('modelling_number_of_segments')}
-list_all_nsegments = list(organoids=organoids_CN_features[[1]] %>% group_by(ID) %>%
-                           group_map( ~ nrow(.x)) %>% unlist,
-                          BriTROC=BriTROC_CN_features[[1]] %>% group_by(ID) %>%
-                            group_map( ~ nrow(.x)) %>% unlist,
-                          pcawg=pcawg_CN_features[[1]] %>% group_by(ID) %>%
-                            group_map( ~ nrow(.x)) %>% unlist,
-                          tcga=tcga_CN_features[[1]] %>% group_by(ID) %>%
-                            group_map( ~ nrow(.x)) %>% unlist)
+# list_all_nsegments = list(organoids=organoids_CN_features[[1]] %>% group_by(ID) %>%
+#                            group_map( ~ nrow(.x)) %>% unlist,
+#                           BriTROC=BriTROC_CN_features[[1]] %>% group_by(ID) %>%
+#                             group_map( ~ nrow(.x)) %>% unlist,
+#                           pcawg=pcawg_CN_features[[1]] %>% group_by(ID) %>%
+#                             group_map( ~ nrow(.x)) %>% unlist,
+#                           tcga=tcga_CN_features[[1]] %>% group_by(ID) %>%
+#                             group_map( ~ nrow(.x)) %>% unlist)
 
 ## Plot together with values
 sequence_dpois = seq(min(unlist(number_of_segments)), max(unlist(number_of_segments)), by = 2)
 # plot(scaling_factor*dpois(x = sequence_dpois, lambda = reduced$fitted.values[1]))
 
 data_poisson = do.call('rbind.data.frame', lapply(c('BriTROC', 'organoids', 'pcawg', 'tcga'), function(i){
-  scaling_factor = length(list_all_nsegments[[i]])
-  extra_scaling_factor = (max(list_all_nsegments[[i]])-min(list_all_nsegments[[i]]))/30 ## we would need to know the number of pixels per unit
+  scaling_factor = length(number_of_segments[[i]])
+  extra_scaling_factor = (max(number_of_segments[[i]])-min(number_of_segments[[i]]))/30 ## we would need to know the number of pixels per unit
   extra_scaling_factor = 9
   cbind.data.frame(value=sequence_dpois,
                                     count=scaling_factor*extra_scaling_factor*dpois(x = sequence_dpois, lambda = reduced$fitted.values[1]), L1=i)}))
         
 data_NB = do.call('rbind.data.frame', lapply(c('BriTROC', 'organoids', 'pcawg', 'tcga'), function(i){
-  scaling_factor = length(list_all_nsegments[[i]])
-  extra_scaling_factor = (max(list_all_nsegments[[i]])-min(list_all_nsegments[[i]]))/30 ## we would need to know the number of pixels per unit
+  scaling_factor = length(number_of_segments[[i]])
+  extra_scaling_factor = (max(number_of_segments[[i]])-min(number_of_segments[[i]]))/30 ## we would need to know the number of pixels per unit
   extra_scaling_factor = 50
   cbind.data.frame(value=sequence_dpois,
                    count=scaling_factor*extra_scaling_factor*dnbinom(x = sequence_dpois, mu = unique(fitted(reduced_nb)), size = reduced_nb$theta, log = FALSE),
                    L1=i)}))
 
 
-give_joint_histogram(list_all_nsegments, bins=30)+ggtitle('Number of segments')+
+give_joint_histogram(number_of_segments, bins=30)+ggtitle('Number of segments')+
   geom_line(data = data_poisson, aes(x=value, y=count))+
   geom_line(data = data_NB, aes(x=value, y=count), col='red')+
   ggtitle('Observed number of segments and Poisson (black) and Negative Binomial (red) model')+
@@ -609,7 +640,9 @@ Use getSegTable to get the segments from this Biobase file
 
 ```{r, get_segtables, echo=FALSE}
 segtables_BriTROC_absolute_copynumber = lapply(sampleNames(BriTROC_absolute_copynumber), function(samplename) getSegTable(BriTROC_absolute_copynumber[,samplename]))
+names(segtables_BriTROC_absolute_copynumber) = sampleNames(BriTROC_absolute_copynumber)
 segtables_organoids_absolute_copynumber = lapply(sampleNames(organoids_absolute_copynumber), function(samplename) getSegTable(organoids_absolute_copynumber[,samplename]))
+names(segtables_organoids_absolute_copynumber) = sampleNames(organoids_absolute_copynumber)
 
 TCGA_absolute_copynumber = readRDS("data/combined.ascat.segments.filt.rds")
 
@@ -618,12 +651,13 @@ TCGA_absolute_copynumber = readRDS("data/combined.ascat.segments.filt.rds")
 TCGA_absolute_copynumber = TCGA_absolute_copynumber[TCGA_absolute_copynumber$sample %in% rownames(natgen$UpdatedExposures),]
 segtables_TCGA_absolute_copynumber = lapply(as.character(sort(unique(TCGA_absolute_copynumber$sample))), function(samplename) TCGA_absolute_copynumber[TCGA_absolute_copynumber$sample == samplename,])
 segtables_TCGA_absolute_copynumber = lapply(segtables_TCGA_absolute_copynumber, function(i) i[,1:(ncol(i)-1)]) ## removing sample name
+names(segtables_TCGA_absolute_copynumber) = as.character(sort(unique(TCGA_absolute_copynumber$sample)))
 ```
 
 ```{r get_segtables2}
 ## we only want the ovarian ones
-ICGC_absolute_copynumber_AU = readRDS("data/OV-AU.segments.raw.rds")
-ICGC_absolute_copynumber_US = readRDS("data/OV-US.segments.raw.rds")
+ICGC_absolute_copynumber_AU = readRDS("data/CN_Calls_ABSOLUTE_PCAWG/OV-AU.segments.raw.rds")
+ICGC_absolute_copynumber_US = readRDS("data/CN_Calls_ABSOLUTE_PCAWG/OV-US.segments.raw.rds")
 ICGC_absolute_copynumber_AU = ICGC_absolute_copynumber_AU[,c('sample', 'chr', 'startpos', 'endpos', 'segVal')]
 ICGC_absolute_copynumber_US = ICGC_absolute_copynumber_US[,c('sample', 'chr', 'startpos', 'endpos', 'segVal')]
 
@@ -633,12 +667,14 @@ segtables_ICGC_absolute_copynumber_AU = lapply(sort(unique(ICGC_absolute_copynum
 segtables_ICGC_absolute_copynumber_AU = lapply(segtables_ICGC_absolute_copynumber_AU, function(i) { colnames(i)[colnames(i) == "chr"] = "chromosome";
 colnames(i)[colnames(i) == "endpos"] = "end";
 return(i) } )
+names(segtables_ICGC_absolute_copynumber_AU) = unique(ICGC_absolute_copynumber_AU$sample)
 
 segtables_ICGC_absolute_copynumber_US = lapply(sort(unique(ICGC_absolute_copynumber_US$sample)),
                                             function(samplename) ICGC_absolute_copynumber_US[ICGC_absolute_copynumber_US$sample == samplename,])
 segtables_ICGC_absolute_copynumber_US = lapply(segtables_ICGC_absolute_copynumber_US, function(i) { colnames(i)[colnames(i) == "chr"] = "chromosome";
 colnames(i)[colnames(i) == "endpos"] = "end";
 return(i) } )
+names(segtables_ICGC_absolute_copynumber_US) = unique(ICGC_absolute_copynumber_US$sample)
 
 ## for ICGC, remove the samples row and put it in the rows
 segtables_ICGC_absolute_copynumber_US = lapply(segtables_ICGC_absolute_copynumber_US, function(i){
@@ -745,20 +781,22 @@ ggplot(ploidies, aes(x=organoids_bool, y=ploidy))+geom_boxplot()
 
 plot_rank = function(df_rank){
   df_rank$value = as.numeric(df_rank$value)
-  df_rank[,'id'] = (order(df_rank$value))
-  df_rank = df_rank[(df_rank$id),]
-  df_rank$id = factor(df_rank$id, levels=df_rank$id)
+  # df_rank$Var1 = (order(df_rank$value))
+  df_rank = df_rank[(df_rank$Var1),]
+  # df_rank$Var1 = factor(df_rank$Var1, levels=df_rank$Var1)
   df_rank$L1= factor(df_rank$L1, levels = c('BriTROC', 'organoids', 'pcawg', 'tcga'))
-
-  # ggplot(df_rank, aes(x=id, fill=L1, y=value))+geom_bar(stat = "identity")+
+  df_rank$labels = ifelse(as.character(df_rank$L1) == 'organoids', as.character(df_rank$Var1), NA)
+  # ggplot(df_rank, aes(x=Var1, fill=L1, y=value))+geom_bar(stat = "identity")+
   #   theme(legend.position = "bottom", axis.title.x=element_blank(),
   #         axis.text.x=element_blank(),
   #         axis.ticks.x=element_blank())+ggtitle("Number of segments")+facet_wrap(.~L1)
   # ggsave("figures/num_segments_ranking.pdf")
   
   df_rank = cbind.data.frame(df_rank, organoids= grepl("organoids", df_rank$L1))
-  ggplot(df_rank, aes(x=id,y=value, width=.5))+geom_bar(stat = "identity", aes( fill= organoids))+
-    geom_label(data=cbind.data.frame(df_rank[df_rank$L1 == "organoids",], label="*"), aes(label=label))+
+  ggplot(df_rank, aes(x=factor(Var1, as.character(df_rank$Var1)[order(df_rank$value)]),
+                      y=value, label=labels, width=.5))+geom_bar(stat = "identity", aes( fill= organoids))+
+    # geom_label(data=cbind.data.frame(df_rank[df_rank$L1 == "organoids",], label="*"), aes(label=label))+
+    geom_label_repel()+
     theme(legend.position = "bottom", axis.title.x=element_blank(),
           axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
@@ -768,13 +806,15 @@ plot_rank = function(df_rank){
 # all(num_segs_rank[num_segs_rank$L1 == 'BriTROC','value'] == num_segs_rank[num_segs_rank$L1 == 'BriTROC2','value'])
 
 plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
-plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort))))+ggtitle("Ploidy")
+plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
+                           Var1=rownames(ploidies)))+ggtitle("Ploidy")
 
 pdf("figures/rank_segments.pdf", width = 7, height = 4)
 plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
 dev.off()
 pdf("figures/rank_ploidy.pdf", width = 7, height = 4)
-plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort))))+ggtitle("Ploidy")
+plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
+                           Var1=rownames(ploidies)))+ggtitle("Ploidy")
 dev.off()
 
 ```

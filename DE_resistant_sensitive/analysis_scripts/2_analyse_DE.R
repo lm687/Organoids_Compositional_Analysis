@@ -8,7 +8,10 @@ library(biomaRt)
 ## Load file output from DESeq2
 load("../objects/deaObjectFile")
 deObj = `~response`
-results <- results(deObj, c("response", "complete_remission_or_response", "progressive_disease"), 
+
+
+# In any case, the contrast argument of the function results takes a character vector of length three: the name of the variable, the name of the factor level for the numerator of the log2 ratio, and the name of the factor level for the denominator. The contrast argument can also take other forms, as described in the help page for results and below
+results <- DESeq2::results(deObj, c("response", "complete_remission_or_response", "progressive_disease"), 
                   alpha = 0.05, format = "DataFrame")
 rownames_short = sapply(rownames(results), function(i) strsplit(i, '[.]')[[1]][1])
 
@@ -72,3 +75,17 @@ vlcano = function (res) {
 vlcano(results)
 ggsave("../objects/volcano_plot.pdf", width = 20, height = 20)
 
+
+## save results in a different format
+for(flename in c('differential_all', 'differential_sig')){
+  dif_all = read.table(paste0("../objects/", flename), sep = ",", header = TRUE, stringsAsFactors = FALSE)
+  # if(flename == "differential_all"){
+    dif_all = cbind(gene_conversion$external_gene_name, dif_all[match(gene_conversion$ensembl_gene_id, sapply(dif_all$X, function(i) strsplit(i, '[.]')[[1]][1])  ),])
+    dif_all = dif_all[!is.na(dif_all$X),]
+  # }else if(flename == "differential_sig"){
+  #   dif_all = cbind(gene_conversion$external_gene_name, dif_all[match(gene_conversion$ensembl_gene_id, sapply(dif_all$X, function(i) strsplit(i, '[.]')[[1]][1])
+  #   ),])
+  # }
+  write.table(x = dif_all, file = paste0("../files/", flename, ".csv"), sep = ",", quote = FALSE)
+  
+}
