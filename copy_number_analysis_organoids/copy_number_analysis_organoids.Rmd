@@ -41,7 +41,7 @@ BriTROC: there are the original BriTROC segments (from manuscript) and new BriTR
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r, libraries,message=FALSE, cache=TRUE, echo=FALSE}
+```{r, libraries, message=FALSE, cache=FALSE, echo=FALSE}
 library(grid)
 library(gridExtra)
 library(dendextend)
@@ -58,6 +58,8 @@ library(MASS)
 library(pheatmap)
 library(ggdendro)
 library(readxl)
+library(CNTools)
+library(GenomicRanges)
 source("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/main_functions.R")
 source("helper_functions.R")
 ```
@@ -90,7 +92,7 @@ clr_mat <- function(X){
 ```
 
 # Loading organoids data
-```{r}
+```{r, load_organoids}
 org<- as(readRDS("data/organoid_exposures_Aug21.rds"), 'matrix')
 rownames(org) <- paste0('Sample ', 1:nrow(org))
 names_orgs = readxl::read_xlsx("data/NewOrganoidNaming.xlsx")
@@ -98,13 +100,13 @@ names_orgs = readxl::read_xlsx("data/NewOrganoidNaming.xlsx")
 
 ## Data from organoids
 
-```{r,fig.height=2.5,message=FALSE, echo=FALSE,warning=FALSE}
+```{r, barplot_organoids, fig.height=2.5,message=FALSE, echo=FALSE,warning=FALSE}
 createBarplot(org, remove_labels = TRUE, order_labels = names(sort(org[,1]))) + 
   ggtitle('Exposures for the organoids')
 ```
 
 
-### Data from Nature Genentics 2018 paper
+### Data from Nature Genetics 2018 paper
 
 We are loading both the original signatures, adn the updated signatures.
 ```{r, natgen_data,include=FALSE}
@@ -163,7 +165,7 @@ print(zeros_percentage)
 
 This makes the organoids and the TCGA exposures sample, and leaves the other in the periphery of the PCA. I suspect this is due to the number of **zero exposures**, which are imputated using the robust analyses that I am using here:
 
-```{r, echo=FALSE, cache=FALSE}
+```{r, comparison_tcga_exposures, echo=FALSE, cache=FALSE}
 # Only selecting those which are TCGA
 num_of_current_not_in_previous = sum(is.na(match(rownames(natgen[[2]])[bool_tcga[[2]]],
                                                  natgen[[1]])[bool_tcga[[1]]]))
@@ -183,7 +185,7 @@ num_exposures_tcga_current = length(rownames(natgen[[2]])[bool_tcga[[2]]]) ## ne
 
 
 We are only selecting the updated exposures, now
-```{r, eval=TRUE}
+```{r, which_signatures, eval=TRUE}
 which_natgen = 'UpdatedSignatures'
 ```
 
@@ -200,7 +202,7 @@ rownames(org_clr_robustzeroes) <- rownames(org_clr) <- paste0('Organoid ', rowna
 
 ## Creating a PCA with the data from the clinical cohorts, and projecting the organoids
 
-```{r, princomp,echo=FALSE, eval=TRUE, fig.height=6, fig.width=10}
+```{r, princomp, echo=FALSE, eval=TRUE, fig.height=6, fig.width=10}
 
 pca_from_projection = prcomp_all = df_prcomp_exposures = list()
 which_natgens = c('UpdatedExposures')
@@ -448,7 +450,7 @@ dev.off()
 ggthemr::ggthemr_reset()
 ```
 
-```{r}
+```{r, print_labels_dendrogram}
 labels(dendro_UpdatedExposures)[grep('Sample', labels(dendro_UpdatedExposures))]
 ```
 
@@ -460,7 +462,7 @@ We are looking at the split plot below (i.e. the first split). We call 'underrep
 accumulator <- list();
 myleaves <- function(anode){
     if(!is.list(anode))return(attr(anode,"label"))
-    accumulator[[length(accumulator)+1]] <<- (reduce(lapply(anode,myleaves),c))
+    accumulator[[length(accumulator)+1]] <<- (purrr::reduce(lapply(anode,myleaves),c))
 }
 
 myleaves(dendro_UpdatedExposures);
@@ -470,6 +472,12 @@ labels(dendro_UpdatedExposures)[!(labels(dendro_UpdatedExposures) %in% underrepr
 labels(dendro_UpdatedExposures)[(labels(dendro_UpdatedExposures) %in% underrepresented_labels)] = "."
 plot(dendro_UpdatedExposures)
 ```
+
+Which cohorts are these samples from?
+```{r, print_underrepresented_labels}
+underrepresented_labels
+```
+
 
 ```{r, analysis_hclust_split2, echo=FALSE, fig.height=4}
 brnch_underrepresente_exposures = all_natgen$UpdatedExposures[underrepresented_labels,]
@@ -570,7 +578,9 @@ sum(apply(all_natgen$UpdatedExposures[!as.logical(df_logistic$bool_underrepresen
 additional genomic data comparing the tumours to the organoids in terms of ploidy, number of rearrangements and any other things that you think could be relevant
 
 ## Load the segments
-```{r}
+
+### Distribution of features
+```{r, read_features}
 pcawg_CN_features = readRDS("data/pcawg_CN_features.rds")
 tcga_CN_features = readRDS("data/tcga_CN_features.rds")
 
@@ -585,11 +595,13 @@ BriTROC_CN_features = readRDS("data/BriTROC_CN_features.rds")
 ```
 
 
-The number of segments can be taken eitehr from segsize (first column) or from copynumber (last column). This is just for PCAWG and TCGA! Not for BriTROC. Any idea why this is the case?
+The number of segments can be taken either from segsize (first column) or from copynumber (last column). This is just for PCAWG and TCGA! Not for BriTROC. Any idea why this is the case?
 
-** Note I am plotting this as the log!**
+** Note: I am plotting this as the log!**
 
-```{r, segmnent_sizes_df, echo=FALSE}
+** Note 2: I am pooling together segments from several samples and analysing them all together! I.e. I have not averaged over samples **
+
+```{r, segment_sizes_df, echo=FALSE}
 df_features =  lapply(names(organoids_CN_features), function(name_it_features){list(organoids=organoids_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
                               unlist %>% as.numeric %>% log,
                             BriTROC=BriTROC_CN_features[[name_it_features]] %>% dplyr::select(2) %>%
@@ -601,7 +613,7 @@ df_features =  lapply(names(organoids_CN_features), function(name_it_features){l
 names(df_features) = c('Segment size', 'Number of breakpoints per 10Mb', 'Oscillating copy number', 'Number of breakpoints per chromosome arm', 'Changepoint', 'Copy number of segment')
 ```
 
-```{r, segmnent_sizes_plot, echo=FALSE}
+```{r, segment_sizes_plot, echo=FALSE}
 ## Distribution of the segment sizes
 distribs_features = lapply(names(df_features), function(name_it_features){
   give_joint_histogram(df_features[[name_it_features]], no_colour=FALSE)+ggtitle(paste0(name_it_features, ' (log)'))+ guides(fill=FALSE)
@@ -621,6 +633,176 @@ grid.draw(nsegments_pcawg_plot)
 dev.off()
 ```
 
+<!-- ### Tests for equality of means of the distribution of features -->
+
+<!-- - Segment size -->
+
+<!-- ```{r, tests_for_features_plot_segment_size0} -->
+<!-- names(df_features) -->
+<!-- sapply(df_features, names) -->
+<!-- ``` -->
+
+<!-- ```{r, tests_for_features_plot_segment_size} -->
+<!-- grid.arrange(ggplot(melt(list(organoids=df_features$`Segment size`$organoids, -->
+<!--                               patients=unlist(df_features$`Segment size`[c("BriTROC", "PCAWG", "TCGA")]))), aes(x=exp(value), group=L1, col=(L1)))+geom_density()+theme(legend.position='bottom'), -->
+<!--                   ggplot(melt(list(df_features$`Segment size`$organoids, unlist(df_features$`Segment size`[c("BriTROC", "PCAWG", "TCGA")]))), aes(x=(value), col=as.factor(L1)))+geom_density()+theme(legend.position='bottom')+geom_density()+theme(legend.position='bottom'), -->
+<!--              ncol=2) -->
+<!-- ``` -->
+
+<!-- ```{r, tests_for_features_plot_segment_size_2} -->
+<!-- t.test(unlist(df_features$`Segment size`[c("BriTROC", "PCAWG", "TCGA")]), -->
+<!--        df_features$`Segment size`[["organoids"]]) -->
+<!-- ``` -->
+
+<!-- - Number of breakpoints per 10Mb -->
+
+<!-- ```{r, looking_at_num_bp_per_10mb} -->
+<!-- head(exp(df_features$`Number of breakpoints per 10Mb`$organoids)) -->
+<!-- ``` -->
+
+<!-- ```{r, tests_for_features_plot_numbreakpointds_per10mb_plots} -->
+<!-- grid.arrange(ggplot(melt(df_features$`Number of breakpoints per 10Mb`), aes(x=exp(value), fill=L1))+geom_histogram()+theme(legend.position='bottom')+facet_wrap(.~L1, scales='free_y')+ggtitle('Raw # bp per 10Mb'), -->
+<!--                   ggplot(melt(df_features$`Number of breakpoints per 10Mb`), aes(x=(value), fill=L1))+geom_histogram()+theme(legend.position='bottom')+facet_wrap(.~L1, scales='free_y')+ggtitle('Log # bp per 10Mb'), -->
+<!--              ncol=2) -->
+<!-- ``` -->
+
+<!-- ```{r, tests_for_features_plot_numbreakpointds_per10mb} -->
+<!-- glm_um_bp10mb = rbind.data.frame( -->
+<!--   cbind.data.frame(num=exp(df_features$`Number of breakpoints per 10Mb`$organoids), -->
+<!--                    bool=rep(0,length(df_features$`Number of breakpoints per 10Mb`$organoids))), -->
+<!--   cbind.data.frame(num=exp(unlist(df_features$`Number of breakpoints per 10Mb`[c("BriTROC", "PCAWG", "TCGA")])), -->
+<!--                    bool=rep(1,length(unlist(df_features$`Number of breakpoints per 10Mb`[c("BriTROC", "PCAWG", "TCGA")]))))) -->
+<!-- table(glm_um_bp10mb[,2]) -->
+<!-- reduced_nb_num_bp10mb = glm.nb(formula = num ~ 1, data = glm_um_bp10mb) -->
+<!-- full_nb_nb_num_bp10mb = glm.nb(formula = num ~ bool, data = glm_um_bp10mb) -->
+<!-- res_LRT_nb_num_bp10mb = anova(reduced_nb_num_bp10mb, full_nb_nb_num_bp10mb, test = "LRT") -->
+<!-- res_LRT_nb_num_bp10mb -->
+
+<!-- ``` -->
+
+### Tests for equality of means of the distribution of features (average of segments within a sample)
+
+- I have computed the average value for each feature for each sample. Then I have compared the distribution of means of the patient cohorts all together, versus the distribution of means of the organoids
+- This is different from the approach above, where we were pooling segments for all samples (i.e. not keeping patient information)
+- In all cases I have log-transformed the data, which ensues normality, to compute a p-value for the difference in means
+- I am using the default r t-test, which is the Welch t-test, which does not assume equality of variances
+- In all cases there is no statistical significance between organoids the cohorts, indicating a similar distribution (at least when it comes to their means)
+- The only feature which is truly problematic is copy number, which very evidently shows a bimodal distribution (since there are the normal segments, or segments of copy number 1, and the amplified segments, which appear as two populations)
+
+```{r, tests_features_patient_averages, fig.height=4}
+
+distrib_segsize = create_distrib_df('segsize', 'value')
+distrib_bp10MB = create_distrib_df('bp10MB', 'value')
+distrib_osCN = create_distrib_df('osCN', 'value')
+distrib_bpchrarm = create_distrib_df('bpchrarm', 'ct1')
+distrib_changepoint = create_distrib_df('changepoint', 'value')
+distrib_copynumber = create_distrib_df('copynumber', 'value')
+
+#------------------------------------------------------------------------------------------------#
+
+## 1/6 breakpoints per 10MB
+grid.arrange(give_joint_histogram(list(distrib_bp10MB[['org']]$`mean(ct1_num)`,
+                          distrib_bp10MB[['pcawg']]$`mean(ct1_num)`,
+                          distrib_bp10MB[['tcga']]$`mean(ct1_num)`,
+                          distrib_bp10MB[['BriTROC']]$`mean(ct1_num)`), no_colour=FALSE),
+give_joint_histogram(list(distrib_bp10MB[['org']]$`mean(ct1_num)` %>% log,
+                          distrib_bp10MB[['pcawg']]$`mean(ct1_num)` %>% log,
+                          distrib_bp10MB[['tcga']]$`mean(ct1_num)` %>% log,
+                          distrib_bp10MB[['BriTROC']]$`mean(ct1_num)` %>% log), no_colour=FALSE)+ggtitle('Log transform'), ncol=2)
+
+t.test(distrib_bp10MB[['org']]$`mean(ct1_num)` %>% log,
+       c(distrib_bp10MB[['pcawg']]$`mean(ct1_num)` %>% log,
+         distrib_bp10MB[['tcga']]$`mean(ct1_num)` %>% log,
+         distrib_bp10MB[['BriTROC']]$`mean(ct1_num)` %>% log))
+
+#------------------------------------------------------------------------------------------------#
+## 2/6 segment size
+grid.arrange(give_joint_histogram(list(distrib_segsize[['org']]$`mean(ct1_num)`,
+                          distrib_segsize[['pcawg']]$`mean(ct1_num)`,
+                          distrib_segsize[['tcga']]$`mean(ct1_num)`,
+                          distrib_segsize[['BriTROC']]$`mean(ct1_num)`), no_colour=FALSE)+ggtitle('Raw'),
+give_joint_histogram(list(distrib_segsize[['org']]$`mean(ct1_num)` %>% log,
+                          distrib_segsize[['pcawg']]$`mean(ct1_num)` %>% log,
+                          distrib_segsize[['tcga']]$`mean(ct1_num)` %>% log,
+                          distrib_segsize[['BriTROC']]$`mean(ct1_num)` %>% log), no_colour=FALSE)+ggtitle('Log transform'), ncol=2)
+
+t.test(distrib_segsize[['org']]$`mean(ct1_num)` %>% log,
+       c(distrib_segsize[['pcawg']]$`mean(ct1_num)` %>% log,
+         distrib_segsize[['tcga']]$`mean(ct1_num)` %>% log,
+         distrib_segsize[['BriTROC']]$`mean(ct1_num)` %>% log))
+
+#------------------------------------------------------------------------------------------------#
+## 3/6 oscillating CN
+grid.arrange(give_joint_histogram(list(distrib_osCN[['org']]$`mean(ct1_num)`,
+                          distrib_osCN[['pcawg']]$`mean(ct1_num)`,
+                          distrib_osCN[['tcga']]$`mean(ct1_num)`,
+                          distrib_osCN[['BriTROC']]$`mean(ct1_num)`), no_colour=FALSE)+ggtitle('Raw'),
+give_joint_histogram(list(distrib_osCN[['org']]$`mean(ct1_num)` %>% log,
+                          distrib_osCN[['pcawg']]$`mean(ct1_num)` %>% log,
+                          distrib_osCN[['tcga']]$`mean(ct1_num)` %>% log,
+                          distrib_osCN[['BriTROC']]$`mean(ct1_num)` %>% log), no_colour=FALSE)+ggtitle('Log transform'), ncol=2)
+
+t.test(distrib_osCN[['org']]$`mean(ct1_num)` %>% log,
+       remove_infty(c(distrib_osCN[['pcawg']]$`mean(ct1_num)` %>% log,
+         distrib_osCN[['tcga']]$`mean(ct1_num)` %>% log,
+         distrib_osCN[['BriTROC']]$`mean(ct1_num)` %>% log)))
+
+#------------------------------------------------------------------------------------------------#
+## 4/6 num of breakpoints per chromosome arm
+grid.arrange(give_joint_histogram(list(distrib_bpchrarm[['org']]$`mean(ct1_num)`,
+                          distrib_bpchrarm[['pcawg']]$`mean(ct1_num)`,
+                          distrib_bpchrarm[['tcga']]$`mean(ct1_num)`,
+                          distrib_bpchrarm[['BriTROC']]$`mean(ct1_num)`), no_colour=FALSE)+ggtitle('Raw'),
+give_joint_histogram(list(distrib_bpchrarm[['org']]$`mean(ct1_num)` %>% log,
+                          distrib_bpchrarm[['pcawg']]$`mean(ct1_num)` %>% log,
+                          distrib_bpchrarm[['tcga']]$`mean(ct1_num)` %>% log,
+                          distrib_bpchrarm[['BriTROC']]$`mean(ct1_num)` %>% log), no_colour=FALSE)+ggtitle('Log transform'), ncol=2)
+
+## Same distribution of num of breakpoints per chromosome arm
+t.test(distrib_bpchrarm[['org']]$`mean(ct1_num)` %>% log,
+       c(distrib_bpchrarm[['pcawg']]$`mean(ct1_num)` %>% log,
+         distrib_bpchrarm[['tcga']]$`mean(ct1_num)` %>% log,
+         distrib_bpchrarm[['BriTROC']]$`mean(ct1_num)` %>% log))
+
+
+#------------------------------------------------------------------------------------------------#
+## 5/6 num of changepoints
+grid.arrange(give_joint_histogram(list(distrib_changepoint[['org']]$`mean(ct1_num)`,
+                          distrib_changepoint[['pcawg']]$`mean(ct1_num)`,
+                          distrib_changepoint[['tcga']]$`mean(ct1_num)`,
+                          distrib_changepoint[['BriTROC']]$`mean(ct1_num)`), no_colour=FALSE)+ggtitle('Raw'),
+give_joint_histogram(list(distrib_changepoint[['org']]$`mean(ct1_num)` %>% log,
+                          distrib_changepoint[['pcawg']]$`mean(ct1_num)` %>% log,
+                          distrib_changepoint[['tcga']]$`mean(ct1_num)` %>% log,
+                          distrib_changepoint[['BriTROC']]$`mean(ct1_num)` %>% log), no_colour=FALSE)+ggtitle('Log transform'), ncol=2)
+
+## Same distribution of num of changepoints
+t.test(distrib_changepoint[['org']]$`mean(ct1_num)` %>% log,
+       c(distrib_changepoint[['pcawg']]$`mean(ct1_num)` %>% log,
+         distrib_changepoint[['tcga']]$`mean(ct1_num)` %>% log,
+         distrib_changepoint[['BriTROC']]$`mean(ct1_num)` %>% log))
+
+#------------------------------------------------------------------------------------------------#
+## 6/6 copy number
+grid.arrange(give_joint_histogram(list(distrib_copynumber[['org']]$`mean(ct1_num)`,
+                          distrib_copynumber[['pcawg']]$`mean(ct1_num)`,
+                          distrib_copynumber[['tcga']]$`mean(ct1_num)`,
+                          distrib_copynumber[['BriTROC']]$`mean(ct1_num)`), no_colour=FALSE)+ggtitle('Raw'),
+give_joint_histogram(list(distrib_copynumber[['org']]$`mean(ct1_num)` %>% log,
+                          distrib_copynumber[['pcawg']]$`mean(ct1_num)` %>% log,
+                          distrib_copynumber[['tcga']]$`mean(ct1_num)` %>% log,
+                          distrib_copynumber[['BriTROC']]$`mean(ct1_num)` %>% log), no_colour=FALSE)+ggtitle('Log transform'), ncol=2)
+
+## Same distribution of copy number of segments
+t.test(distrib_copynumber[['org']]$`mean(ct1_num)` %>% log,
+       c(distrib_copynumber[['pcawg']]$`mean(ct1_num)` %>% log,
+         distrib_copynumber[['tcga']]$`mean(ct1_num)` %>% log,
+         distrib_copynumber[['BriTROC']]$`mean(ct1_num)` %>% log))
+
+```
+
+**Explanation**: The distribution of sample-averaged values of features are the sample between organoids and the cohorts of primary tissue samples for the number of breakpoints per 10MB (Welch Two Sample t-test on log-transformed data, p-value = 0.6059), segment size (Welch Two Sample t-test on log-transformed data, p-value = 0.4501
+), oscillating copy number (Welch Two Sample t-test on log-transformed data, p-value = 0.7191), number of breakpoints per chromosome arm  (Welch Two Sample t-test on log-transformed data, p-value = 0.6007), number of changepoints (Welch Two Sample t-test on log-transformed data, p-value = 0.8472), and the copy number of the segments (Welch Two Sample t-test on log-transformed data, p-value = 0.7275).
 
 ## Number of segments; Poisson and NegBin GLM
 TL;DR with a negative binomial model, which is much more appropriate in this setting than a Poisson, there is no difference in the distributions of organoids and non-organodis when it comes to **number of segments**.
@@ -663,6 +845,11 @@ res_LRT_nb
 # but in fact when using negative binomial this is no longer the case
 ```
 
+```{r, number_of_segments_table}
+sapply(list(glm_poisson_length[glm_poisson_length$names == 'organoids','length']), function(i) c(mean(i), sd(i)))
+sapply(list(glm_poisson_length[glm_poisson_length$names != 'organoids','length']), function(i) c(mean(i), sd(i)))
+```
+
 Unfortunately the scaling factor has to do with the width of the bins in the histogram.
 ```{r, plotting_poisson_fit, echo=FALSE, dependson=c('modelling_number_of_segments')}
 # list_all_nsegments = list(organoids=organoids_CN_features[[1]] %>% group_by(ID) %>%
@@ -703,7 +890,7 @@ give_joint_histogram(number_of_segments, bins=30)+ggtitle('Number of segments')+
 ```
 
 
-```{r, fig.height=3, echo=FALSE}
+```{r, comparison_numsegments_step, fig.height=3, echo=FALSE}
 ggplot(reshape2::melt(list(unlist(number_of_segments[-1]), number_of_segments[1])),
        aes(x=value, fill=L1, group=L1, col=L1), alpha=0.2)+ stat_bin(geom="step", bins = 30)+
   facet_wrap(.~L1, nrow=1, scales='free_y')+ggtitle('Comparison on non-organoids (left) and organoids (right)')
@@ -714,6 +901,8 @@ ggplot(reshape2::melt(list(unlist(number_of_segments[-1]), number_of_segments[1]
 To get the ploidy, I just have to compute the weighted average of the copy number segments (this is computed from the absolute copy number profiles objects, since they specify, for each segment, its length and its ploidy).
 
 Use getSegTable to get the segments from this Biobase file
+
+*Needs to be ammended*: it has to also count areas of the genome for which we don't have segments! i.e. we need to know the effective genome size
 
 ```{r, get_segtables, echo=FALSE}
 segtables_BriTROC_absolute_copynumber = lapply(sampleNames(BriTROC_absolute_copynumber), function(samplename) getSegTable(BriTROC_absolute_copynumber[,samplename]))
@@ -732,7 +921,7 @@ segtables_TCGA_absolute_copynumber = lapply(segtables_TCGA_absolute_copynumber, 
 names(segtables_TCGA_absolute_copynumber) = as.character(sort(unique(TCGA_absolute_copynumber$sample)))
 ```
 
-```{r get_segtables2}
+```{r, get_segtables2}
 ## we only want the ovarian ones
 ICGC_absolute_copynumber_AU = readRDS("data/CN_Calls_ABSOLUTE_PCAWG/OV-AU.segments.raw.rds")
 ICGC_absolute_copynumber_US = readRDS("data/CN_Calls_ABSOLUTE_PCAWG/OV-US.segments.raw.rds")
@@ -789,10 +978,45 @@ sapply(list(segtables_TCGA_absolute_copynumber, segtables_ICGC_absolute_copynumb
 
 
 ```{r, getploidy, dependson=c('get_segtables', 'get_segtables2'), echo=FALSE}
-give_ploidy = function(segtab){ 
+GRanges_chroms = as(droplevels(data.frame(chrom=gsub("chr", "", chrlen$V1), start=1, end=chrlen$V2)[!chrlen$V1 %in% c('chrX', 'chrY'),]),
+                    "GRanges")
+rename_cols <- function(df){
+  colnames(df)[colnames(df) == 'startpos'] = 'start'
+  colnames(df)[colnames(df) == 'endpos'] = 'end'
+  return(df)
+}
+diploidifNA <- function(x){
+  ifelse(is.na(x), 2, x)
+}
+weighted_ploidy <- function(ploidy, widths){
+  isna = is.na(ploidy) | is.na(widths)
+  ploidy = ploidy[!isna]
+  widths = widths[!isna]
+  sum( ploidy * widths/sum(widths) )
+}
+## not applicable here. it looks like all segments were included anyway
+give_ploidy = function(segtab){
+  ## new version
+  ## I need to find the overlaps with the whole genome, and compute the weighted ploidy with also normal segments
+  full_GR <- c(GRanges_chroms, as(rename_cols(data.frame(segtab)), "GRanges"))
+  granges <- GenomicRanges::disjoin(full_GR, with.revmap=TRUE, ignore.strand=TRUE)
+  ploidies_all_segs = sapply(granges$revmap, function(idxs){
+    ## if it's an overlap, get the ploidy of the second indexed segment (i.e. the CN segment). otherwise, it's diploid
+    if(length(idxs) == 2){
+      full_GR[idxs[[2]]]$segVal
+    }else if(length(idxs) == 1){
+      2
+    }
+   })
+  ploidies_all_segs[sapply(ploidies_all_segs, length) == 0] = NA
+  return(weighted_ploidy(unlist(ploidies_all_segs), width(granges)))
+}
+give_ploidy = function(segtab){
+  ## old version
   .lengths = apply(segtab, 1, function(rw) rw[3]-rw[2])
   sum(segtab[,4]*.lengths/sum(.lengths))
 }
+
 ploidy_ICGC_US = sapply(segtables_ICGC_absolute_copynumber_US, give_ploidy)
 ploidy_ICGC_AU = sapply(segtables_ICGC_absolute_copynumber_AU, give_ploidy)
 ploidy_TCGA = sapply(segtables_TCGA_absolute_copynumber, give_ploidy)
@@ -800,28 +1024,58 @@ ploidy_BriTROC = sapply(segtables_BriTROC_absolute_copynumber, give_ploidy)
 ploidy_organoids = sapply(segtables_organoids_absolute_copynumber, give_ploidy)
 ```
 
+```{r, ploidy_debug, eval=TRUE, include=FALSE}
+give_ploidy_previous = function(segtab){
+  ## old version
+  .lengths = apply(segtab, 1, function(rw) rw[3]-rw[2])
+  sum(segtab[,4]*.lengths/sum(.lengths))
+}
+ploidy_ICGC_US_previous = sapply(segtables_ICGC_absolute_copynumber_US, give_ploidy_previous)
+ploidy_ICGC_AU_previous = sapply(segtables_ICGC_absolute_copynumber_AU, give_ploidy_previous)
+ploidy_TCGA_previous = sapply(segtables_TCGA_absolute_copynumber, give_ploidy_previous)
+ploidy_BriTROC_previous = sapply(segtables_BriTROC_absolute_copynumber, give_ploidy_previous)
+ploidy_organoids_previous = sapply(segtables_organoids_absolute_copynumber, give_ploidy_previous)
+
+# ploidy_ICGC_US = sapply(segtables_ICGC_absolute_copynumber_US[1:2], give_ploidy)
+# ploidy_ICGC_AU = sapply(segtables_ICGC_absolute_copynumber_AU[1:2], give_ploidy)
+# ploidy_TCGA = sapply(segtables_TCGA_absolute_copynumber[1:2], give_ploidy)
+# ploidy_BriTROC = sapply(segtables_BriTROC_absolute_copynumber[1:2], give_ploidy)
+# ploidy_organoids = sapply(segtables_organoids_absolute_copynumber[1:2], give_ploidy)
+```
+
+
+In the previous computation of the sample ploidy (ploidy\_ICGC\_US\_previous, etc.) I had not included normal segments. Now I do but actually the result is very similar. (Note slghtly under- and over-estimated values at the right and left of ploidy=2).
+```{r, ploidy_debug_2}
+plot(log(c(ploidy_ICGC_US_previous, ploidy_ICGC_AU_previous, ploidy_TCGA_previous,
+           ploidy_BriTROC_previous, ploidy_organoids_previous)),
+     log(c(ploidy_ICGC_US, ploidy_ICGC_AU, ploidy_TCGA, ploidy_BriTROC, ploidy_organoids)),
+     ylab='log ploidy of samples with current mean ploidy calculation',
+     xlab='log ploidy of samples with previous mean ploidy calculation')
+abline(coef=c(0,1), lty='dashed')
+abline(v=log(2), lty='dashed')
+```
+
 Ploidy is not normally distributed and it's right-skewed. Moreover, the distribution is bimodal: I guess there are genomes in which there is a clear amplification and genomes which are more or less normal, so centered around 2.
-
-
-```{r, ploidy_plots, dependson=c('getploidy'), echo=FALSE}
+```{r, ploidy_plots, dependson=c('getploidy'), echo=FALSE, eval=TRUE}
 grid.arrange(give_joint_histogram(list(organoids=ploidy_organoids, ICGC_US=ploidy_ICGC_US, ICGC_AU=ploidy_ICGC_AU, TCGA_OV=ploidy_TCGA, BriTROC=ploidy_BriTROC))+
   ggtitle('Ploidy')+theme(legend.position = "bottom")+geom_vline(xintercept = 2)+geom_vline(xintercept = 1),
   give_joint_histogram(lapply(list(organoids=ploidy_organoids, ICGC_US=ploidy_ICGC_US, ICGC_AU=ploidy_ICGC_AU, TCGA_OV=ploidy_TCGA, BriTROC=ploidy_BriTROC), log))+theme(legend.position = "bottom")+geom_vline(xintercept = log(2))+ggtitle('Logged ploidy')+geom_vline(xintercept = log(1)), ncol=2)
 
+# - The ploidy in the BriTROC cohort is `r {mean(ploidy_BriTROC)}` $\pm$ `r {mean(ploidy_BriTROC)}` (sd).
+# - The ploidy in the TCGA cohort (AU) is `r {mean(ploidy_TCGA)}` $\pm$ `r {mean(ploidy_TCGA)}` (sd).
+# - The ploidy in the ICGC cohort (AU) is `r {mean(ploidy_ICGC_AU)}` $\pm$ `r {mean(ploidy_ICGC_AU)}` (sd).
+# - The ploidy in the ICGC cohort (US) is `r {mean(ploidy_ICGC_US)}` $\pm$ `r {mean(ploidy_ICGC_US)}` (sd).
+# - The ploidy in the whole ICGC cohort is `r {mean(c(ploidy_ICGC_US, ploidy_ICGC_AU))}` $\pm$ `r {mean(c(ploidy_ICGC_US, ploidy_ICGC_AU))}` (sd).
+# - The ploidy in the **organoid** cohort is `r {mean(ploidy_organoids)}` $\pm$ `r {mean(ploidy_organoids)}` (sd).
+
 ```
 
-- The ploidy in the BriTROC cohort is `r {mean(ploidy_BriTROC)}` $\pm$ `r {mean(ploidy_BriTROC)}` (sd).
-- The ploidy in the TCGA cohort (AU) is `r {mean(ploidy_TCGA)}` $\pm$ `r {mean(ploidy_TCGA)}` (sd).
-- The ploidy in the ICGC cohort (AU) is `r {mean(ploidy_ICGC_AU)}` $\pm$ `r {mean(ploidy_ICGC_AU)}` (sd).
-- The ploidy in the ICGC cohort (US) is `r {mean(ploidy_ICGC_US)}` $\pm$ `r {mean(ploidy_ICGC_US)}` (sd).
-- The ploidy in the whole ICGC cohort is `r {mean(c(ploidy_ICGC_US, ploidy_ICGC_AU))}` $\pm$ `r {mean(c(ploidy_ICGC_US, ploidy_ICGC_AU))}` (sd).
-- The ploidy in the **organoid** cohort is `r {mean(ploidy_organoids)}` $\pm$ `r {mean(ploidy_organoids)}` (sd).
 
 
 I am also using a robust linear regression, but I don't think this is suitable either.
 
 
-```{r, test_ploidy}
+```{r, test_ploidy, eval=TRUE}
 t.test(log(ploidy_organoids), log(ploidy_BriTROC))
 MASS::rlm(ploidy~group,
          data=cbind.data.frame(ploidy=c(ploidy_organoids, ploidy_BriTROC), group=c(rep(1,length(ploidy_organoids)), rep(2, length(ploidy_BriTROC)))))
@@ -829,7 +1083,7 @@ MASS::rlm(ploidy~group,
 
 
 ## Segments across the genome
-```{r}
+```{r, chromosomes_lengths}
 ## Segments across the genome
 # (sapply(chrlen$V1, function(i) gsub("chr", "", i)))
 sorted_chroms = chrlen$V1[order(as.numeric((gsub("chr", "", chrlen$V1))))]
@@ -839,18 +1093,17 @@ chrom_lenths = chrlen[match(sorted_chroms, chrlen$V1),]
 ## Ploidy
 ```{r, ploidies_boxplot, echo=FALSE, fig.height=3, fig.width=3}
 ploidies = rbind.data.frame(cbind.data.frame(cohort='pcawg',
-                                             ploidy=c(sapply(segtables_ICGC_absolute_copynumber_US, give_ploidy),
-                                                      sapply(segtables_ICGC_absolute_copynumber_AU, give_ploidy))),
-    cbind.data.frame(cohort='tcga',  ploidy=sapply(segtables_TCGA_absolute_copynumber, give_ploidy)),
-    cbind.data.frame(cohort='BriTROC',  ploidy=sapply(segtables_BriTROC_absolute_copynumber, give_ploidy)),
-    cbind.data.frame(cohort='organoids', ploidy=sapply(segtables_organoids_absolute_copynumber, give_ploidy)))
+                                             ploidy=c(ploidy_ICGC_US,
+                                                      ploidy_ICGC_AU)),
+    cbind.data.frame(cohort='tcga',  ploidy=ploidy_TCGA),
+    cbind.data.frame(cohort='BriTROC',  ploidy=ploidy_BriTROC),
+    cbind.data.frame(cohort='organoids', ploidy=ploidy_organoids))
 ploidies[,'organoids_bool'] = c('Clinical', 'Organoids')[1+as.numeric(grepl('organoids', ploidies$cohort))]
 
 
 ggplot(ploidies, aes(x=organoids_bool, y=ploidy))+geom_boxplot()
 
 ```
-
 
 
 ## Ranking for the number of copy number events and ploidy
@@ -869,7 +1122,7 @@ plot_rank = function(df_rank){
   #         axis.text.x=element_blank(),
   #         axis.ticks.x=element_blank())+ggtitle("Number of segments")+facet_wrap(.~L1)
   # ggsave("figures/num_segments_ranking.pdf")
-  
+
   df_rank = cbind.data.frame(df_rank, organoids= grepl("organoids", df_rank$L1))
   ggplot(df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
                       y=value, label=labels, width=.5))+geom_bar(stat = "identity", aes( fill= organoids))+
@@ -919,4 +1172,306 @@ df_plotting = cbind(melt(bps), x=as.vector(sapply(bps, function(bpsit) 1:nrow(bp
 levels(df_plotting$x) = sort(unique(df_plotting$x))
 ggplot(df_plotting, aes(y=value, x=x))+geom_line(aes(group=L1))+facet_wrap(.~L1, ncol=1, scales = "free_y")
 
+```
+
+```{r, print_organoids_absolute_copynumber}
+head(organoids_absolute_copynumber)
+```
+
+## Comparing amplified/deleted genes between organoids and TCGA
+```{r, compare_amplification}
+data("geneInfo")
+gr_BriTROC <- lapply(segtables_BriTROC_absolute_copynumber, function(i) as(data.frame(i), "GRanges"))
+gr_genes_of_interest = as(data.frame(geneInfo[!(geneInfo$chrom %in% c('X', 'Y')), c('chrom', 'start', 'end', 'genename', 'geneid' )]), "GRanges")
+
+# gr_genes_of_interest = as(data.frame(rbind(c(1, 830001, 860001),
+#                           geneInfo[sample(1:nrow(geneInfo), 2000),c('chrom', 'start', 'end' )])), "GRanges")
+
+give_ploidy_gene <- function(gene_idx, sample){
+  disjoint_segments <- GenomicRanges::disjoin(c(gr_genes_of_interest[gene_idx,], sample), with.revmap=TRUE, ignore.strand=TRUE)
+  # GenomicRanges::disjoin(c(gr_genes_of_interest[1,], gr_BriTROC$IM_100[1,]), with.revmap=TRUE, ignore.strand=TRUE)
+  # GenomicRanges::disjoin(c(gr_BriTROC$IM_100[1,], gr_genes_of_interest[1,]), with.revmap=FALSE, ignore.strand=TRUE)
+  # GenomicRanges::disjoin(c(gr_genes_of_interest[1,], gr_BriTROC$IM_100[1,]), with.revmap=FALSE, ignore.strand=TRUE)
+  
+  # disjoint_segments = GenomicRanges::reduce(c(gr_genes_of_interest[1,], gr_BriTROC$IM_100[1,]), with.revmap=TRUE, ignore.strand=TRUE)
+  # disjoint_segments_b = GenomicRanges::reduce(c(gr_BriTROC$IM_100[1,], gr_genes_of_interest[1,]), with.revmap=TRUE, ignore.strand=TRUE)
+  revmap <- mcols(disjoint_segments)$revmap
+  r_scores <- extractList(mcols(c(gr_genes_of_interest[gene_idx,], sample))$segVal, revmap)
+
+  return(weighted_ploidy(diploidifNA(sapply(1:length(r_scores), function(idx) if(1 %in% revmap[[idx]]){r_scores[[idx]][2]}else{r_scores[[idx]][1]})[sapply(revmap, function(i) any(1 %in% i))]),
+                  width(disjoint_segments)[sapply(revmap, function(i) 1 %in% i)]))
+}
+
+all_ranges_cohort = rep(1:5, c(length(gr_BriTROC), length(segtables_ICGC_absolute_copynumber_AU),
+                              length(segtables_ICGC_absolute_copynumber_US),
+                              length(segtables_TCGA_absolute_copynumber),
+                              length(segtables_organoids_absolute_copynumber)))
+all_ranges_cohort = c('BriTROC', 'ICGC AU', 'ICGC US', 'TCGA', 'Organoids')[all_ranges_cohort]
+all_ranges = c(gr_BriTROC,
+               lapply(segtables_ICGC_absolute_copynumber_AU, function(i) as(data.frame(rename_cols(i)), "GRanges")),
+               lapply(segtables_ICGC_absolute_copynumber_US, function(i) as(data.frame(rename_cols(i)), "GRanges")),
+               lapply(segtables_TCGA_absolute_copynumber, function(i) as(data.frame(rename_cols(i)), "GRanges")),
+               lapply(segtables_organoids_absolute_copynumber, function(i) as(data.frame(rename_cols(i)), "GRanges")))
+subsample_samples = sample(1:length(all_ranges), 10)
+subset_genes = c('MYC', 'CCNE1', 'PIK3CA', 'TERT', 'KRAS', 'PTEN', 'RB1', 'AKT1',
+                 'AKT2', 'PARP1', 'PARP2', 'ATM', 'ATR', 'WEE1', 'TOP1', 'TUBB1')
+# subsample_samples = sort(subsample_samples)
+subsample_samples = 1:length(all_ranges)
+# all_ploidies = outer(X = 1:length(gr_genes_of_interest),
+# all_ploidies = outer(X =  which(geneInfo$genename %in% subset_genes),
+#                      Y = subsample_samples, Vectorize(function(x, y) give_ploidy_gene(x,all_ranges[[y]])))
+# all_ploidies = t(all_ploidies)
+# rownames(all_ploidies) = names(all_ranges)[subsample_samples]
+# ann_row = data.frame(cohort=all_ranges_cohort[subsample_samples], row.names = names(all_ranges)[subsample_samples])
+# pheatmap(all_ploidies, annotation_row = ann_row, cluster_rows = FALSE)
+
+```
+
+```{r, compare_amplification_generalised, echo=FALSE, eval=TRUE}
+## scaling up to multiple genes (I have a problem with runtime)
+give_ploidy_gene_scaling <- function(sample){
+  
+  # GRanges object with a row for each entry in subset_genes (sorted)
+  gr_genes_of_interest_subset = as(geneInfo[which(geneInfo$genename %in% subset_genes),], 'GRanges')
+  gr_genes_of_interest_subset = gr_genes_of_interest_subset[match(subset_genes, gr_genes_of_interest_subset$genename),]
+  all(gr_genes_of_interest_subset$genename == subset_genes)
+  
+  ## Both the genes and the samples, so that they can be split
+  full_GRanges = c(gr_genes_of_interest_subset, sample)
+  disjoint_segments <- GenomicRanges::disjoin(full_GRanges,
+                       with.revmap=TRUE, ignore.strand=TRUE)
+  ## disjoint_segments contains a long GRanges object with the overlaps between any two intervals (genes or CN segments)
+  
+  ## revmap contains the map to the genes and CN segments, for each of the disjoint intervals
+  
+  revmap <- mcols(disjoint_segments)$revmap
+  length(unique(unlist(revmap)))
+  length(gr_genes_of_interest_subset)+length(sample)
+  
+  ## keep only the intervals that refer to overlaps with genes, and not only with samples
+  keep_bool = sapply(revmap, function(revmap_idx) any(1:length(gr_genes_of_interest_subset) %in% revmap_idx) )
+  
+  ## revmap_short keeps the map, but only for the segments of interest (i.e. overlap with genes)
+  revmap_short = revmap[keep_bool,]
+  disjoint_segments_short = disjoint_segments[keep_bool,]
+  ## Note that here, in revmap_short, the rows are unsorted, and multiple rows might correspond to the same gene
+  
+  ## computing the widths of the disjoint segments of interest
+  widths_disjoint_short = width(disjoint_segments)[keep_bool]
+  
+  ## for each of the rows in revmap_short, get the segVal (unrounded CN). The first element of each row is going to be NA, as
+  ## the first elements in revmap_short correspond to the genes, and the second to the CN segments
+  r_scores = extractList(mcols(full_GRanges)$segVal, revmap_short)
+
+  ## for each of the genes of interest, which are indexed by gene_idx, and which are ordered as in subset_genes,
+  ## we get the rows in revmap_short that contain them (which are stored in the index vector genes_idx).
+  ## It might be that there are several rows that contain the same gene (in which case we have to compute the weighted sum
+  ## of the CN values). For each of the overlaps, find the ploidy and its width
+  ## In the case that the overlap doesn't have a CN, because it's outside of any segment, make this interval diploid, CN=2
+  weights = sapply(1:length(gr_genes_of_interest_subset), function(gene_idx){
+    genes_idx_vec = sapply(revmap_short, function(i) which(gene_idx %in% i))
+    genes_idx = which(sapply(genes_idx_vec, length) > 0)
+    ploidies_short = diploidifNA(sapply(1:length(genes_idx), function(j){
+      ## we get the first(and only) element in the list by [[1]] and we get the second index [2],
+      ## which is the only that has a CN value (the first one corresponds to the gene)
+      r_scores[genes_idx,][j,][[1]][2]
+    }))
+    return(weighted_ploidy(ploidies_short,
+                    widths_disjoint_short[genes_idx]))
+  })
+  names(weights) = subset_genes
+  return(weights)
+}
+
+subsample_samples = all_ranges
+all_ploidies_2 = mclapply(subsample_samples, give_ploidy_gene_scaling)
+all_ploidies_2_df_original = data.frame(do.call('rbind', all_ploidies_2))
+all_ploidies_2_df = all_ploidies_2_df_original
+image(do.call('rbind', all_ploidies_2))
+
+## there are some outliers, which I remove
+
+## some ploidies are negative (??)
+sum(all_ploidies_2_df < 0)
+all_ploidies_2_df[all_ploidies_2_df < 0] = NA
+sum(na.omit(all_ploidies_2_df > 15))
+all_ploidies_2_df[all_ploidies_2_df > 15] = NA
+## because I am doing the log, remove zeros
+# sum(na.omit(all_ploidies_2_df == 0))
+# all_ploidies_2_df[all_ploidies_2_df == 0] = NA
+
+ann_row = data.frame(cohort=all_ranges_cohort, row.names = names(all_ranges))
+# pheatmap(log(all_ploidies_2_df), annotation_row = ann_row, cluster_rows = FALSE, cluster_cols = FALSE, show_rownames = FALSE, scale = "none")
+
+pheatmap((all_ploidies_2_df), annotation_row = ann_row, cluster_rows = FALSE, cluster_cols = FALSE, show_rownames = FALSE, scale = "row")
+
+paletteLength <- 50
+myColor <- colorRampPalette(c("yellow", "white", "blue"))(paletteLength)
+# length(breaks) == length(paletteLength) + 1
+# use floor and ceiling to deal with even/odd length pallettelengths
+myBreaks <- c(seq(0, 2, length.out=ceiling(paletteLength/2) + 1), 
+              seq(max(all_ploidies_2_df, na.rm = TRUE)/paletteLength, max(all_ploidies_2_df, na.rm = TRUE), length.out=floor(paletteLength/2)))
+
+pheatmap((all_ploidies_2_df), annotation_row = ann_row, cluster_rows = TRUE, cluster_cols = FALSE, show_rownames = FALSE, scale = "none", color=myColor, breaks=myBreaks)
+
+pheatmap((all_ploidies_2_df), annotation_row = ann_row, cluster_rows = FALSE, cluster_cols = FALSE, show_rownames = FALSE, scale = "none", color=myColor, breaks=myBreaks)
+
+```
+
+```{r, heatmap_ampldel_organoids}
+pheatmap((all_ploidies_2_df[ann_row == 'Organoids',]), cluster_rows = FALSE, cluster_cols = FALSE,
+         show_rownames = TRUE, scale = "none", color=myColor, breaks=myBreaks)
+
+```
+
+```{r, GRanges_deprecated, echo=FALSE}
+# library(trackViewer)
+# geneInfo[geneInfo$genename == 'TERT',]
+# # trackViewer::plotGRanges(all_ranges[[1]], range = as(data.frame(chrom=1, start=1, end=chrlen[1,2]), "GRanges"))
+# 
+# trackViewer::plotGRanges(all_ranges[[1]], range = as(data.frame(chrom=5, start=748159, end=1548159), "GRanges"))
+# 
+# trackViewer::plotGRanges(all_ranges[[1]], range = as(data.frame(chrom=5, start=1306282, end=1348159), "GRanges"))
+# trackViewer::plotGRanges(all_ranges[[2]], range = as(data.frame(chrom=5, start=1306282, end=1306482), "GRanges"))
+# trackViewer::plotGRanges(all_ranges[[1]], range = as(data.frame(chrom=1, start=1, end=30348159), "GRanges"))
+# # AneuFinder:::plot.GRanges(all_ranges[[1]])
+# # copynumber::plotChrom(segments =  all_ranges[[1]])
+# 
+# GenomicRanges::intersect(x = all_ranges[[1]], y = as(data.frame(chrom=5, start=748159, end=2048159), "GRanges"))
+# GenomicRanges::reduce(c(all_ranges[[1]], as(data.frame(chrom=5, start=748159, end=2048159), "GRanges")))
+# # GenomicRanges::disjoin(c(all_ranges[[1]], as(data.frame(chrom=5, start=748159, end=2048159), "GRanges")))
+# 
+# geneInfo[geneInfo$genename == 'TERT',]
+# 
+# findOverlaps(query = all_ranges[[1]], subject = as(geneInfo[geneInfo$genename == 'TERT',], "GRanges"))
+# all_ranges[[1]][83,]
+# 
+# give_ploidy_gene(gene_idx = which(gr_genes_of_interest$genename == 'TERT'), sample = all_ranges[[1]])
+# sample[83,]
+
+## give_ploidy_gene is correct
+## give_ploidy_gene_scaling is not
+
+```
+
+
+```{r, gene_ploidy_cosmic_plot, echo=FALSE}
+names(ploidies)
+names(ploidies[[1]])
+rownames(all_ploidies_2_df_original[match(rownames(ploidies), rownames(all_ploidies_2_df_original)),])[1:10]
+rownames(ploidies[1:10,])
+all_ploidies_2_df_original = all_ploidies_2_df_original[match(rownames(ploidies), rownames(all_ploidies_2_df_original)),]
+
+sum(na.omit(all_ploidies_2_df_original == 0))
+all_ploidies_2_df_original[all_ploidies_2_df_original == 0] = NA
+
+all_ploidies_2_df_cat = sapply(1:nrow(all_ploidies_2_df_original), function(row_idx){
+# all_ploidies_2_df_cat = sapply(97, function(row_idx){
+  if(ploidies[row_idx,'ploidy'] <= 2.7){
+    average_high = FALSE
+  }else{
+    average_high = TRUE
+  }
+  # print(average_high)
+  sapply(1:ncol(all_ploidies_2_df_original), function(genes_idx){
+    # print(all_ploidies_2_df_original[row_idx,genes_idx])
+    if(is.na(all_ploidies_2_df_original[row_idx,genes_idx])){
+      NA
+    }else{
+      if( !average_high & (all_ploidies_2_df_original[row_idx,genes_idx] >= 5) ){
+        'gain'
+      }else if( average_high & (all_ploidies_2_df_original[row_idx,genes_idx] >= 9) ){
+        'gain'
+      }else if( !average_high & (all_ploidies_2_df_original[row_idx,genes_idx] == 0) ){
+        'loss'
+      }else if( average_high & ( (all_ploidies_2_df_original[row_idx,genes_idx]) < (ploidies[row_idx,'ploidy']-2.7)  )){
+        'loss'
+      }else{
+        'other'
+      }
+    }
+  })
+})
+
+```
+
+```{r, plot_cosmic, echo=FALSE}
+# all_ploidies_2_df_cat
+# t(apply((all_ploidies_2_df_cat), 1, function(i) as.numeric(as.factor(i))))
+all_ploidies_2_df_cat[all_ploidies_2_df_cat == 'other'] = NA
+# all_ploidies_2_df_cat_factors = (apply((all_ploidies_2_df_cat), 1, function(i) as.numeric(as.factor(i))))
+# rownames(all_ploidies_2_df_cat_factors) = rownames(all_ploidies_2_df)
+all_ploidies_2_df_cat_factors = all_ploidies_2_df_cat
+all_ploidies_2_df_cat_factors[all_ploidies_2_df_cat == 'gain'] = 1
+all_ploidies_2_df_cat_factors[all_ploidies_2_df_cat == 'loss'] = -1
+all_ploidies_2_df_cat_factors[all_ploidies_2_df_cat == 'other'] = NA
+all_ploidies_2_df_cat_factors = data.frame(apply(all_ploidies_2_df_cat_factors, 1, as.numeric))
+rownames(all_ploidies_2_df_cat_factors) = rownames(all_ploidies_2_df)
+colnames(all_ploidies_2_df_cat_factors) = colnames(all_ploidies_2_df)
+pheatmap((all_ploidies_2_df_cat_factors),
+         annotation_row = ann_row,
+         cluster_rows = FALSE, cluster_cols = FALSE, na_col = "white",
+show_rownames = FALSE, scale = "none")
+
+all_ploidies_2_df_cat_factors[ann_row == 'Organoids',]
+
+```
+
+Amplifications/deletions of selected genes in organoids
+```{r, genes_discrete_organoids_ampdel, echo=FALSE}
+# subset_all_ploidies_2_df_cat_factors = all_ploidies_2_df_cat_factors[ann_row %in% c('TCGA', 'Organoids'),]
+# 
+# pheatmap(sapply(subset_all_ploidies_2_df_cat_factors, as.numeric),
+#          cluster_rows = FALSE, cluster_cols = FALSE,
+#          show_rownames = FALSE, scale = "none")
+
+# image(all_ploidies_2_df_cat_factors[ann_row$cohort %in% c('TCGA'),])
+# all_ploidies_2_df_cat_factors[ann_row$cohort %in% c('TCGA'),]
+subset_all_ploidies_2_df_cat_factors = all_ploidies_2_df_cat_factors[ann_row$cohort %in% c('Organoids'),]
+subset_all_ploidies_2_df_cat_factors[is.na(subset_all_ploidies_2_df_cat_factors)] = 0
+subset_all_ploidies_2_df_cat_factors
+
+myColor2 <- colorRampPalette(c("blue", "white", "red"))(3)
+# length(breaks) == length(paletteLength) + 1
+# use floor and ceiling to deal with even/odd length pallettelengths
+# myBreaks2 <- c(seq(-1, 0, length.out=2),
+#               seq(0, 1, length.out=1))
+myBreaks2 <- c(-2, -0.99, .99, 2)
+
+pheatmap(subset_all_ploidies_2_df_cat_factors,
+         cluster_rows = FALSE, cluster_cols = FALSE,
+         show_rownames = TRUE, scale = "none",
+         color = myColor2, breaks = myBreaks2)
+         # color = myColor, breaks = myBreaks)
+```
+
+Could you repeat the analysis taking into account the ploidy as recommended by Cosmic?
+
+*  Gain:
+
+§  average genome ploidy <= 2.7 AND total copy number >= 5
+
+§  OR average genome ploidy > 2.7 AND total copy number >= 9
+
+*  Loss:
+
+§  average genome ploidy <= 2.7 AND total copy number = 0
+
+§  OR average genome ploidy > 2.7 AND total copy number < ( average genome ploidy - 2.7 )
+
+Thanks!
+
+Saving the global ploidy for organoids
+```{r, saving_global_ploidy, echo=FALSE}
+ploidy_organoids
+```
+
+How come the segments include all the genome?
+```{r, segments_whole_genome}
+full_GR_example <- c(GRanges_chroms, as(rename_cols(data.frame(segtables_ICGC_absolute_copynumber_US[[1]])), "GRanges"))
+granges_example <- GenomicRanges::disjoin(full_GR_example, with.revmap=TRUE, ignore.strand=TRUE)
+diploid_segments = granges_example[sapply(granges_example$revmap, function(i) !any(i > length(GRanges_chroms))),]
+diploid_segments
+length(diploid_segments)
+chrlen
 ```

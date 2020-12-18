@@ -189,3 +189,17 @@ wrapper_get_bp = function(df){
   names(df) = paste0('df', 1:length(df))
   getBPnum2(df, chrlen = chrlen)
 }
+
+create_distrib_df = function(feature, name_value_col){
+  df = list()
+  df[['pcawg']] = pcawg_CN_features[[feature]] %>% group_by(ID) %>% mutate(ct1_num = as.numeric(get(name_value_col))) %>% summarize(mean(ct1_num), .groups = 'drop')
+  df[['org']] = organoids_CN_features[[feature]] %>% group_by(ID) %>% mutate(ct1_num = as.numeric(get(name_value_col))) %>% summarize(mean(ct1_num), .groups = 'drop')
+  df[['tcga']] = tcga_CN_features[[feature]] %>% group_by(ID) %>% mutate(ct1_num = as.numeric(get(name_value_col))) %>% summarize(mean(ct1_num), .groups = 'drop')
+  df[['BriTROC']] = BriTROC_CN_features[[feature]] %>% group_by(ID) %>% mutate(ct1_num = as.numeric(get(name_value_col))) %>% summarize(mean(ct1_num), .groups = 'drop')
+  return(df)
+}
+
+remove_infty = function(i){
+  i = i[!is.infinite(i)]
+  return(i)
+}

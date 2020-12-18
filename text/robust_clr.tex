@@ -1,0 +1,15 @@
+\documentclass{article}
+
+\usepackage{mathtools}
+\usepackage{ bbold }
+
+\begin{document}
+
+\begin{equation}
+ \text{rclr}(x_i) =   \begin{dcases*}
+      0, & if $ x_i=0$ \\
+      \frac{\log(x_i)}{\frac{\sum_{j=1}^k \mathbb{1}_{x_j>0} \log(x_j) }{\sum_{j=1}^k \mathbb{1}_{x_j>0}}}, & if  $0 < x_i \leq 1$
+    \end{dcases*}
+    \end{equation}
+
+\end{document}
