@@ -44,6 +44,8 @@ for(org in c('118976org', '23868org', '119148orgb')){
   labels_chroms$idx_first_norm =labels_chroms$idx_first/(ncol(org_clean)-4)
   annotation_chroms = data.frame(row.names = colnames(org_clean), chrom=clean_chrom(labels_chroms0))
   
+  saveRDS(org_clean, paste0("../data/absCN_clean_", org, ".RDS"))
+  
   pdf(paste0("../plots/basicplot_", org, ".pdf"), width=15)
   pheatmap::pheatmap(org_clean, cluster_rows = FALSE, cluster_cols = FALSE, show_colnames = FALSE,
                      color             = c("#2670af", "#8daecf", "#eaeaea", "#ffd2b6", "#f5b788", "#f39d5f", "#f17e37", "#ee1200", "#b60000", "#7a0e04", "#401004", "#000000"),

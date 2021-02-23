@@ -91,24 +91,69 @@ clr_mat <- function(X){
 }
 ```
 
+
 # Loading organoids data
 ```{r, load_organoids}
-org<- as(readRDS("data/organoid_exposures_Aug21.rds"), 'matrix')
-rownames(org) <- paste0('Sample ', 1:nrow(org))
+org<- as(readRDS("data/organoid_exposures.rds"), 'matrix')
+# rownames(org) <- paste0('Sample ', 1:nrow(org))
 names_orgs = readxl::read_xlsx("data/NewOrganoidNaming.xlsx")
+names_orgs$`new name`[match(rownames(org), paste0(names_orgs$`old name`, 'org'))]
+rownames(org) = names_orgs$`new name`[match(rownames(org), paste0(names_orgs$`old name`, 'org'))]
 ```
 
 ## Data from organoids
 
+```{r, funs}
+rename_rows = function(i, new_names){
+  rownames(i) = new_names; return(i)}
+```
+
 ```{r, barplot_organoids, fig.height=2.5,message=FALSE, echo=FALSE,warning=FALSE}
-createBarplot(org, remove_labels = TRUE, order_labels = names(sort(org[,1]))) + 
-  ggtitle('Exposures for the organoids')
+createBarplot(rename_rows(org, gsub('Sample ', 'PDO', rownames(org))), remove_labels = FALSE, order_labels = gsub('Sample ', 'PDO', names(sort(org[,1])))) + 
+    scale_fill_brewer(palette="Dark2")+labs(y='Exposure')+
+  ggtitle('Exposures for the organoids')+labs(x='')+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggsave("figures/exposures_organoids.pdf")
+```
+
+Apparently only PDO1 is a WGD sample. I see which log-ratio with any other signature shows a clear difference between this WGD sample and the rest. The ratio between s4 (WGD signature) and s2 is.
+```{r, WGD, echo=FALSE, fig.width=12}
+melt_exposures_WGD = (melt(sapply(1:ncol(org), function(j) org[,'s4']/org[,j])))
+melt_exposures_WGD$group = ifelse(melt_exposures_WGD$Var1 == 'PDO1', 'WGD', 'No WGD')
+melt_exposures_WGD %>% filter(Var1 == 'PDO1')
+grid.arrange(ggplot(melt_exposures_WGD, aes(x=Var2, y=value, col=Var1))+geom_point()+facet_wrap(.~group),
+             ggplot(melt_exposures_WGD %>% filter(Var2 == 2), aes(x=Var1, y=value))+geom_point()+facet_wrap(.~group)+
+               theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)), ncol=2)
+```
+
+```{r, zeros_organoids}
+apply(org, 2, function(j) table(factor(j==0, levels=c(T,F))))
+
+table(apply(org[,-5], 1, function(j) paste0(j==0,collapse='-')))
+
+```
+
+```{r, barplot_old_exposures, fig.height=2.5, echo=FALSE}
+# naming_table=readxl::read_xlsx("~/Desktop/PDOnameProperSample_sWGS.xlsx")
+# org_old<- as(readRDS("data/organoid_exposures.rds"), 'matrix')
+# naming_table$PDO[match(naming_table$ID, rownames(org_old))]
+# createBarplot(org_old, remove_labels = FALSE, order_labels = names(sort(org_old[,1]))) +
+#     scale_fill_brewer(palette="Dark2")+labs(y='Exposure')+
+#     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+#   ggtitle('OLD Exposures for the organoids')
+# 
+# tail(naming_table[match(gsub('Sample ', 'PDO', rownames(org)), naming_table$PDO),])
+# org_old[naming_table$ID[match(gsub('Sample ', 'PDO', rownames(org)), naming_table$PDO)],]
+# org
+# 
+# matched_vector_old_exp = as.vector(org_old[naming_table$ID[match(gsub('Sample ', 'PDO', rownames(org)), naming_table$PDO)],])
+# ggplot(cbind.data.frame(new=as.vector(org), old=matched_vector_old_exp, label= ifelse(matched_vector_old_exp>0.4, gsub('Sample ', 'PDO', rownames(org)), NA), sig=factor(rep(1:7, each=nrow(org)))), aes(x=old, y=new, col=sig, label=label))+geom_abline(slope = 1, intercept = 0)+geom_point()+geom_label_repel()
 ```
 
 
 ### Data from Nature Genetics 2018 paper
 
-We are loading both the original signatures, adn the updated signatures.
+We are loading both the original signatures, and the updated signatures.
 ```{r, natgen_data,include=FALSE}
 #------------ Load ------------#
 natgen = natgen_metadata = list()
@@ -405,13 +450,13 @@ p3 = ggplot(melt(heatmap_dendrogram_df), aes(x=Var2, y=Var1, fill=value))+geom_t
 
 dend_data <- dendro_data(dendro_UpdatedExposures, type = "rectangle")
 dend_data$labels$label = as.character(dend_data$labels$label)
-dend_data$labels$label[!grepl('Sample', dend_data$labels$label)] = ""
+dend_data$labels$label[!grepl('PDO', dend_data$labels$label)] = ""
 p <- ggplot(dend_data$segments) + 
   geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
   # geom_text(data = dend_data$labels, aes(x, y, label = label),
   #           hjust = 1, angle = 90, size = 3)+
-  geom_label_repel(data = dend_data$labels, aes(x, y, label = label),
-            hjust = 1, angle = 90, size = 3, vjust=0)+
+  geom_label_repel(data = dend_data$labels, aes(x, y, label = gsub('Organoid ', '', label)),
+            hjust = 0, size = 6, vjust=5)+
   ylim(-3, 15)+
   theme(axis.title.x=element_blank(),
     axis.text.x=element_blank(),
@@ -427,13 +472,15 @@ print(p)
 
 ggthemr::ggthemr("pale")
 p2 = ggplot(melt(heatmap_dendrogram_df), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+
-    theme(axis.title.x=element_blank(),
+    theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+          legend.text=element_text(size=18),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),  legend.position = "bottom")+
-      scale_x_discrete(expand = c(extra_expand, extra_expand))+
+  scale_fill_brewer(palette="Dark2")+
+      # scale_x_discrete(expand = c(extra_expand, extra_expand))+
   guides(fill = guide_legend(nrow = 1))
 
 
@@ -571,6 +618,443 @@ cat('Fraction of samples with any zero in underrepresented: ', sum(apply(all_nat
 sum(apply(all_natgen$UpdatedExposures[!as.logical(df_logistic$bool_underrepresented),], 1, function(i) any(i == 0)))/sum(1-df_logistic$bool_underrepresented)
 )
 
+```
+
+```{r, compositional}
+give_pca = function(data_matrix, center = T, title='', names, names_bool=T, give_loadings=F, print_labels=T, groups=NULL,groups_shape=NULL, nrow_legend=3, size_points=1, print_both_labels=FALSE){
+  prcomp_res = prcomp(data_matrix, scale. = TRUE, center = center)
+  eigs <- prcomp_res$sdev^2
+  if(!names_bool){
+    names=NA
+  }
+  
+  if(give_loadings){
+    if(!is.null(groups_shape)){
+      stop('Groups shape not yet implemented for loadings')
+    }
+    a = ggplot()+
+      geom_point(data=cbind.data.frame(prcomp_res$x[,1:2], names=names), aes(x=PC1, y=PC2), size=size_points)+
+      geom_segment(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                   aes(x=0, y=0, xend=PC1*4, yend=PC2*4), col='red', arrow = arrow(length = unit(0.03, "npc")))+
+      labs(x=paste0('PC1 (', round(100*eigs[1]/sum(eigs), 2), '%)' ),
+           y=paste0('PC2 (', round(100*eigs[2]/sum(eigs), 2), '%)' ))+ggtitle(title)
+    if(print_labels){
+      a = a+geom_label_repel(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                              aes(x=PC1*3, y=PC2*3, label=names), size=3, col='red')
+      if(print_both_labels){
+        a = a+geom_label_repel(data=cbind.data.frame(prcomp_res$x[,1:2], names=rownames(prcomp_res$x)),
+                              aes(x=PC1, y=PC2, label=names), size=3, col='black')
+      }
+    }
+    a
+  }else{
+    if(!is.null(groups)){
+      df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=as.factor(groups))
+    }else{
+      df = cbind.data.frame(prcomp_res$x[,1:2], names=names)
+    }
+    if(!is.null(groups_shape)){
+      df = cbind(df, groups_shape=groups_shape)
+    }
+    a = ggplot(df,
+               aes(x=PC1, y=PC2,label=gsub('Sample ', 'PDO', names)))+
+      labs(x=paste0('PC1 (', round(100*eigs[1]/sum(eigs), 2), '%)' ),
+           y=paste0('PC2 (', round(100*eigs[2]/sum(eigs), 2), '%)' ))+ggtitle(title)
+    if(!is.null(groups)){
+      if(!is.null(groups_shape)){
+        a = a +geom_point(aes(col=groups, shape=groups_shape), size=size_points)
+      }else{
+        a = a +geom_point(aes(col=groups), size=size_points)
+      }
+      a = a + theme(legend.position = "bottom",
+            legend.key.size = unit(0.3, "cm"),
+            legend.key.width = unit(0.2,"cm"),
+            legend.title = element_blank())+
+        guides(col=guide_legend(nrow=nrow_legend,byrow=TRUE))
+    }else{
+      if(!is.null(groups_shape)){
+        a = a + geom_point(aes(shape=groups_shape), size=size_points)
+      }else{
+        a = a + geom_point(size=size_points)
+      }
+    }
+
+    
+    if(print_labels){
+      a = a+geom_label_repel(size=3,)
+    }
+    a
+  }
+}
+```
+
+PCA of a uniform sample from the 3-dimensional simplex (i.e. four parts), with three different transformations
+```{r, compositional2, fig.height=3, dependson=c('compositional'), echo=FALSE, warning=FALSE}
+grid.arrange(give_pca(MCMCpack::rdirichlet(300, c(1,1,1,1)), title='Untransformed, centered', names_bool = F),
+give_pca(MCMCpack::rdirichlet(300, c(1,1,1,1)), center = F, title='Untransformed, uncentered', names_bool = F),
+give_pca(as(compositions::clr(MCMCpack::rdirichlet(300, c(1,1,1,1))), 'matrix'), title='CLR, centered', names_bool = F), ncol=3)
+```
+
+
+PCA of organoids with three variations
+```{r, compositional3, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(org, title='Untransformed, centered', names=rownames(org)),
+give_pca(org, center = F, title='Untransformed, uncentered', names=rownames(org)),
+give_pca(as(compositions::clr(org), 'matrix'), title='CLR, centered', names=rownames(org)), ncol=3)
+```
+
+Plot the loadings of the organoids (PCA only with organoids)
+
+```{r, compositional4, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(org, title='Untransformed, centered', names=rownames(org), give_loadings = T),
+give_pca(org, center = F, title='Untransformed, uncentered', names=rownames(org), give_loadings = T),
+give_pca(as(compositions::clr(org), 'matrix'), title='CLR, centered', names=rownames(org), give_loadings = T), ncol=3)
+```
+
+
+```{r, groupings_for_pca}
+grouping_cohort_all_basic = c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))
+grouping_cohort_all_basic[grouping_cohort_all_basic != "organoids"] = "primary"
+```
+
+- PCA of only-nonzero organoids
+
+```{r, compositional4_onlynonzero, fig.height=3, dependson=c('compositional'), echo=FALSE, fig.width=10}
+grid.arrange(give_pca(org[apply(org, 1, function(i) !any(i==0)),], title='Untransformed, centered',
+         names=rownames(org[apply(org, 1, function(i) !any(i==0)),]), give_loadings = T),
+give_pca(all_natgen[[which_natgen]][apply(all_natgen[[which_natgen]], 1, function(i) !any(i==0)),], title='Untransformed, centered',
+names=rownames(all_natgen[[which_natgen]][apply(all_natgen[[which_natgen]], 1, function(i) !any(i==0)),]), give_loadings = F, print_labels = F,
+groups=c(natgen_metadata[[which_natgen]]$study[apply(all_natgen[[which_natgen]][1:nrow(natgen_metadata[[which_natgen]]),], 1, function(i) !any(i==0))],
+rep('organoids', sum(apply(org, 1, function(i) !any(i==0)))))),
+give_pca(all_natgen[[which_natgen]][apply(all_natgen[[which_natgen]], 1, function(i) !any(i==0)),], title='Untransformed, centered',
+names=rownames(all_natgen[[which_natgen]][apply(all_natgen[[which_natgen]], 1, function(i) !any(i==0)),]), give_loadings = F, print_labels = F,
+groups=grouping_cohort_all_basic[apply(all_natgen[[which_natgen]], 1, function(i) !any(i==0))]), nrow=1)
+```
+
+```{r, compositional_allcohorts_onlynonzero_loadings, fig.height=3, dependson=c('compositional'), echo=FALSE, fig.width=3}
+give_pca(all_natgen[[which_natgen]][apply(all_natgen[[which_natgen]], 1, function(i) !any(i==0)),], title='Untransformed, centered',
+         names=rownames(all_natgen[[which_natgen]][apply(all_natgen[[which_natgen]], 1, function(i) !any(i==0)),]), give_loadings = T)
+```
+
+
+- PCA of all samples, with three variations. CLR is robust.
+```{r, compositional5, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(all_natgen[[which_natgen]], title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+                      groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(all_natgen[[which_natgen]], center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(as(compositions::clr(all_natgen[[which_natgen]]), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))), ncol=3)
+```
+
+
+```{r, compositional5b, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(all_natgen[[which_natgen]], title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+                      groups=grouping_cohort_all_basic),
+give_pca(all_natgen[[which_natgen]], center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=grouping_cohort_all_basic),
+give_pca(as(compositions::clr(all_natgen[[which_natgen]]), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=grouping_cohort_all_basic), ncol=3)
+```
+
+```{r, compositional5_loadings, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(all_natgen[[which_natgen]], title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = T, print_labels=T,
+                      groups=grouping_cohort_all_basic),
+give_pca(all_natgen[[which_natgen]], center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = T, print_labels=T,
+         groups=grouping_cohort_all_basic),
+give_pca(as(compositions::clr(all_natgen[[which_natgen]]), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = T, print_labels=T,
+         groups=grouping_cohort_all_basic), ncol=3)
+```
+
+- PCA of all samples, with three variations, and with an addition of 1e-4 to all samples. CLR, and only CLR, changes notably.
+
+```{r, compositional6, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(normalise_rw(1e-4+all_natgen[[which_natgen]]), title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+                      groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(normalise_rw(1e-4+all_natgen[[which_natgen]]), center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(as(compositions::clr(normalise_rw(1e-4+all_natgen[[which_natgen]])), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))), ncol=3)
+```
+
+```{r, inputation_fun, echo=FALSE}
+impute = function(mat, inputation_value){
+  mat[mat == 0] = inputation_value
+  normalise_rw(mat)
+}
+```
+
+- PCA of all samples, with three variations, and with an inputation of 1e-4 in all samples. As expected, the results are essentially the same as adding the same value to all elements (zero or non-zero).
+
+```{r, compositional8, fig.height=3, dependson=c('compositional', 'inputation_fun'), echo=FALSE}
+grid.arrange(give_pca(impute(all_natgen[[which_natgen]], 1e-4), title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+                      groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(impute(all_natgen[[which_natgen]], 1e-4), center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(as(compositions::clr(impute(all_natgen[[which_natgen]], 1e-4)), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))), ncol=3)
+```
+
+- PCA of all samples, with three variations, and with an addition of 1e-2 to all samples
+```{r, compositional7, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+                      groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))),
+give_pca(as(compositions::clr(normalise_rw(1e-2+all_natgen[[which_natgen]])), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))), ncol=3)
+```
+
+```{r, compositional7b, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+                      groups=grouping_cohort_all_basic, nrow_legend=1),
+give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=grouping_cohort_all_basic, nrow_legend=1),
+give_pca(as(compositions::clr(normalise_rw(1e-2+all_natgen[[which_natgen]])), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=grouping_cohort_all_basic, nrow_legend=1), ncol=3)
+```
+
+```{r, compositional7_loading, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = T, print_labels=,
+                      groups=grouping_cohort_all_basic, nrow_legend=1),
+give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = T, print_labels=T,
+         groups=grouping_cohort_all_basic, nrow_legend=1),
+give_pca(as(compositions::clr(normalise_rw(1e-2+all_natgen[[which_natgen]])), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = T, print_labels=T,
+         groups=grouping_cohort_all_basic, nrow_legend=1), ncol=3)
+```
+
+s1 seems not to be of importance in the loadings of this last PCA. Use it as baseline for PCA (good, too, because it's almost always strictly positive).
+```{r, barplot_organoids_alr, fig.height=6.5,message=FALSE, echo=FALSE,warning=FALSE}
+createBarplot((org/org[,1])[,-1], remove_labels = TRUE, order_labels = names(sort(org[,1]))) + 
+    labs(y='ALR with s1 baseline')+facet_wrap(.~Var2, ncol=1, scales='free_y')+
+  ggtitle('ALR with s1 as baseline')
+```
+
+```{r, pairs_alr}
+pairs( (org/org[,1])[,-1])
+```
+
+```{r, pairs_alr_cohort}
+pairs( (all_natgen[[which_natgen]]/all_natgen[[which_natgen]][,1])[,-1])
+```
+
+```{r, pairs_alr_cohort_no_s5}
+pairs( (normalise_rw(all_natgen[[which_natgen]][,-5])/all_natgen[[which_natgen]][,1])[,-1])
+```
+
+```{r, s2_and_s4_and_s6_organoids, fig.height=2, fig.width=4}
+df_correlations_exposures_organoids = data.frame(ALR_bsS1_s2=org[,2]/org[,1],
+                  ALR_bsS1_s4=org[,4]/org[,1],
+                  ALR_bsS1_s6=org[,6]/org[,1])
+grid.arrange(ggplot(df_correlations_exposures_organoids, aes(x=ALR_bsS1_s2,y=ALR_bsS1_s4))+
+               geom_point()+geom_smooth(method = "lm")+labs(x='ALR_s1(s2)', y='ALR_s1(s4)'),
+             ggplot(df_correlations_exposures_organoids, aes(x=ALR_bsS1_s2,y=ALR_bsS1_s6))+
+               geom_point()+geom_smooth(method = "lm")+labs(x='ALR_s1(s2)', y='ALR_s1(s6)'), nrow=1)
+```
+
+
+```{r, barplot_amalgamations, fig.height=3}
+org_rename = org
+rownames(org_rename) = gsub("Sample ", "PDO", rownames(org))
+grid.arrange(createBarplot(cbind(org_rename[,c(1,3,5,7)], sum=rowSums(org_rename[,c(2,4,6)])), remove_labels = FALSE, order_labels = names(sort(org_rename[,1]))) + 
+    labs(y='Exposure')+ ggtitle('Exposures for the organoids')+theme(axis.text.x = element_text(angle = 45))+theme(legend.position = "bottom"),
+createBarplot(normalise_rw(cbind(org_rename[,c(1,3,7)], sum=rowSums(org_rename[,c(2,4,6)]))), remove_labels = FALSE, order_labels = names(sort(org_rename[,1]))) + 
+    labs(y='Exposure')+ ggtitle('Exposures for the organoids')+theme(axis.text.x = element_text(angle = 45))+theme(legend.position = "bottom"), nrow=1)
+grid.arrange(give_pca(normalise_rw(cbind(org_rename[,c(1,3,7)], sum=rowSums(org_rename[,c(2,4,6)]))), names=rownames(org_rename)),
+             give_pca(as(compositions::clr(normalise_rw(cbind(org_rename[,c(1,3,7)], sum=rowSums(org_rename[,c(2,4,6)])))), 'matrix'), names=rownames(org_rename)),
+             give_pca(as(compositions::clr(normalise_rw(cbind(org_rename[,c(1,3,7)], sum=rowSums(org_rename[,c(2,4,6)])))), 'matrix'), names=rownames(org_rename),
+                      give_loadings = T), nrow=1)
+```
+
+
+Note: s3 and s4 are consistently shown in the same PC axis, in opposite directions.
+
+```{r, s2_and_s4_and_s6_cohorts, fig.height=2, fig.width=4}
+df_correlations_exposures_cohorts = data.frame(ALR_bsS1_s2=all_natgen[[which_natgen]][,2][1:nrow(natgen_metadata[[which_natgen]])]/all_natgen[[which_natgen]][,1][1:nrow(natgen_metadata[[which_natgen]])],
+           ALR_bsS1_s4=all_natgen[[which_natgen]][,4][1:nrow(natgen_metadata[[which_natgen]])]/all_natgen[[which_natgen]][,1][1:nrow(natgen_metadata[[which_natgen]])],
+          ALR_bsS1_s6=all_natgen[[which_natgen]][,6][1:nrow(natgen_metadata[[which_natgen]])]/all_natgen[[which_natgen]][,1][1:nrow(natgen_metadata[[which_natgen]])],
+                  colour=natgen_metadata[[which_natgen]]$study[1:nrow(natgen_metadata[[which_natgen]])]
+                  )
+grid.arrange(ggplot(df_correlations_exposures_cohorts, aes(x=ALR_bsS1_s2,y=ALR_bsS1_s4))+
+               geom_point()+geom_smooth(method = "lm")+labs(x='ALR_s1(s2)', y='ALR_s1(s4)'),
+             ggplot(df_correlations_exposures_cohorts, aes(x=ALR_bsS1_s2,y=ALR_bsS1_s6))+
+               geom_point()+geom_smooth(method = "lm")+labs(x='ALR_s1(s2)', y='ALR_s1(s6)'), nrow=1)
+```
+
+- Inputation of 1e-2, and without s5 (first three plots), and with robust CLR wihout imputation (last plot)
+```{r, compositional_without_s5, fig.height=3, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(normalise_rw(impute(all_natgen[[which_natgen]][,-5], 1e-2)), title='Untransformed, centered',
+                      names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+                      groups_shape=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org))), groups = grouping_cohort_all_basic),
+give_pca(normalise_rw(impute(all_natgen[[which_natgen]][,-5], 1e-2)), center = F, title='Untransformed, uncentered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups_shape=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org))), groups = grouping_cohort_all_basic),
+give_pca(as(compositions::clr(normalise_rw(impute(all_natgen[[which_natgen]][,-5], 1e-2))), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups_shape=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org))), groups = grouping_cohort_all_basic),
+give_pca(as(compositions::clr(normalise_rw(all_natgen[[which_natgen]][,-5])), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups_shape=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org))), groups = grouping_cohort_all_basic), ncol=4)
+```
+
+Pretty interesting plot, as it seems to show four driving forces whicc are orthogonal two-on-two. n1 (s1) and s2 (s3) are anticorrelated and driving most of the variance in organoids. The sum of s2,4,6, is orthogonal to both s1 and s3, and causes most subsequent variation.
+```{r, interesating_pca, dependson=c('compositional'), echo=FALSE, message=FALSE, fig.height=7}
+amalgamation_interesting = normalise_rw(cbind(org_rename[,c(1,3,7)], sum=rowSums(org_rename[,c(2,4,6)])))
+interesting_data = as(compositions::clr(amalgamation_interesting), 'matrix')
+prcomp_res_interesting_data = prcomp(interesting_data, scale. = TRUE, center = TRUE)
+
+df_exposures_pca = cbind.data.frame(melt(org),
+                 pos=(amalgamation_interesting[,'s3']/amalgamation_interesting[,'s1'])[match(melt(org)$Var1,
+                                                                                             names((amalgamation_interesting[,'s3']/amalgamation_interesting[,'s1'])))])
+df_exposures_pca = df_exposures_pca[!is.infinite(df_exposures_pca$pos),]
+
+
+first_col = plot_grid(ggplot(cbind.data.frame(pc1=prcomp_res_interesting_data$x[,1],
+           ratio=amalgamation_interesting[,'s3']/amalgamation_interesting[,'s1']))+geom_point(aes(x=pc1, y=ratio))+labs(x='', y='LogR s3/s1'),
+           # ggplot(),
+           give_pca(data_matrix = interesting_data,
+         names=rownames(org_rename), give_loadings = T, print_labels = T, print_both_labels=T)+theme(title = element_blank())+labs(x='PC1', y='PC2'),
+         ncol = 1, rel_heights = c(2, 3))
+second_col = plot_grid(ggplot(df_exposures_pca,
+       aes(x=pos, y=value, fill=Var2))+geom_bar(stat = 'identity', width=.05)+  coord_flip()+
+         scale_fill_brewer(palette="Dark2")+labs(y='Exposure')+guides(fill=FALSE)
+, ggplot(cbind.data.frame(ratio=amalgamation_interesting[,'sum']/(amalgamation_interesting[,'s1']+amalgamation_interesting[,'s3']),
+                                                     pc2=prcomp_res_interesting_data$x[,2]))+geom_point(aes(x=ratio, y=pc2))+
+                         labs(x='LogR (s2+4+6)/(s1+3)'),
+                       ncol = 1, rel_heights = c(2, 3))
+plot_grid(first_col, second_col, ncol = 2, rel_widths = c(3, 2))
+
+createBarplot(rename_rows(org, gsub('Sample ', 'PDO', rownames(org))), remove_labels = FALSE, order_labels = gsub('Sample ', 'PDO', names(sort(org[,1])))) + 
+    scale_fill_brewer(palette="Dark2")+labs(y='Exposure')+
+  ggtitle('Exposures for the organoids')+labs(x='')+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+Does the same happen in the cohorts?
+
+```{r, interesting_pca_cohorts}
+give_pca(data_matrix = as(compositions::clr(normalise_rw(cbind(natgen[[which_natgen]][,c(1,3,7)],
+                                                                sum=rowSums(natgen[[which_natgen]][,c(2,4,6)])))), 'matrix'),
+         names=rownames(natgen[[which_natgen]]), give_loadings = T, print_labels = T, print_both_labels=F)
+```
+
+### Some comments on the PCAs
+- Whenever an imputation for zero values is used, a large fraction of organoid samples appear as outliers, and so do the other TCGA samples (which are the other samples that contain zeros)
+- If the robust CLR PCA is used, there is no such distinction
+- If the raw values are used (which I think there should be no problem using), there is no big difference either.
+
+## Hierarchical clustering
+```{r, hierarchical_compositional}
+
+give_dendrogram_generalised = function(df, modify_labels=T){
+  x = hclust(dist(df))
+  if(modify_labels){
+    x$labels[!grepl("Sample", x$labels)] = ''
+    x$labels[grepl("Sample", x$labels)] = '*'
+  }
+  y = x
+  y$labels = gsub("Sample ", "PDO", x$labels)
+  # plot(x)
+
+  labelCol <- function(x) {
+    if (is.leaf(x)) {
+      ## fetch label
+      label <- attr(x, "label")
+      ## set label color to red for A and B, to blue otherwise
+      attr(x, "nodePar") <- list(lab.col="blue")
+    }
+    return(x)
+  }
+  d <- dendrapply(as.dendrogram(x), labelCol)
+  plot(d)
+  return(y)
+
+}
+```
+
+## Plot showing differences in amalgamation ratios
+
+```{r, amalgamation_ratios_fun, echo=FALSE}
+remove_organoids = function(df){
+  df[!grepl('Sample ', rownames(df)),]
+}
+
+give_zero = function(a) a[a == 0]
+give_infty = function(a) a[is.infinite(a)]
+give_nonzero = function(a) a[(a > 0) & !is.infinite(a)]
+```
+
+```{r, amalgamation_ratios_implementation, dependson=c('amalgamation_ratios_fun'), echo=FALSE, fig.height=2}
+for(j in 1:7){
+  .orgs = org[,j] / rowSums(org[,(1:7)[!c(1:7 %in% j)]])
+  .orgs_zero = give_zero(.orgs)
+  .orgs_infty = give_infty(.orgs)
+  .orgs_nonzero = give_nonzero(.orgs)
+  .cohort = remove_organoids(natgen[[which_natgen]])[,j] / rowSums(remove_organoids(natgen[[which_natgen]])[,(1:7)[!c(1:7 %in% j)]])
+  .cohort_zero = give_zero(.cohort)
+  .cohort_infty = give_infty(.cohort)
+  .cohort_nonzero = give_nonzero(.cohort)
+  
+  grid.arrange(
+  ggplot(melt(cbind.data.frame(zero=c(length(.orgs_zero), length(.cohort_zero)),
+                          total=c(length(c(.orgs_infty,.orgs_nonzero)), length(c(.cohort_infty,.cohort_nonzero))),
+                          cohort=c('Organoids', ' Cohort')), id.vars = "cohort"), aes(x=cohort, fill=variable, y=value))+geom_bar(stat = "identity")+
+    facet_wrap(.~cohort, scales = "free")+theme(legend.position = "bottom", legend.title = element_blank(), legend.key = element_blank(), legend.key.width = unit(.01, "cm"), legend.key.height = unit(.1, "cm"), strip.background = element_blank(), strip.text.x = element_blank())+labs(x='', y=''),
+  ggplot(cbind.data.frame(x=c(.cohort_nonzero, .orgs_nonzero), y=c(rep("Cohort", length(.cohort_nonzero)), rep("Organoids", length(.orgs_nonzero)))))+
+    geom_density(aes(x=log(x), col=y))+theme(legend.position = "bottom", legend.title = element_blank(), legend.key.width = unit(.3, "cm"), legend.key.height = unit(.1, "cm"))+scale_color_manual(values=c("#56B4E9", "#E69F00")),
+  ggplot(melt(cbind.data.frame(zero=c(length(.orgs_infty), length(.cohort_infty)),
+                               total=c(length(c(.orgs_zero,.orgs_nonzero)), length(c(.cohort_zero,.cohort_nonzero))),
+                               cohort=c('Organoids', ' Cohort')), id.vars = "cohort"), aes(x=cohort, fill=variable, y=value))+geom_bar(stat = "identity")+
+    facet_wrap(.~cohort, scales = "free")+theme(legend.position = "bottom", legend.title = element_blank(), legend.key = element_blank(), legend.key.width = unit(.01, "cm"), legend.key.height = unit(.1, "cm"), strip.background = element_blank(), strip.text.x = element_blank())+labs(x='', y=''),
+  ncol=3, widths=c(0.2, 0.6, 0.2), top=paste0('Signature ', j))
+}
+```
+
+```{r, hierarchical_compositional_2, dependson=c('hierarchical_compositional'), fig.width=12}
+par(mfrow=c(1,2))
+dendroraw = give_dendrogram_generalised(all_natgen[[which_natgen]])
+dendroclr = give_dendrogram_generalised(as(compositions::clr(all_natgen[[which_natgen]]), 'matrix'))
+par(mfrow=c(1,4), mar=c(0.2,0.2,0.2,0.2))
+dendroraw_pdo = give_dendrogram_generalised(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], modify_labels=F)
+dendroclr_pdo = give_dendrogram_generalised(as(compositions::clr(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),]), 'matrix'), modify_labels=F)
+dendroimput_pdo = give_dendrogram_generalised(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2), modify_labels=F)
+dendroimputclr_pdo = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2)), 'matrix'), modify_labels=F)
+
+dend1comparison <- as.dendrogram (dendroraw_pdo)
+dend2comparison <- as.dendrogram (dendroclr_pdo)
+dend3comparison <- as.dendrogram (dendroimput_pdo)
+dend4comparison <- as.dendrogram (dendroimputclr_pdo)
+
+library(dendextend) # for comparing two dendrograms
+tanglegram(dend1comparison, dend2comparison)
+tanglegram(dend1comparison, dend3comparison)
+tanglegram(dend1comparison, dend4comparison)
+tanglegram(dend2comparison, dend4comparison)
 ```
 
 
@@ -1127,11 +1611,16 @@ plot_rank = function(df_rank){
   ggplot(df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
                       y=value, label=labels, width=.5))+geom_bar(stat = "identity", aes( fill= organoids))+
     lims(y=c(-max(df_rank$value)*0.3, 2+max(df_rank$value)))+
-         # x=c(0, 500))+  #c(-nrow(df_rank)*0.3, nrow(df_rank)*1.3))+
-    # geom_label(data=cbind.data.frame(df_rank[df_rank$L1 == "organoids",], label="*"), aes(label=label))+
-    geom_label_repel(data=df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                      y=0, label=labels), vjust = 4)+
+    # geom_label_repel(data=df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
+    #                   y=0, label=labels), vjust = 4)+
+    # geom_label_repel(data=df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
+    #                   y=value/2, label=labels))+
+    geom_label_repel(data=df_rank[c(T,F),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                      y=value/2, label=labels), vjust=4)+
+        geom_label_repel(data=df_rank[c(F,T),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                      y=value/2, label=labels), vjust=-4)+
     scale_x_discrete(expand = c(.05, 0, .05, 0))+
+    scale_fill_manual(values = c("#f2a5a5", "black"))+
     theme_cowplot()+
     theme(legend.position = "bottom", axis.title.x=element_blank(),
           axis.text.x=element_blank(),
@@ -1145,10 +1634,10 @@ plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
 plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
                            Var1=rownames(ploidies)))+ggtitle("Ploidy")
 
-pdf("figures/rank_segments.pdf", width = 14, height = 6)
+pdf("figures/rank_segments_2.pdf", width = 14, height = 6)
 plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
 dev.off()
-pdf("figures/rank_ploidy.pdf", width = 14, height = 6)
+pdf("figures/rank_ploidy_2.pdf", width = 14, height = 6)
 plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
                            Var1=rownames(ploidies)))+ggtitle("Ploidy")
 dev.off()
@@ -1324,6 +1813,45 @@ pheatmap((all_ploidies_2_df[ann_row == 'Organoids',]), cluster_rows = FALSE, clu
 
 ```
 
+## Comparisong RNASeq and copy number
+```{r, correlation_rnaseq_absoluteCN}
+all_ploidies_2_df_t = t(all_ploidies_2_df)
+TPM = read.csv("../DE_resistant_sensitive/files/20191218_ViasM_BJ_orgaBrs_tpm.csv", stringsAsFactors = FALSE)
+renaming1 = read_excel("../DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+
+matching_tpm = TPM[match(colnames(all_ploidies_2_df), TPM$gene_name),]
+renaming1 = renaming1[match(colnames(matching_tpm), gsub('-', '', renaming1$sampleNameRNAseq)),]
+colnames(matching_tpm)[!is.na(renaming1$PDO)] = renaming1$PDO[!is.na(renaming1$PDO)]
+
+length(colnames(matching_tpm))
+length( colnames(all_ploidies_2_df_t))
+matching_samples = colnames(matching_tpm)[match(colnames(all_ploidies_2_df_t), colnames(matching_tpm))]
+matching_samples = matching_samples[!is.na(matching_samples)]
+matching_tpm = matching_tpm[,matching_samples]
+all_ploidies_2_df_t = all_ploidies_2_df_t[,matching_samples]
+
+dim(all_ploidies_2_df_t)
+dim(matching_tpm)
+
+df_correlation_tpm_ploidy = cbind.data.frame(ploidies=as.vector(all_ploidies_2_df_t), tpm=unlist(matching_tpm),
+                 gene_name=rep(rownames(all_ploidies_2_df_t), ncol(all_ploidies_2_df_t)),
+                 sample_name = rep(colnames(all_ploidies_2_df_t), each=nrow(all_ploidies_2_df_t)))
+
+# ggplot(df_correlation_tpm_ploidy,
+#        aes(x=ploidies, y=tpm, col=gene_name))+geom_point()+facet_wrap(.~sample_name)+scale_x_continuous(trans = "log2")
+
+ggplot(df_correlation_tpm_ploidy,
+       aes(x=ploidies, y=tpm, col=sample_name))+geom_point()+facet_wrap(.~gene_name, scales = "free")+scale_x_continuous(trans = "log2")+
+    labs(x='Absolute CN', y='TPM')
+
+# JBLAB19936 == PDO16
+renaming1[which(renaming1$sampleNameRNAseq == "JBLAB-19936"),]
+df_correlation_tpm_ploidy[1,]
+all_ploidies_2_df['PDO16', 'MYC']
+sort(TPM[which(TPM$gene_name == 'MYC'),])
+
+```
+
 ```{r, GRanges_deprecated, echo=FALSE}
 # library(trackViewer)
 # geneInfo[geneInfo$genename == 'TERT',]
@@ -1474,4 +2002,29 @@ diploid_segments = granges_example[sapply(granges_example$revmap, function(i) !a
 diploid_segments
 length(diploid_segments)
 chrlen
+```
+
+```{r}
+dim(natgen[[which_natgen]])
+```
+
+## Correlations between signatures and features
+```{r}
+
+as.vector(number_of_segments$organoids[match(gsub('PDO', '', names(number_of_segments$organoids)), gsub('PDO ', '', rownames(org)))])
+# plot(as.vector(number_of_segments$organoids[match(gsub('PDO', '', names(number_of_segments$organoids)), gsub('PDO ', '', rownames(org)))]),
+#      org[,'s6'])
+# plot(as.vector(number_of_segments$organoids[match(gsub('PDO', '', names(number_of_segments$organoids)), gsub('PDO ', '', rownames(org)))]),
+#      org[,'s6']/org[,'s1'])
+```
+
+## Ascites
+```{r, ascites_barplot}
+ascites = read.csv("data/asorg_PDO.csv")
+ascites = cbind(ascites, bool_ascites=c('Ascites','Organoid'))
+ascites = cbind(ascites, sample_paired=rep(1:(nrow(ascites)/2), each=2))
+ascites$sample = factor(ascites$sample, levels = ascites$sample)
+ggplot(melt(ascites, id.vars=c('sample', 'bool_ascites', 'sample_paired')), aes(x=sample, y=value, fill=variable))+geom_bar(stat = "identity")+facet_wrap(.~bool_ascites, scales = "free_x", ncol=2)+
+  scale_fill_brewer(palette="Dark2")
+ggsave("figures/barplot_ascites_organoids.pdf", width = 7.5, height = 5)
 ```

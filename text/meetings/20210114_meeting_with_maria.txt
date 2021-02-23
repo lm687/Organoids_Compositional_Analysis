@@ -1,0 +1,10 @@
+Meeting with maria 20210114
+
+- RNASeq: the targets re not the same in organoid, which is not strange because organoids are in a very different environment than the normal tissue
+- Stefan did do some analyses on the correlation between highly amplified genes and expression
+- there was a 3' bias in 2 of the RNASeq samples
+
+I need to:
+- Put everything on google drive again
+- Rank: make the blue line darker; otherwise it's difficult to see
+- Xeno sample: it's one of the PDO; look it up!

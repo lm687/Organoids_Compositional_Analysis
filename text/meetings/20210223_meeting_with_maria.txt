@@ -1,0 +1,8 @@
+- TAMSeq: panel of genes. There is an excel spreadsheet
+	- a subset are HRD genes
+- Stephan didn't use the three samples with high 3' bias
+- check what Kauffmann DNA repair genes exactly mean. High value <-> good repair?
+- compare signatures per cell to signatures per organoid
+- bin single cell per 30KB, instead of 20KB, and check exposures
+- colour rna seq by BRCA-mutated
+- How to discriminate HRD-positive samples?

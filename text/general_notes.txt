@@ -1,0 +1,4 @@
+Notes
+
+- 	Q: which organoids from from xeno and which from ascites? is there a change in their signatures?
+	A: there is only one from PDX--54276

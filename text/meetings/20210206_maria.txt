@@ -1,0 +1,32 @@
+## Maria meeting 20210206
+
+DNA content flow cytometry para comparar con ploidy
+WGD parece que solo hay en PD01
+
+supplementary 1
+- clinical data
+supplementary 2
+- cox-plot survival
+supplementary 3
+- genomic features (density plot)
+supplementary 4
+- flow cytometry
+supplementary 5
+- histochemistry, etc
+supplementary 6
+- dos ejemplos de correlation con biological replicates and drug correlation
+supplementary 7
+- absolute copy number plots de todos los organoids
+supplementary 8
+- same for ascites
+supplementary 9
+- Dom: copy number signatures con sensitivity (negative result)
+supplementary 10
+- zootopic implantation
+
+
+comprobar que el absolute copy number que ha usado Stefane es el ultimo
+
+mirarlo yo también que sean las últimas
+
+normalised counts for PCA
