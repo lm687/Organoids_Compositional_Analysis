@@ -1594,31 +1594,24 @@ ggplot(ploidies, aes(x=organoids_bool, y=ploidy))+geom_boxplot()
 ```{r, rank_plots, fig.width=10, echo=FALSE}
 #  hierarchical clustering or ranking for the number of copy number events
 
-plot_rank = function(df_rank){
+plot_rank = function(df_rank, nudge_scalar=1){
   df_rank$value = as.numeric(df_rank$value)
-  # df_rank$Var1 = (order(df_rank$value))
-  df_rank = df_rank[(df_rank$Var1),]
-  # df_rank$Var1 = factor(df_rank$Var1, levels=df_rank$Var1)
+  # df_rank = df_rank[(df_rank$Var1),]
   df_rank$L1= factor(df_rank$L1, levels = c('BriTROC', 'organoids', 'pcawg', 'tcga'))
   df_rank$labels = ifelse(as.character(df_rank$L1) == 'organoids', as.character(df_rank$Var1), NA)
-  # ggplot(df_rank, aes(x=Var1, fill=L1, y=value))+geom_bar(stat = "identity")+
-  #   theme(legend.position = "bottom", axis.title.x=element_blank(),
-  #         axis.text.x=element_blank(),
-  #         axis.ticks.x=element_blank())+ggtitle("Number of segments")+facet_wrap(.~L1)
-  # ggsave("figures/num_segments_ranking.pdf")
 
   df_rank = cbind.data.frame(df_rank, organoids= grepl("organoids", df_rank$L1))
   ggplot(df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                      y=value, label=labels, width=.5))+geom_bar(stat = "identity", aes( fill= organoids))+
+                      y=value, label=labels))+
+    geom_bar(stat = "identity", aes( fill= organoids), width=0.5)+
+    geom_bar(data = df_rank[df_rank$L1 == "organoids",], stat = "identity",
+             aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                      y=value, label=labels, width=5), width=100)+
     lims(y=c(-max(df_rank$value)*0.3, 2+max(df_rank$value)))+
-    # geom_label_repel(data=df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
-    #                   y=0, label=labels), vjust = 4)+
-    # geom_label_repel(data=df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
-    #                   y=value/2, label=labels))+
     geom_label_repel(data=df_rank[c(T,F),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                      y=value/2, label=labels), vjust=4)+
-        geom_label_repel(data=df_rank[c(F,T),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                      y=value/2, label=labels), vjust=-4)+
+                                                y=value/2, label=labels), nudge_y=400*nudge_scalar)+
+    geom_label_repel(data=df_rank[c(F,T),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                                                y=value/2, label=labels), nudge_y=-400*nudge_scalar)+
     scale_x_discrete(expand = c(.05, 0, .05, 0))+
     scale_fill_manual(values = c("#f2a5a5", "black"))+
     theme_cowplot()+
@@ -1630,22 +1623,27 @@ plot_rank = function(df_rank){
 # BriTROC2 (now deleted) was the same as BriTROC
 # all(num_segs_rank[num_segs_rank$L1 == 'BriTROC','value'] == num_segs_rank[num_segs_rank$L1 == 'BriTROC2','value'])
 
-plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
+plot_rank(melt(number_of_segments), nudge_scalar=1)+ggtitle("Number of segments")
 plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
-                           Var1=rownames(ploidies)))+ggtitle("Ploidy")
+                           Var1=rownames(ploidies)), nudge_scalar=0.2)+ggtitle("Ploidy")
 
 pdf("figures/rank_segments_2.pdf", width = 14, height = 6)
 plot_rank(melt(number_of_segments))+ggtitle("Number of segments")
 dev.off()
 pdf("figures/rank_ploidy_2.pdf", width = 14, height = 6)
 plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
-                           Var1=rownames(ploidies)))+ggtitle("Ploidy")
+                           Var1=rownames(ploidies)), nudge_scalar=0.02)+ggtitle("Ploidy")
 dev.off()
 
 ```
 
-
-
+```{r, xxxx_ploidies}
+saveRDS("~/Desktop/cb.RDS", object = cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
+                           Var1=rownames(ploidies)))
+head(melt(number_of_segments))
+head(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
+                           Var1=rownames(ploidies)))
+```
 
 ```{r, across_genome_plot, fig.height=8, message=FALSE, echo=FALSE}
 bps = lapply(list(
@@ -2028,3 +2026,81 @@ ggplot(melt(ascites, id.vars=c('sample', 'bool_ascites', 'sample_paired')), aes(
   scale_fill_brewer(palette="Dark2")
 ggsave("figures/barplot_ascites_organoids.pdf", width = 7.5, height = 5)
 ```
+
+
+```{r, ternary_plots}
+all_natgen[[which_natgen]][ grepl("^PDO*", rownames(all_natgen[[which_natgen]])) ,]
+
+
+library(Ternary)
+
+amalgamation = cbind(rowSums(all_natgen[[which_natgen]][,-c(1,3)]),
+      all_natgen[[which_natgen]][,1],
+      all_natgen[[which_natgen]][,3])
+colnames(amalgamation) = c('Rest', 's1', 's3')
+amalgamation1 = amalgamation[grepl("^PDO*", rownames(all_natgen[[which_natgen]])),]
+amalgamation2 = amalgamation[!grepl("^PDO*", rownames(all_natgen[[which_natgen]])),]
+
+head(amalgamation1)
+head(amalgamation2)
+
+nPoints <- 4000L
+coordinates <- cbind(abs(rnorm(nPoints, 2, 3)),
+                     abs(rnorm(nPoints, 1, 1.5)),
+                     abs(rnorm(nPoints, 1, 0.5)))
+
+TernaryPlot(atip = colnames(amalgamation)[1], btip = colnames(amalgamation)[2], ctip = colnames(amalgamation)[3],
+            main='Organoids')
+ColourTernary(TernaryDensity(amalgamation1, resolution = 10L))
+TernaryPoints(amalgamation1, col = 'red', pch = '.')
+TernaryDensityContour(amalgamation1, resolution = 30L)
+
+TernaryPlot(atip = colnames(amalgamation)[1], btip = colnames(amalgamation)[2], ctip = colnames(amalgamation)[3],
+            main='Primary cohorts')
+ColourTernary(TernaryDensity(amalgamation2, resolution = 10L))
+TernaryPoints(amalgamation2, col = 'red', pch = '.')
+TernaryDensityContour(amalgamation2, resolution = 30L)
+
+```
+
+```{r, quiet_organoids}
+(number_of_segments$organoids)
+```
+
+```{r, ascites_matching, eval=FALSE}
+all((organoids_absolute_copynumber@assayData$copynumber) == organoids_absolute_copynumber2@assayData$copynumber, na.rm = T)
+
+require(reshape2)
+require(ggplot2)
+exposures = readRDS("~/Desktop/ascites_exposures.rds")
+exposures
+ggplot(melt(cbind(org=rownames(exposures), exposures)), aes(x=org, y=value, fill=variable))+geom_bar(stat='identity')
+
+org == exposures
+
+book_ascites = readxl::read_xlsx("/Users/morril01/Documents/PhD/other_repos/b_tape/Vias_Brenton/copy_number_analysis_organoids/data/Book1.xlsx")
+
+exposures = exposures[match(book_ascites$`JBLAB-number`, rownames(exposures)),]
+exposures = exposures[!colSums(apply(exposures, 1, is.na)) == 7,]
+rownames(exposures) = book_ascites$organoid[match(book_ascites$`JBLAB-number`, rownames(exposures))]
+
+## Data from organoids
+
+rename_rows = function(i, new_names){
+  rownames(i) = new_names; return(i)}
+
+
+createBarplot(rename_rows(exposures, gsub('Sample ', 'PDO', rownames(exposures))), remove_labels = FALSE, order_labels = gsub('Sample ', 'PDO', names(sort(exposures[,1])))) + 
+  scale_fill_brewer(palette="Dark2")+labs(y='Exposure')+
+  ggtitle('Exposures for the organoids')+labs(x='')+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+gsub('org', '', rownames(exposures))
+matched_ascites = ascites[match(gsub('org', '', rownames(exposures)), (ascites$sample)),2:ncol(ascites)]
+all.equal(matched_ascites, exposures)
+matched_ascites[1,] == exposures[1,]
+matched_ascites[1,]
+exposures[1,]
+
+```
+

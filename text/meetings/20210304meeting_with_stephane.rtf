@@ -1,0 +1,44 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red254\green244\blue139;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c99608\c95686\c61176;\cssrgb\c0\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww12000\viewh8960\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Questions for Stephane\
+\
+1. \
+should I use\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf0 \cb2 \CocoaLigature0 -rw-r--r--  1 baller01 bioinformatics                   10130 Mar 25  2020 gexVsCn_20200325.R\
+
+\f0\fs24 \cb1 \CocoaLigature1 instead of \
+
+\f1\fs22 \cb2 \CocoaLigature0 -r--r-----  1 baller01 sec_archive_fs_bioinformatics_rw 13165 May 18  2020 gexVsCn.R
+\f0\fs24 \cb1 \CocoaLigature1 \
+\
+from now on? (which I guess is the one I have been using)\
+uin the fmlab shared there was 
+\f1\fs22 \cb2 \CocoaLigature0 gexVsCn.R from march which is the one I had been using, and he renamed it, and the copied the May version as gexVsCn.R.
+\f0\fs24 \cb1 \CocoaLigature1 \
+\
+2. in his opinion, what could we do and expect to find?\
+from looking at the scatterplots, the correlation wasn't great. In general the trend was pulled by a.a few samples only, and sometimes they were the same samples, but not always. PCA on those regions would be useful. For the genes for which you find expression, pathway analysis.\
+\
+3. so whole genome is done on deseq counts?\
+yes, he is\
+\
+4. go through gexVsCnGw.R\
+	what is the most variable thing for?\
+	we're finding the closest copy number segment for each gene? (if that's the case, then I know why I am getting different results from him)\
+\
+\
+There was the DE of organoid vs normal, and\
+\
+check the readme\
+\
+\pard\pardeftab720\partightenfactor0
+
+\fs29\fsmilli14667 \cf3 \expnd0\expndtw0\kerning0
+GrCh38 is what they started with, but when Maria sent the copy number files he noticed that she had been using 37 instead. }

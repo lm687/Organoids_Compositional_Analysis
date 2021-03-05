@@ -1,0 +1,20 @@
+## Meeting with James and Maria
+
+- Make rank lines thicker - done
+- DT extensions in the context of 3' bias in RNASeq sequencing
+- RNASeq: absolute copy number aberrations and gene expression scatterplot: talk to Stephane [TO DO]
+- Gene expression analysis has not been very helpful in ovarian cancer for stratification, because it's driven by copy number which is very variable between patients, and because the tumour microenvironment drives the good results for gene expression
+- Samples with less s1 have fewer focal amplifications. "More quiet" vs less quiet genomes: find which samples are which.
+- check which genes have focal amplifications
+- james said to do an analysis about clonal sc and number of reads, i.e. is variance of number of reads higher in subclonal areas? [TO DO]
+- possible phylogenetic reconstruction for scDNA to see what the clones are
+- scDNA + gene expression? this was James idea but it's not clear to me as RNASeq is bulk
+- clonality question: what genes are being expressed? (same as previous line)
+
+Four themes of the paper
+- does it represent patients
+- How can CN tell us/ compare with TCGA
+- Intrapatient analysis (?)
+- (Ongoing) clonal composition, gene expression
+
+- James sent three files of Felipe's manuscript

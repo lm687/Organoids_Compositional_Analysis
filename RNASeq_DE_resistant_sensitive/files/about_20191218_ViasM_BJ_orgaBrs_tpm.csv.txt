@@ -1,0 +1,1 @@
+scp morril01@clust1-headnode.cri.camres.org:/Users/morril01/ViasM_mine/20191218_ViasM_BJ_orgaBrs/TpmMat/20191218_ViasM_BJ_orgaBrs_tpm.csv .

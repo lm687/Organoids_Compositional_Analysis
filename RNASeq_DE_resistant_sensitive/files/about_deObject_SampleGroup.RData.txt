@@ -1,0 +1,5 @@
+(base) FVFXDASHHV29:~ morril01$ scp morril01@clust1-headnode.cri.camres.org:/Users/morril01/ViasM_mine/20191218_ViasM_BJ_orgaBrs/RnaSeqPip/DEAnalysis/deObject_SampleGroup.RData /Users/morril01/Documents/PhD/other_repos/b_tape/Vias_Brenton/RNASeq_DE_resistant_sensitive/files/
+
+(base) FVFXDASHHV29:~ morril01$ scp morril01@clust1-headnode.cri.camres.org:/Users/morril01/ViasM_mine/20191218_ViasM_BJ_orgaBrs/RnaSeqPipAuc/DEAnalysis/deObject_SampleGroup.RData /Users/morril01/Documents/PhD/other_repos/b_tape/Vias_Brenton/RNASeq_DE_resistant_sensitive/files/deObject_SampleGroup_sensitive_vs_resistant.RData
+
+

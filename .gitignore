@@ -7,7 +7,8 @@ copy_number_analysis_organoids/copy_number_analysis_organoids_cache/
 copy_number_analysis_organoids/copy_number_analysis_organoids_files/
 copy_number_analysis_organoids/data
 
-DE_resistant_sensitive/analysis_scripts/files/Homo_sapiens.GRCh37.87.gff3
+RNASeq_DE_resistant_sensitive/analysis_scripts/files/Homo_sapiens.GRCh37.87.gff3
+RNASeq_DE_resistant_sensitive/objects/deaObjectFile
 
 text/paper/
 
