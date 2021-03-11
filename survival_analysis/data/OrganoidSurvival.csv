@@ -1,0 +1,60 @@
+OVO4 study number,CI number,JB number,From,Tissue type,Tissue,tumouCellularity(%),surgery_type,FirstDate,Media ,LastDate,CulturedTime,PassageNumber,Death
+409,54288-011,,frozen vial,ascites,ascites,na,drainage,24/01/2017,fallopian_tube,08/05/2017,104,10,0
+788,118944-015,jb343,frozen vial,omentum,solid,40,ids,24/01/2017,fallopian_tube,16/03/2017,51,2,1
+75,23868,jb95A,frozen vial,ascites,ascites,na,drainage,24/01/2017,fallopian_tube,01/05/2017,97,10,0
+600,80506-003/004,jb257,frozen vial,omentum,solid,unkown,primary,14/02/2017,fallopian_tube,22/02/2017,8,1,1
+772,118806-003/004,jb327,frozen vial,omentum,solid,70,laparoscopic biopsy,14/02/2017,fallopian_tube,22/02/2017,8,0,1
+338,54357-034,,frozen vial,ascites,ascites,na,drainage,16/02/2017,fallopian_tube,11/04/2017,54,4,1
+348,50495-016,,frozen vial,ascites,ascites,na,drainage,16/02/2017,fallopian_tube,21/07/2017,155,10,0
+161,11297-003,,frozen vial,ascites,ascites,na,drainage,16/02/2017,fallopian_tube,23/05/2017,96,2,1
+47,32070,,frozen vial,ascites,ascites,na,drainage,23/03/2017,fallopian_tube,21/07/2017,120,8,0
+669,80630,,frozen vial,ascites,ascites,na,drainage,03/05/2017,fallopian_tube,23/05/2017,20,0,1
+800,119120,,fresh,ascites,ascites,na,drainage,07/04/2017,fallopian_tube,17/07/2017,101,3,1
+839,119123,jb365,fresh,omentum,solid,70,ids,10/04/2017,fallopian_tube,08/05/2017,28,5,1
+708,119129,jb367,fresh,para aortic LN,solid,60,relapse biopsy,21/04/2017,fallopian_tube,23/05/2017,32,2,1
+466,119058,,fresh,ascites,ascites,na,drainage,17/01/2017,fallopian_tube,27/04/2017,100,10,0
+680,119153,,Fresh,ascites,ascites,na,drainage,25/05/2017,fallopian_tube,27/10/2017,155,6,1
+626,119016,,Frozen,ascites,ascites,na,drainage,03/05/2017,fallopian_tube,24/10/2017,174,6,1
+687,118902,,Frozen,ascites,ascites,na,drainage,03/05/2017,fallopian_tube,18/07/2017,76,4,1
+333,119145,,Fresh,ascites,ascites,na,drainage,17/05/2017,fallopian_tube,31/07/2017,75,4,1
+466,118976,,Frozen,ascites,ascites,na,drainage,03/05/2017,fallopian_tube,31/10/2017,181,10,0
+892,119167,,Fresh,ascites,ascites,na,drainage,05/06/2017,fallopian_tube,02/08/2017,58,3,1
+413,54327,,Frozen,ascites,ascites,na,drainage,03/05/2017,fallopian_tube,01/09/2017,121,10,0
+839,119025,,Frozen,ascites,ascites,na,drainage,03/05/2017,fallopian_tube,31/07/2017,89,4,1
+788,119178,,Fresh,ascites,ascites,na,drainage,19/06/2017,fallopian_tube,20/09/2017,93,10,0
+877,119133,,Fresh,ascites,ascites,na,drainage,02/05/2017,fallopian_tube,02/08/2017,92,3,1
+742,119150,,Fresh,ascites,ascites,na,drainage,24/05/2017,fallopian_tube,02/08/2017,70,3,1
+333,118947,,Frozen,ascites,ascites,na,drainage,03/05/2017,fallopian_tube,01/09/2017,121,10,0
+627,119148,,Fresh,ascites,ascites,na,drainage,24/05/2017,fallopian_tube,09/09/2017,108,10,0
+627,119127,,Fresh,ascites,ascites,na,drainage,19/04/2017,fallopian_tube,09/09/2017,143,10,0
+926,151752,,Fresh- chemo naïve,ascites,ascites,na,drainage,03/10/2017,fallopian_tube,27/10/2017,24,1,1
+904,151731,,,ascites,ascites,na,drainage,11/09/2017,fallopian_tube,25/10/2017,44,2,1
+904,151680,,frozen,ascites,ascites,na,drainage,04/09/2017,fallopian_tube,10/10/2017,36,1,1
+358,31995,jb140a,"Frozen, same as JB140a",ascites,ascites,na,drainage,05/09/2017,fallopian_tube,18/10/2017,43,3,1
+828,119011,,Frozen- chemo naïve,ascites,ascites,na,drainage,05/09/2017,fallopian_tube,22/09/2017,17,3,1
+645,151745,,Fresh,ascites,ascites,na,drainage,27/09/2017,fallopian_tube,27/10/2017,30,3,1
+873,119119,JB364,fresh,ovary,solid,,ids,07/04/2017,fallopian_tube,17/04/2017,10,1,1
+849,119114,JB363,frozen,ovary,solid,,ids,29/03/2017,fallopian_tube,30/03/2017,1,0,1
+788,118872,,frozen,ascites,ascites,na,drainage,17/01/2017,fallopian_tube,14/03/2017,56,3,1
+882,119142,,,ascites,ascites,,drainage,17/05/2017,fallopian_tube,04/08/2017,79,4,1
+914,146874,jb382,fresh,omentum,solid,,primary,17/08/2017,fallopian_tube,17/09/2017,31,0,1
+876,146870,jb381,fresh,omentum,solid,,ids,15/08/2017,fallopian_tube,08/09/2017,24,1,1
+864,119196,,,ascites,ascites,na,drainage,22/06/2017,fallopian_tube,16/08/2017,55,2,1
+333,118948,,,ascites,ascites,na,drainage,04/11/2016,fallopian_tube,22/11/2016,18,1,1
+819,118987,,,ascites,ascites,na,drainage,21/11/2016,fallopian_tube,30/11/2016,9,0,1
+825,118982,jb345,,ovary,solid,,primary,18/11/2016,fallopian_tube,30/11/2016,12,0,1
+831,119006,jb348,,ovary,solid,,primary,30/11/2016,fallopian_tube,08/12/2016,8,0,1
+467,151761,,,ascites,ascites,na,drainage,12/10/2017,fallopian_tube,23/01/2018,103,12,0
+904,151733,,,ascites,ascites,na,drainage,18/10/2017,fallopian_tube,31/10/2017,13,1,1
+915,151710,,,ascites,ascites,na,drainage,23/08/2017,fallopian_tube,24/10/2017,62,5,1
+920,151723,,,ascites,ascites,na,surgical drainage,25/08/2017,fallopian_tube,04/12/2017,101,10,0
+366,32077,,,ascites,ascites,na,drainage,27/12/2017,fallopian_tube,28/04/2018,122,10,0
+366,54059,,,ascites,ascites,na,drainage,26/10/2017,fallopian_tube,16/02/2018,113,10,0
+297,54276-Xeno,,Xenograft,xenografted tissue,xenograft,,schedule 1,25/01/2018,fallopian_tube,23/05/2018,118,8,0
+571,151773,,,ascites,xenograft,na,schedule 1,25/01/2018,fallopian_tube,23/01/2018,121,10,0
+516,jb233-xenograft,,fresh,xenografted tissue,xenograft,unkown,schedule 1,21/02/2017,fallopian_tube,23/05/2017,91,3,0
+581,JB250-xenograft,,fresh,xenografted tissue,xenograft,na,schedule 1,21/03/2017,fallopian_tube,21/07/2017,122,4,0
+496,jb228-xenograft,,fresh,xenografted tissue,xenograft,unkown,schedule 1,13/03/2017,fallopian_tube,20/06/2017,99,4,0
+358,JB140a-xeno,jb140a,Xenograft,xenografted tissue,xenograft,na,schedule 1,19/09/2017,fallopian_tube,14/10/2017,25,1,1
+737,JB313-xeno,jb313,Xenograft,xenografted tissue,xenograft,na,schedule 1,12/09/2017,fallopian_tube,04/01/2018,114,13,0
+358,JB140a-xeno,jb140a,Xenograft,xenografted tissue,xenograft,na,schedule 1,13/12/2017,fallopian_tube,04/01/2018,22,2,1

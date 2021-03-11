@@ -1,0 +1,241 @@
+---
+title: "organoidPAPER"
+author: "MV"
+date: "3 February 2019"
+output: html_document
+---
+
+#survival organoids (Figure 1A)
+
+```{r setup, include=FALSE}
+library(survival)
+library(survminer)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+survival<-read.csv("../data/OrganoidSurvival.csv")
+
+ggplot(data = survival) + 
+  geom_bar(mapping = aes(x = PassageNumber,fill=Tissue))
+
+# pdf("04022021_survival.pdf",height = 7, width =10)
+s1 <- survfit(formula=Surv(CulturedTime, Death==1) ~Tissue, data = survival, conf.type = "log-log")
+ggsurvplot(s1, conf=TRUE,legend.labs = c("Ascites", "Solid", "xenograft"), pval = TRUE, risk.table = TRUE) 
+# dev.off()
+
+# png("survivalRisk.png", height = 7, width =10)
+# km.as.one <- survfit(formula=Surv(CulturedTime, Death==1) ~Tissue, data = survival, conf.type = "log-log")
+# ggsurvplot(km.as.one, conf=TRUE,legend.labs = c("Ascites", "Solid", "xenograft"), pval = TRUE, risk.table = TRUE) 
+# dev.off()
+# summary(km.as.one)
+
+# Fit a Cox proportional hazards model
+
+m <- coxph(formula=Surv(CulturedTime, Death==1)~Tissue, data=survival)
+ggforest(m, data = survival)
+summary(m)
+anova(m)
+
+
+# pdf("survivalCox.pdf", height = 7, width = 10)
+survival %>% ggplot(aes(x = Tissue, y = CulturedTime)) + geom_boxplot(notch = TRUE, aes(colour = Tissue), alpha = 0.8) + geom_point(aes(colour = Tissue), position = position_jitterdodge()) + theme_bw() + labs(x = "Tissue type", y = "Time") + theme(text = element_text(size = 14, family = "sans"), axis.text = element_text(size = 12, family = "sans"), legend.position = "right") + stat_compare_means(method = "wilcox.test", comparisons = survival)+ 
+  stat_compare_means(label.y = 50) 
+# dev.off()
+
+```
+
+
+
+#Plotting tumour-growth based on the animal weight (supplementary figure 9)
+
+
+```{r}
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(cowplot)
+
+micewlatest = read_csv("../data/19.08.2020_MiceW.csv")
+micewlatest.df <- as.data.frame(micewlatest)
+ 
+
+plot.micewlatest <- ggplot(micewlatest.df, aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 0.5) + 
+  theme(axis.text.x = element_text(angle= 30, size = 5),strip.text.x = element_text(size = 8, colour = "red"))+
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight") +
+  facet_wrap(. ~ paste(pdo, mouseNumber), nrow = 2) +
+  panel_border()
+
+plot.micewlatest + scale_x_continuous(breaks = seq(0, 500, by = 100)) + scale_y_log10()
+save_plot("../figures/19.08.2020_micew.pdf", plot.micewlatest)
+
+#plots individually
+#PDO1
+plot.PDO1 <- micewlatest.df %>% 
+  filter(mouseNumber == "472") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 472") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 100)) + scale_y_log10()
+
+plot.PDO1
+
+save_plot("../figures/PDO1.pdf", plot.PDO1)
+
+#PDO2  
+plot.PDO2 <- micewlatest.df %>% 
+  filter(mouseNumber == "475") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 475") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 50)) + scale_y_log10()
+
+plot.PDO2
+
+save_plot("../figures/PDO2.pdf", plot.PDO2)
+
+#PDO3  
+plot.PDO3 <- micewlatest.df %>% 
+  filter(mouseNumber == "643") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 643") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 50)) + scale_y_log10()
+
+plot.PDO3
+
+save_plot("../figures/PDO3.pdf", plot.PDO3)
+
+#PDO4 
+plot.PDO4 <- micewlatest.df %>% 
+  filter(mouseNumber == "642") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 642") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 50)) + scale_y_log10()
+
+plot.PDO4
+
+save_plot("../figures/PDO4.pdf", plot.PDO4)
+
+#PDO5 
+plot.PDO5 <- micewlatest.df %>% 
+  filter(mouseNumber == "645") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 645") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 50)) + scale_y_log10()
+
+plot.PDO5
+
+save_plot("../figures/PDO5.pdf", plot.PDO5)
+
+#PDO8 
+plot.PDO8 <- micewlatest.df %>% 
+  filter(mouseNumber == "466") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 466") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 50)) + scale_y_log10()
+
+plot.PDO8
+
+save_plot("../figures/PDO8.pdf", plot.PDO8)
+
+
+#PDO10 
+plot.PDO10 <- micewlatest.df %>% 
+  filter(mouseNumber == "471") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 471") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 50)) + scale_y_log10()
+
+plot.PDO10
+
+save_plot("../figures/PDO10.pdf", plot.PDO10)
+
+#PDO12 
+plot.PDO12 <- micewlatest.df %>% 
+  filter(mouseNumber == "468") %>% 
+  ggplot(aes(x=days, y=weight)) + 
+  geom_point(color= "darkgreen", size = 1) + 
+  geom_smooth(method = "lm") +
+  labs(x = "Days", y = "Weight", title="Mouse 468") + 
+  theme(panel.background = element_rect(fill = NA), axis.text.x = element_text(angle= 30, size = 10)) + scale_x_continuous(breaks = seq (0, 500, 50)) + scale_y_log10()
+
+plot.PDO12
+
+save_plot("../figures/PDO12.pdf", plot.PDO12)
+```
+
+# Correlation between Patient-derived spheroids and organoids (Figure3E)
+
+```{r}
+library(tidyverse)
+library(readr)
+PDS_PDO <- read_csv("../data/20191107-auc.csv")
+# View(X20191107_auc)
+
+PDS_PDO$sample <- as.factor(PDS_PDO$sample)
+
+PDS_PDO.plot<- ggplot(data = PDS_PDO, aes(auc_ll5.sph, auc_ll5.org, colour = sample))+
+  geom_point() +
+  labs(x="Patient-derived spheroids", y="Patient-derived organoids")+
+theme_classic() +
+geom_smooth(method=lm, se=FALSE)
+cor.test(PDS_PDO$auc_ll5.org, PDS_PDO$auc_ll5.sph, method = "pearson", conf.level = 0.95)
+
+plot(PDS_PDO.plot)
+```
+
+#correlation between different passages (supplementary figure 6)
+
+```{r}
+
+passagesorganoids <- read_csv ("../data/AUCdifferentPassagesW.csv") 
+
+passagesorganoids$sample <- as.factor(passagesorganoids$sample)
+passagesorganoids<-spread(passagesorganoids, key=passage, value=AUC)
+
+
+passagesorganoid.plot<- ggplot(data = passagesorganoids, aes(early, late, colour = sample))+
+  geom_point() +
+theme_classic() +
+ geom_smooth(method=lm)
+ 
+cor.test(passagesorganoids$early, passagesorganoids$late, method = "pearson", conf.level = 0.95)
+
+plot(passagesorganoid.plot)
+
+
+```
+
+
+#correlation between biological replicates
+
+```{r}
+bioreporganoids <- read_csv ("../data/AUCbiolrepW.csv") 
+
+bioreporganoids$sample <- as.factor(bioreporganoids$sample)
+bioreporganoids<-spread(bioreporganoids, key=replicate, value=AUC)
+
+
+bioreporganoid.plot<- ggplot(data = bioreporganoids, aes(rep1, rep2, colour = sample))+
+  geom_point() +
+theme_classic() +
+ geom_smooth(method=lm)
+ 
+cor.test(bioreporganoids$rep1, bioreporganoids$rep2, method = "pearson", conf.level = 0.95)
+
+plot(bioreporganoid.plot)
+```
+
