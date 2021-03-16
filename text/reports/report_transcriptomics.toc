@@ -1,0 +1,9 @@
+\contentsline {section}{\numberline {1}Data}{1}{section.1}% 
+\contentsline {subsection}{\numberline {1.1}3' bias}{1}{subsection.1.1}% 
+\contentsline {subsection}{\numberline {1.2}Summary of organoids}{1}{subsection.1.2}% 
+\contentsline {section}{\numberline {2}Transcriptomics of organoids}{3}{section.2}% 
+\contentsline {subsection}{\numberline {2.1}Organoids $vs$ normal ovarian tissue DE}{3}{subsection.2.1}% 
+\contentsline {subsection}{\numberline {2.2}Sensitive organoids $vs$ resistant organoids DE}{3}{subsection.2.2}% 
+\contentsline {subsection}{\numberline {2.3}Comparison with TCGA}{4}{subsection.2.3}% 
+\contentsline {subsection}{\numberline {2.4}(Resistant $vs$ sensitive in organoids) $vs$ (complete remission or response $vs$ progressive disease in TCGA) }{5}{subsection.2.4}% 
+\contentsline {section}{\numberline {3}Correlation of gene expression and copy number}{5}{section.3}% 
