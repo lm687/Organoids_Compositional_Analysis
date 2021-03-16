@@ -826,7 +826,7 @@ ggplot(joint_counts_CN %>% filter(counts.Var2 %in% subset_genes_of_interest),
            y=scaled_centered_DESeq, col=(scaled_centered_weighted_CN)))+geom_violin()+
   geom_point(size=3)+
   geom_line(aes(group=counts.Var1), col='black', alpha=0.1)+
-  theme(legend.position = "bottom")+labs(x='Gene, sorted by median weighted CN', y='Weighted CN (log scale)')+
+  theme(legend.position = "bottom")+labs(x='Gene', y='Scaled and centered DESeq2 counts')+
   scale_color_jcolors_contin("pal2", reverse = TRUE, bias = 2.25)+
   theme(axis.text.x=element_text(angle = 90, hjust = 0))
 ggsave("../../figures/CN_violinplots_goi_2.pdf", width = 6, height = 6)
