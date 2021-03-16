@@ -6,4 +6,6 @@
 \BOOKMARK [2][-]{subsection.2.2}{Sensitive organoids vs resistant organoids DE}{section.2}% 6
 \BOOKMARK [2][-]{subsection.2.3}{Comparison with TCGA}{section.2}% 7
 \BOOKMARK [2][-]{subsection.2.4}{\(Resistant vs sensitive in organoids\) vs \(complete remission or response vs progressive disease in TCGA\) }{section.2}% 8
-\BOOKMARK [1][-]{section.3}{Correlation of gene expression and copy number}{}% 9
+\BOOKMARK [1][-]{section.3}{Correlation of gene expression \(GE\) and copy number \(CN\)}{}% 9
+\BOOKMARK [2][-]{subsection.3.1}{Genome-wide correlations}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.2}{Correlation of specific genes}{section.3}% 11
