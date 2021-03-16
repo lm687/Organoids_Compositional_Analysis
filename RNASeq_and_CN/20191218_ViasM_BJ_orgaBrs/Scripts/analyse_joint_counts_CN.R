@@ -9,6 +9,7 @@ require(reshape2)
 require(jcolors)
 require(biomaRt)
 require(gridExtra)
+library(jcolors)
 ##------------------------------------------------------------------------------------------------------------##
 
 ##------------------------------------------------------------------------------------------------------------##
@@ -56,6 +57,10 @@ joint_counts_CN[4,]
 # corDfAll = read.csv("../GexVsCnGwDeseq2/corStatTable.csv")
 corDfAll = readRDS("../output/corDfAll.RDS")
 # joint_counts_CN_TPM_subset = readRDS("../output/joint_counts_CN_TPM_subset.RDS")
+
+renaming = readxl::read_xlsx("../../../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+
+joint_counts_CN$PDO = renaming$PDO[match(joint_counts_CN$counts.Var1, renaming$ID)]
 
 ## add TPM
 joint_counts_CN_TPM_subset = joint_counts_CN %>% filter( !(counts.Var1 %in% remove_samples[2,]))
@@ -121,7 +126,7 @@ joint_counts_CN$topDiff_norm_tissue = ifelse(joint_counts_CN$CN.gene_name %in% t
 # coding_genes = getBM(attributes=c("ensembl_gene_id","external_gene_name","description"),
 #                      filters='biotype', values=c('protein_coding'), mart=ensembl)
 # saveRDS(coding_genes, "~/Desktop/coding_genes.RDS")
-coding_genes.RDS <- readRDS("~/Desktop/coding_genes.RDS")
+coding_genes <- readRDS("~/Desktop/coding_genes.RDS")
 coding_genes$external_gene_name
 
 ## Removing outliers from joint_counts_CN_subset
@@ -414,21 +419,19 @@ ggplot(data = joint_counts_CN_subset %>% filter(nearestGeneCN.gene == 'PARP1'),
   facet_wrap(.~labels, scales="free")
 
 
-# ggplot(data = joint_counts_CN_subset %>% filter(nearestGeneCN.gene %in% subset_genes_of_interest) %>%
-#          dplyr::select(-labels),
-#        aes(x=nearestGeneCN.value, y=counts.value, nearestGeneCN.gene=nearestGeneCN.gene, label=nearestGeneCN.variable))+
-#   facet_wrap(.~nearestGeneCN.gene, scales = "free")+
-#   geom_text_repel(size=2.5)+
-#   geom_point()+ggtitle('genes of interest CN and GE')
-# ggsave("../../figures/outliers_annotated_orgs.png", width = 7, height = 5)
-# 
-# logCN = joint_counts_CN_subset %>% group_by(nearestGeneCN.variable) %>% summarise(mean=mean(log(nearestGeneCN.value)))
-# ggplot(joint_counts_CN_subset, aes(x=log(nearestGeneCN.value)))+geom_density()+
-#   facet_wrap(.~factor(nearestGeneCN.variable, levels=logCN$nearestGeneCN.variable[order(logCN$mean)]), nrow=2)+
-#   geom_vline(xintercept = mean(log(joint_counts_CN_subset$nearestGeneCN.value)), col='red')
-# ggsave("../../figures/mean_CN_segment_per_org.pdf", width = 15, height = 5)
+ggplot(data = joint_counts_CN_subset %>% filter(nearestGeneCN.gene %in% subset_genes_of_interest) %>%
+         dplyr::select(-labels),
+       aes(x=nearestGeneCN.value, y=counts.value, nearestGeneCN.gene=nearestGeneCN.gene, label=PDO))+
+  facet_wrap(.~nearestGeneCN.gene, scales = "free")+
+  geom_text_repel(size=2.5)+
+  geom_point()+ggtitle('genes of interest CN and GE')
+ggsave("../../figures/outliers_annotated_orgs.png", width = 7, height = 5)
 
-joint_counts_CN_subset %>% filter(nearestGeneCN.gene == 'MYC')
+logCN = joint_counts_CN_subset %>% group_by(PDO) %>% summarise(mean=mean(log(nearestGeneCN.value)))
+ggplot(joint_counts_CN_subset, aes(x=log(nearestGeneCN.value)))+geom_density()+
+  facet_wrap(.~factor(PDO, levels=logCN$PDO[order(logCN$mean)]), nrow=2)+
+  geom_vline(xintercept = mean(log(joint_counts_CN_subset$nearestGeneCN.value)), col='red')
+ggsave("../../figures/mean_CN_segment_per_org.pdf", width = 15, height = 5)
 
 #-----------------------------------------------------------------------------------------#
 ## all genes
@@ -558,20 +561,20 @@ ggplot(joint_counts_CN_normalised %>% filter(CN.value > 2), aes(x=scaled_centere
 ggsave("../../figures/scatterplot_normCNweighted_normDESeq.pdf", width=8)
 
 ggplot(joint_counts_CN_normalised_excludingnormal %>% filter(CN.value > 2), aes(x=scaled_centered_weighted_CN, y=scaled_centered_DESeq))+
-  geom_point(alpha=0.01)+geom_smooth()+facet_wrap(.~counts.Var1)
+  geom_point(alpha=0.01)+geom_smooth()+facet_wrap(.~PDO)
 ggsave("../../figures/scatterplot_normCNweighted_normDESeq_perorg.pdf", width=8)
 
 ggplot(joint_counts_CN_normalised_excludingnormal %>% filter(CN.value > 2), aes(x=scaled_centered_weighted_CN,
                                                                                 y=scaled_centered_DESeq))+
-  geom_point(alpha=0.01)+geom_smooth()+facet_wrap(.~factor(counts.Var1,
-   levels=c( "119058org", "119148org", "151723org", "151761org", "151773org", "23868org",  "32077org",  "50495org", 
-             "54059org",  "54276org", '118976org', '119127org', '54327org', '119178org', '118947org' )), nrow=2)
+  geom_point(alpha=0.01)+geom_smooth()+facet_wrap(.~factor(PDO,
+   levels=renaming$PDO[match(c( "119058org", "119148org", "151723org", "151761org", "151773org", "23868org",  "32077org",  "50495org", 
+                                "54059org",  "54276org", '118976org', '119127org', '54327org', '119178org', '118947org' ), renaming$ID)]), nrow=2)
 ggsave("../../figures/scatterplot_normCNweighted_normDESeq_perorg2.png", width=8, height=2.5)
 
 ggplot(joint_counts_CN_normalised_excludingnormal %>% filter(CN.value > 2) %>%
          filter(counts.Var1 %in% c( "119058org", "119148org", "151723org", "151761org", "151773org", "23868org",  "32077org",  "50495org", 
                          "54059org",  "54276org")),
-                 aes(x=scaled_centered_weighted_CN, y=scaled_centered_DESeq, col=counts.Var1))+
+                 aes(x=scaled_centered_weighted_CN, y=scaled_centered_DESeq, col=PDO))+
   geom_point(alpha=0.01)+geom_smooth()
 ggsave("../../figures/scatterplot_normCNweighted_normDESeq_perorg2_subsetorgs.png", width=5, height=4)
 
@@ -745,12 +748,12 @@ ggplot(joint_counts_CN_subset %>% filter(counts.Var2 == 'MYC'),
   geom_smooth()+geom_label_repel()+facet_wrap(.~labels)+geom_point()+
   guides(col=FALSE)+theme_bw()
 ggplot(joint_counts_CN_subset %>% filter(counts.Var2 == 'KRT6B'),
-       aes(x=CN.value, y=DESeq.count, label=counts.Var1), alpha=0.2)+
+       aes(x=CN.value, y=DESeq.count, label=PDO), alpha=0.2)+
   geom_smooth()+geom_label_repel()+geom_point()+
   guides(col=FALSE)+theme_bw()+ggtitle('KRT6Bs')
 ggsave("../../figures/example_KRT6B.pdf", width = 4, height = 4)
 ggplot(joint_counts_CN_subset %>% filter(counts.Var2 == 'AKT2'),
-       aes(x=CN.value, y=DESeq.count, label=counts.Var1), alpha=0.2)+
+       aes(x=CN.value, y=DESeq.count, label=PDO), alpha=0.2)+
   geom_smooth()+geom_label_repel()+geom_point()+
   guides(col=FALSE)+theme_bw()+ggtitle('AKT2')
 ggsave("../../figures/example_AKT2.pdf", width = 4, height = 4)
@@ -818,7 +821,6 @@ ggplot(joint_counts_CN %>% filter(counts.Var2 %in% subset_genes_of_interest),
   scale_color_jcolors_contin("pal2", reverse = TRUE, bias = 2.25)
 ggsave("../../figures/CN_violinplots_goi.pdf", width = 6, height = 6)
 
-library(jcolors)
 ggplot(joint_counts_CN %>% filter(counts.Var2 %in% subset_genes_of_interest),
        aes(x=factor(counts.Var2, levels=median_CN_goi$counts.Var2[order(median_CN_goi$CN.value)]),
            y=scaled_centered_DESeq, col=(scaled_centered_weighted_CN)))+geom_violin()+
@@ -841,7 +843,6 @@ ggplot(joint_counts_CN %>% filter(counts.Var2 %in% c('AKT1', 'AKT3')),
 df_gene_characteristics = cbind.data.frame(df_gene_characteristics,
                                            df_average_bottomCN = df_average_bottomCN[match(df_gene_characteristics$Gene,
                                                                                            df_average_bottomCN$Gene),])
-
 
 plot(df_gene_characteristics$df_average_bottomCN.average_comparison_CN_DESeq,
 df_gene_characteristics$r2_normCNnormDESeq)
