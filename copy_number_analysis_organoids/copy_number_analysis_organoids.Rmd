@@ -60,7 +60,8 @@ library(ggdendro)
 library(readxl)
 library(CNTools)
 library(GenomicRanges)
-source("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/main_functions.R")
+# source("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/main_functions.R")
+source(paste0(Sys.readlink(paths = "BriTROC-cnsignatures-symlink"), "/main_functions.R"))
 source("helper_functions.R")
 ```
 
