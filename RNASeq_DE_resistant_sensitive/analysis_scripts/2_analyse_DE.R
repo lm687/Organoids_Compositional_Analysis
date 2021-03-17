@@ -17,17 +17,21 @@ deObj = `~response`
 ##---------------------------------------------------------------------------------------------------------------##
 ## Run differential expression with DESeq
 # In any case, the contrast argument of the function results takes a character vector of length three: the name of the variable, the name of the factor level for the numerator of the log2 ratio, and the name of the factor level for the denominator. The contrast argument can also take other forms, as described in the help page for results and below
-results <- DESeq2::results(deObj, c("response", "complete_remission_or_response", "progressive_disease"), 
-                  alpha = 0.05, format = "DataFrame")
+# results <- DESeq2::results(deObj, c("response", "complete_remission_or_response", "progressive_disease"),
+#                   alpha = 0.05, format = "DataFrame")
+# saveRDS(results, file = "../objects/resultsDESeq_TCGA.RDS")
+results <- readRDS("../objects/resultsDESeq_TCGA.RDS")
 rownames_short = sapply(rownames(results), function(i) strsplit(i, '[.]')[[1]][1])
 
 ## Re-name
 # mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-# gene_conversion <- getBM(attributes = c("external_gene_name", "ensembl_gene_id"),
+# gene_conversion <- getBM(attributes = c("external_gene_name", "ensembl_gene_id", "entrezgene_id"),
 #                  filters = "ensembl_gene_id", values = rownames_short,
 #                  mart = mart)
 # gene_conversion = gene_conversion[match(rownames_short, gene_conversion$ensembl_gene_id),]
-t2g = readRDS("~/Desktop/t2g.RDS")
+saveRDS(object = gene_conversion, file = "~/Desktop/t2g2.RDS")
+t2g = readRDS("~/Desktop/t2g2.RDS")
+# t2g = readRDS("~/Desktop/t2g.RDS")
 gene_conversion = t2g[match(rownames_short, t2g$ensembl_gene_id),]
 dim(gene_conversion)
 dim(results)
@@ -108,11 +112,19 @@ DE_results_TCGA = read.table("../objects/differential_all", sep = ',', header = 
 load("../files/deObject_SampleGroup_sensitive_vs_resistant.RData")
 ## e.g. JBLAB-19920 is PDO18 and has been excluded based on 3' bias
 "JBLAB-19920" %in% colnames(SampleGroup)
-length(colnames(SampleGroup)) ## 3' bias have been excluded
+length(colnames(SampleGroup)) ## 3' bias have been excluded. No!!! one has been left
 ## but I am not sure why there are 14 instead of 15
 "JBLAB-19939" %in% colnames(SampleGroup) ## the fourth sample with highest 3' bias
 
-DE_results_org = DESeq2::results(SampleGroup)
+# remove_na = function(i)i[!is.na(i)]
+# SampleGroup <- SampleGroup[,-remove_na(match(c('JBLAB-19920', 'JBLAB-19925', 'JBLAB-19936'), SampleGroup$SampleName))]
+# SampleGroup = DESeq2::DESeq(SampleGroup)
+# DE_results_org = DESeq2::results(SampleGroup)
+# saveRDS(DE_results_org, file = "../objects/resultsDESeq_org.RDS")
+DE_results_org <- readRDS("../objects/resultsDESeq_org.RDS")
+# saveRDS(SampleGroup, file = "../objects/SampleGroup_org_no3primebias.RDS")
+SampleGroup <- readRDS("../objects/SampleGroup_org_no3primebias.RDS")
+
 DE_results_org
 
 plot(DE_results_TCGA$log2FoldChange, -log(DE_results_TCGA$padj), cex=.1, pch=19)
@@ -203,6 +215,109 @@ pdf("../figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcg
 plot(log(means_tcga), log(means_org), xlab='DESeq normalised counts from TCGA',ylab='DESeq normalised counts from organoids')
 abline(coef=c(0,1), lty='dashed', col='blue')
 dev.off()
+
+# require(GSVA)
+# require(GSVAdata)
+# data("c2BroadSets")
+# c2BroadSets$NAKAMURA_CANCER_MICROENVIRONMENT_UP
+# table(sapply(c2BroadSets, length))
+
+ConsensusTMB_OV = read.table("https://raw.githubusercontent.com/cansysbio/ConsensusTME/master/Consensus_Signatures/OV_Consensus_Signatures.txt", header = T)
+genes_TMB_OV = unique(unlist(ConsensusTMB_OV))
+colours_TME_tcga_org_cor = match(names(means_tcga), genes_TMB_OV)
+colours_TME_tcga_org_cor[!is.na(colours_TME_tcga_org_cor)] = 'TME'
+colours_TME_tcga_org_cor[is.na(colours_TME_tcga_org_cor)] = 'Other'
+df_colmeans_deseqcounts_correlation_tcga_org <- cbind.data.frame(means_tcga, means_org, TME=colours_TME_tcga_org_cor)
+df_colmeans_deseqcounts_correlation_tcga_org = df_colmeans_deseqcounts_correlation_tcga_org[colSums(apply(df_colmeans_deseqcounts_correlation_tcga_org, 1, is.na)) == 0,]
+ggplot(df_colmeans_deseqcounts_correlation_tcga_org,
+       aes(x=means_tcga, y=means_org, col=TME))+geom_point()+
+  scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
+  geom_abline(slope = 1, intercept = 0, lty='dashed')+facet_wrap(.~TME)+
+  theme(legend.position = "bottom")+ggtitle('Comparison of DESeq counts between TCGA\nand organoid samples')+
+  theme_bw()+labs(x='DESEq count means for TCGA', y='DESEq count means for organoid samples')
+ggsave("../figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org_TME.pdf", width = 6, height = 4)
+ggsave("../figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org_TME.png", width = 6, height = 4)
+
+keep_pos = (df_colmeans_deseqcounts_correlation_tcga_org$means_tcga > 0) & (df_colmeans_deseqcounts_correlation_tcga_org$means_org > 0)
+lm_colmeans_deseqcounts_correlation_tcga_org = lm(log(means_org) ~ log(means_tcga),
+  data = df_colmeans_deseqcounts_correlation_tcga_org[keep_pos,])
+quantile_lm_cor = quantile(abs(lm_colmeans_deseqcounts_correlation_tcga_org$effects), 0.9)
+lower_diag = lm_colmeans_deseqcounts_correlation_tcga_org$residuals < -quantile_lm_cor
+upper_diag = lm_colmeans_deseqcounts_correlation_tcga_org$residuals > quantile_lm_cor
+
+df_colmeans_deseqcounts_correlation_tcga_org[keep_pos,'cat'] = paste0(lower_diag, upper_diag)
+ggplot(df_colmeans_deseqcounts_correlation_tcga_org,
+       aes(x=means_tcga, y=means_org, col=cat))+geom_point()+
+  scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
+  geom_abline(slope = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[2],
+              intercept = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[1], lty='dashed')+
+  theme(legend.position = "bottom")+ggtitle('Comparison of DESeq counts between TCGA\nand organoid samples')+
+  theme_bw()+labs(x='DESEq count means for TCGA', y='DESEq count means for organoid samples')
+
+## do GE on this
+names(lower_diag[lower_diag])
+names(upper_diag[upper_diag])
+
+counts_DESeq_TCGA_upperdiag = counts_DESeq_TCGA[match(names(upper_diag[upper_diag]), rownames(counts_DESeq_TCGA)),]
+clust_counts_DESeq_TCGA_upperdiag = hclust(dist(log(counts_DESeq_TCGA_upperdiag + 0.001)))
+clust_counts_DESeq_TCGA_upperdiag_cutree = cutree(tree = clust_counts_DESeq_TCGA_upperdiag, k = 10)
+pheatmap::pheatmap(log(counts_DESeq_TCGA_upperdiag+0.001), show_rownames = F, show_colnames = F)
+counts_DESeq_TCGA_lowerdiag = counts_DESeq_TCGA[match(names(lower_diag[lower_diag]), rownames(counts_DESeq_TCGA)),]
+clust_counts_DESeq_TCGA_lowerdiag = hclust(dist(log(counts_DESeq_TCGA_lowerdiag + 0.001)))
+clust_counts_DESeq_TCGA_lowerdiag_cutree = cutree(tree = clust_counts_DESeq_TCGA_lowerdiag, k = 10)
+pheatmap::pheatmap(log(counts_DESeq_TCGA_lowerdiag+0.001), show_rownames = F, show_colnames = F)
+
+
+cutreecats = c(paste0('lowerdiag', clust_counts_DESeq_TCGA_lowerdiag_cutree),
+  paste0('upperdiag', clust_counts_DESeq_TCGA_upperdiag_cutree))
+df_colmeans_deseqcounts_correlation_tcga_org$cutreecats<- cutreecats[match(rownames(df_colmeans_deseqcounts_correlation_tcga_org),
+    c(names(clust_counts_DESeq_TCGA_lowerdiag_cutree), names(clust_counts_DESeq_TCGA_upperdiag_cutree)))]
+
+ggplot(df_colmeans_deseqcounts_correlation_tcga_org,
+       aes(x=means_tcga, y=means_org, col=cutreecats))+geom_point()+
+  scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
+  geom_abline(slope = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[2],
+              intercept = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[1], lty='dashed')+
+  theme(legend.position = "bottom")+ggtitle('Comparison of DESeq counts between TCGA\nand organoid samples')+
+  theme_bw()+labs(x='DESEq count means for TCGA', y='DESEq count means for organoid samples')+
+  facet_wrap(.~cutreecats)
+
+lower_diag[lower_diag]
+
+t2g_matched_entrez = t2g$entrezgene_id[match(rownames(counts_DESeq_org), t2g$external_gene_name)]
+library(GOSim)
+require(topGO)
+list_categories_cor = list()
+
+cutreecats_list = split(x = rownames(df_colmeans_deseqcounts_correlation_tcga_org),
+      f = factor(df_colmeans_deseqcounts_correlation_tcga_org$cutreecats))
+names(cutreecats_list) = levels(factor(df_colmeans_deseqcounts_correlation_tcga_org$cutreecats))
+goterm_per_cutreecat = mclapply(cutreecats_list, function(i){
+  .x = i
+  .xentrez = t2g[match(.x, t2g$external_gene_name),'entrezgene_id']
+  .xentrez = .xentrez[!is.na(.xentrez)]
+  .xres_gosimenrich = GOSim::GOenrichment(genesOfInterest = as.character(.xentrez),
+                                        allgenes = as.character(t2g_matched_entrez[!is.na(t2g_matched_entrez)]))
+  .xres_gosim = GOSim::getGOInfo(.xentrez)
+  return(.xres_gosim)
+})
+
+cbind.data.frame(sapply(cutreecats_list, length), sapply(goterm_per_cutreecat, typeof))
+lapply(goterm_per_cutreecat, function(j) try(sapply(1:10, function(i) j[,i]$Term[1])))
+
+short_go = c('Signalling, immune response', NA, 'Hypoxia +', NA, 'Cell proliferation, immune', NA, 'Metabolism +', NA, NA, NA, 'Metabolism +', NA, 'Chemotaxis +', NA, NA, NA, 'Apoptosis, DNA', NA, NA, NA)
+df_colmeans_deseqcounts_correlation_tcga_org = cbind.data.frame(df_colmeans_deseqcounts_correlation_tcga_org,
+                                                                short_go=short_go[match(df_colmeans_deseqcounts_correlation_tcga_org$cutreecats, names(cutreecats_list))])
+ggplot(droplevels(df_colmeans_deseqcounts_correlation_tcga_org[!is.na(df_colmeans_deseqcounts_correlation_tcga_org$short_go),]),
+       aes(x=means_tcga, y=means_org, col=cutreecats))+geom_point(alpha=0.4)+
+  scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
+  geom_abline(slope = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[2],
+              intercept = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[1], lty='dashed')+
+  theme(legend.position = "bottom")+ggtitle('Comparison of DESeq counts between TCGA and organoid samples')+
+  theme_bw()+labs(x='DESEq count means for TCGA', y='DESEq count means for organoid samples')+
+  facet_wrap(.~short_go)+guides(col=FALSE)
+ggsave("../figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org_GOterms.png", width = 6.5, height = 5)
+
 
 ggplot()+
   geom_violin(data=df_subset_genes %>% filter(L1 == 'TCGA'), aes(x=factor(Var1, levels=names(sort(means_tcga[subset_genes]))),
