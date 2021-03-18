@@ -114,6 +114,7 @@ ggplot(pca_with_gsva_annotation_NC, aes(x=PC1, y=PC2, col=KAUFFMANN_DNA_REPAIR_G
   ggtitle('KAUFFMANN_DNA_REPAIR_GENES')
 ggsave("../figures/PCA_RNASeq/PCA_counts_subset_KAUFFMANN_DNA_REPAIR_GENES.png", width = 6.5, height = 5)
 
+saveRDS(pca_with_gsva_annotation_NC, "../objects/fig4_pca_with_gsva_annotation_NC.RDS")
 ggplot(pca_with_gsva_annotation_NC, aes(x=PC1, y=PC2, col=OUELLET_CULTURED_OVARIAN_CANCER_INVASIVE_VS_LMP_UP, label=labels))+
   geom_point()+
   geom_label_repel()+

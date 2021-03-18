@@ -972,12 +972,19 @@ give_pca(data_matrix = as(compositions::clr(normalise_rw(cbind(natgen[[which_nat
 ## Hierarchical clustering
 ```{r, hierarchical_compositional}
 
-give_dendrogram_generalised = function(df, modify_labels=T){
+give_dendrogram_generalised = function(df, modify_labels=T, keep_only_PDO){
+  if(keep_only_PDO & modify_labels){stop('Only one can be true: keep_only_PDO, modify_labels')}
+  
   x = hclust(dist(df))
   if(modify_labels){
-    x$labels[!grepl("Sample", x$labels)] = ''
-    x$labels[grepl("Sample", x$labels)] = '*'
+    x$labels[!grepl("PDO", x$labels)] = ''
+    x$labels[grepl("PDO", x$labels)] = '*'
   }
+  
+  if(keep_only_PDO){
+    x$labels[!grepl("PDO", x$labels)] = ''
+  }
+  
   y = x
   y$labels = gsub("Sample ", "PDO", x$labels)
   # plot(x)
@@ -997,6 +1004,7 @@ give_dendrogram_generalised = function(df, modify_labels=T){
 
 }
 ```
+
 
 ## Plot showing differences in amalgamation ratios
 
@@ -1038,24 +1046,86 @@ for(j in 1:7){
 
 ```{r, hierarchical_compositional_2, dependson=c('hierarchical_compositional'), fig.width=12}
 par(mfrow=c(1,2))
-dendroraw = give_dendrogram_generalised(all_natgen[[which_natgen]])
-dendroclr = give_dendrogram_generalised(as(compositions::clr(all_natgen[[which_natgen]]), 'matrix'))
+dendroraw = give_dendrogram_generalised(all_natgen[[which_natgen]], modify_labels = F, keep_only_PDO = T)
+dendroclr = give_dendrogram_generalised(as(compositions::clr(all_natgen[[which_natgen]]), 'matrix'), modify_labels = F, keep_only_PDO=T)
 par(mfrow=c(1,4), mar=c(0.2,0.2,0.2,0.2))
-dendroraw_pdo = give_dendrogram_generalised(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], modify_labels=F)
-dendroclr_pdo = give_dendrogram_generalised(as(compositions::clr(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),]), 'matrix'), modify_labels=F)
-dendroimput_pdo = give_dendrogram_generalised(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2), modify_labels=F)
-dendroimputclr_pdo = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2)), 'matrix'), modify_labels=F)
+dendroraw_pdo = give_dendrogram_generalised(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], modify_labels=F, keep_only_PDO = T)
+dendroclr_pdo = give_dendrogram_generalised(as(compositions::clr(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),]), 'matrix'), modify_labels=F, keep_only_PDO = T)
+dendroimput_pdo = give_dendrogram_generalised(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2), modify_labels=F, keep_only_PDO = T)
+dendroimputclr_pdo = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = T)
+dendroimputclr_all = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = F)
+```
 
+```{r, tanglegram, eval=FALSE}
+library(dendextend) # for comparing two dendrograms
 dend1comparison <- as.dendrogram (dendroraw_pdo)
 dend2comparison <- as.dendrogram (dendroclr_pdo)
 dend3comparison <- as.dendrogram (dendroimput_pdo)
 dend4comparison <- as.dendrogram (dendroimputclr_pdo)
 
-library(dendextend) # for comparing two dendrograms
 tanglegram(dend1comparison, dend2comparison)
 tanglegram(dend1comparison, dend3comparison)
 tanglegram(dend1comparison, dend4comparison)
 tanglegram(dend2comparison, dend4comparison)
+```
+
+```{r, raw_hclust}
+give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = T)
+
+dend_data_inputclr <- dendro_data(dendroimputclr_all, type = "rectangle")
+dend_data_inputclr$labels$label = as.character(dend_data_inputclr$labels$label)
+dend_data_inputclr$labels$label[!grepl('PDO', dend_data_inputclr$labels$label)] = ""
+p_v2 <- ggplot(dend_data_inputclr$segments) +
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
+  # geom_text(data = dend_data$labels, aes(x, y, label = label),
+  #           hjust = 1, angle = 90, size = 3)+
+  geom_label_repel(data = dend_data_inputclr$labels, aes(x, y, label = gsub('Organoid ', '', label)),
+            hjust = 0, size = 3, vjust=0, nudge_y = -2)+
+  ylim(-3, 15)+
+  theme_bw()+
+  theme(axis.title.x=element_blank(),
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank(),
+    axis.title.y=element_blank(),
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    panel.grid = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank())+
+    scale_x_continuous(expand = c(extra_expand, extra_expand))+
+  scale_y_continuous(expand = c(0.5, 0, 0.05, 0))
+# print(p)
+
+heatmap_dendrogram_df_inputclr = t(all_natgen$UpdatedExposures[rownames(all_natgen$UpdatedExposures)[match(gsub("Organoid ", "", labels(dendroimputclr_all)),rownames(all_natgen$UpdatedExposures))],])
+# heatmap_dendrogram_df_inputclr = colnames(heatmap_dendrogram_df)
+# heatmap_dendrogram_df_inputclr[!grepl('Sample',heatmap_dendrogram_df_inputclr)] = ""
+# heatmap_dendrogram_df_inputclr[grepl('Sample',heatmap_dendrogram_df_inputclr)] = "*"
+
+ggthemr::ggthemr("pale")
+extra_expand_v2 = .040
+p2_inputclr = ggplot(melt(heatmap_dendrogram_df_inputclr), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+    theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+          legend.text=element_text(size=10),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),  legend.position = "bottom",
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.border = element_blank())+
+  scale_fill_brewer(palette="Dark2")+
+      scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
+  guides(fill = guide_legend(nrow = 1))
+# 
+
+pdf("figures/barplot_dendrogam_impute10emin2_clr.pdf", width=10, height = 4)
+grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
+dev.off()
+
+grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
+# grid.arrange(p, p3, heights=c(2,1))
+# grid.arrange(p, p3, heights=c(2,1))
+
 ```
 
 
