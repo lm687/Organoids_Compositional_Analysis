@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.1)  17 MAR 2021 10:23
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.1)  18 MAR 2021 08:03
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1094,189 +1094,208 @@ Package pdftex.def Info: ../../RNASeq_DE_resistant_sensitive/figures/Sensitive_
 resistant_figures/colmeans_deseqcounts_correlation_tcga_org.pdf  used on input 
 line 104.
 (pdftex.def)             Requested size: 203.36679pt x 203.37134pt.
+<../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/colmea
+ns_deseqcounts_correlation_tcga_org_GOterms.png, id=100, 1957.3125pt x 1505.625
+pt>
+File: ../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/c
+olmeans_deseqcounts_correlation_tcga_org_GOterms.png Graphic file (type png)
+<use ../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/co
+lmeans_deseqcounts_correlation_tcga_org_GOterms.png>
+Package pdftex.def Info: ../../RNASeq_DE_resistant_sensitive/figures/Sensitive_
+resistant_figures/colmeans_deseqcounts_correlation_tcga_org_GOterms.png  used o
+n input line 105.
+(pdftex.def)             Requested size: 231.26378pt x 177.88736pt.
 <../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/TPM_co
-rrelation_tcga_org_selected_genes.pdf, id=100, 1011.78pt x 504.88625pt>
+rrelation_tcga_org_selected_genes.pdf, id=101, 1011.78pt x 504.88625pt>
 File: ../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/T
 PM_correlation_tcga_org_selected_genes.pdf Graphic file (type pdf)
 <use ../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/TP
 M_correlation_tcga_org_selected_genes.pdf>
 Package pdftex.def Info: ../../RNASeq_DE_resistant_sensitive/figures/Sensitive_
 resistant_figures/TPM_correlation_tcga_org_selected_genes.pdf  used on input li
-ne 105.
+ne 111.
 (pdftex.def)             Requested size: 484.20877pt x 241.62616pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
 [4
 
  <../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/colme
 ans_deseqcounts_correlation_tcga_org.pdf> <../../RNASeq_DE_resistant_sensitive/
-figures/Sensitive_resistant_figures/TPM_correlation_tcga_org_selected_genes.pdf
->]
+figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org_G
+Oterms.png>] [5 <../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistan
+t_figures/TPM_correlation_tcga_org_selected_genes.pdf>]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 111.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 111.
+(hyperref)                removing `math shift' on input line 117.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 111.
+(hyperref)                removing `math shift' on input line 117.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 111.
+(hyperref)                removing `math shift' on input line 117.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 111.
+(hyperref)                removing `math shift' on input line 117.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 111.
+(hyperref)                removing `math shift' on input line 117.
 
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 120.
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 117.
+
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 126.
 
 (/usr/local/texlive/2019/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 120.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 126.
 <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_nonormal.png,
- id=120, 1204.5pt x 2102.85625pt>
+ id=127, 1204.5pt x 2102.85625pt>
 File: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_nonormal
 .png Graphic file (type png)
 <use ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_nonormal.
 png>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted
-_normDESeq_nonormal.png  used on input line 144.
+_normDESeq_nonormal.png  used on input line 150.
 (pdftex.def)             Requested size: 122.85876pt x 214.46924pt.
 <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normTPM_nonormal.png, i
-d=121, 1204.5pt x 2102.85625pt>
+d=128, 1204.5pt x 2102.85625pt>
 File: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normTPM_nonormal.p
 ng Graphic file (type png)
 <use ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normTPM_nonormal.pn
 g>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted
-_normTPM_nonormal.png  used on input line 145.
+_normTPM_nonormal.png  used on input line 151.
 (pdftex.def)             Requested size: 122.85876pt x 214.46924pt.
 <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2_subse
-torgs.png, id=122, 1505.625pt x 1204.5pt>
+torgs.png, id=129, 1505.625pt x 1204.5pt>
 File: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2_
 subsetorgs.png Graphic file (type png)
 <use ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2_s
 ubsetorgs.png>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted
-_normDESeq_perorg2_subsetorgs.png  used on input line 146.
+_normDESeq_perorg2_subsetorgs.png  used on input line 152.
 (pdftex.def)             Requested size: 202.35622pt x 161.8837pt.
 <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2.png, 
-id=123, 2409.0pt x 752.8125pt>
+id=130, 2409.0pt x 752.8125pt>
 File: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2.
 png Graphic file (type png)
 <use ../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2.p
 ng>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/scatterplot_normCNweighted
-_normDESeq_perorg2.png  used on input line 147.
+_normDESeq_perorg2.png  used on input line 153.
 (pdftex.def)             Requested size: 484.20877pt x 151.30647pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.pdf, id=124, 578.16pt x 
+<../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.pdf, id=131, 578.16pt x 
 504.88625pt>
 File: ../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.pdf Graphic file (t
 ype pdf)
 <use ../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.pdf>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.
-pdf  used on input line 155.
+pdf  used on input line 161.
 (pdftex.def)             Requested size: 216.81pt x 189.33186pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[5
+[6
 
-] [6 <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_nonormal
+] [7 <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_nonormal
 .png> <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normTPM_nonormal.
 png> <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2_
 subsetorgs.png> <../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDES
-eq_perorg2.png>] [7 <../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.pdf>
+eq_perorg2.png>] [8 <../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.pdf>
 ]
-<../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf, id=153, 433.62pt x 433.62p
+<../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf, id=160, 433.62pt x 433.62p
 t>
 File: ../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf Graphic file (type pdf
 )
 <use ../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf  us
-ed on input line 181.
+ed on input line 187.
 (pdftex.def)             Requested size: 217.89246pt x 217.89458pt.
-<../../RNASeq_and_CN/figures/CN_violinplots_goi_2.pdf, id=154, 433.62pt x 433.6
+<../../RNASeq_and_CN/figures/CN_violinplots_goi_2.pdf, id=161, 433.62pt x 433.6
 2pt>
 File: ../../RNASeq_and_CN/figures/CN_violinplots_goi_2.pdf Graphic file (type p
 df)
 <use ../../RNASeq_and_CN/figures/CN_violinplots_goi_2.pdf>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/CN_violinplots_goi_2.pdf  
-used on input line 182.
+used on input line 188.
 (pdftex.def)             Requested size: 217.89246pt x 217.89458pt.
-<../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN.pdf, id=155, 
+<../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN.pdf, id=162, 
 433.62pt x 433.62pt>
 File: ../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN.pdf Grap
 hic file (type pdf)
 <use ../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN.pdf>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_avera
-gebottomCN.pdf  used on input line 183.
+gebottomCN.pdf  used on input line 189.
 (pdftex.def)             Requested size: 216.81pt x 216.80946pt.
 <../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN_best.pdf, id=
-156, 433.62pt x 433.62pt>
+163, 433.62pt x 433.62pt>
 File: ../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN_best.pdf
  Graphic file (type pdf)
 <use ../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN_best.pdf>
 
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_avera
-gebottomCN_best.pdf  used on input line 184.
+gebottomCN_best.pdf  used on input line 190.
 (pdftex.def)             Requested size: 216.81pt x 216.80946pt.
-<../../RNASeq_and_CN/figures/example_KRT6B.pdf, id=157, 289.08pt x 289.08pt>
+<../../RNASeq_and_CN/figures/example_KRT6B.pdf, id=164, 289.08pt x 289.08pt>
 File: ../../RNASeq_and_CN/figures/example_KRT6B.pdf Graphic file (type pdf)
 <use ../../RNASeq_and_CN/figures/example_KRT6B.pdf>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/example_KRT6B.pdf  used on
- input line 185.
+ input line 191.
 (pdftex.def)             Requested size: 180.67499pt x 180.67455pt.
-<../../RNASeq_and_CN/figures/average_bottomCN_DESeq.pdf, id=158, 289.08pt x 289
+<../../RNASeq_and_CN/figures/average_bottomCN_DESeq.pdf, id=165, 289.08pt x 289
 .08pt>
 File: ../../RNASeq_and_CN/figures/average_bottomCN_DESeq.pdf Graphic file (type
  pdf)
 <use ../../RNASeq_and_CN/figures/average_bottomCN_DESeq.pdf>
 Package pdftex.def Info: ../../RNASeq_and_CN/figures/average_bottomCN_DESeq.pdf
-  used on input line 186.
+  used on input line 192.
 (pdftex.def)             Requested size: 216.81pt x 216.80946pt.
 
 
-LaTeX Warning: Float too large for page by 67.93552pt on input line 188.
+LaTeX Warning: Float too large for page by 67.93552pt on input line 194.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[8
+[9
 
-] [9 <../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf> <../../RNASeq_and_CN/
-figures/CN_violinplots_goi_2.pdf> <../../RNASeq_and_CN/figures/r2normCNnormDESe
-q_vs_averagebottomCN.pdf> <../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_ave
-ragebottomCN_best.pdf> <../../RNASeq_and_CN/figures/example_KRT6B.pdf> <../../R
-NASeq_and_CN/figures/average_bottomCN_DESeq.pdf>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 190.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 190.
+] [10 <../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf> <../../RNASeq_and_CN
+/figures/CN_violinplots_goi_2.pdf> <../../RNASeq_and_CN/figures/r2normCNnormDES
+eq_vs_averagebottomCN.pdf> <../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_av
+eragebottomCN_best.pdf> <../../RNASeq_and_CN/figures/example_KRT6B.pdf> <../../
+RNASeq_and_CN/figures/average_bottomCN_DESeq.pdf>]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 196.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 196.
 
 (./report_transcriptomics.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 190.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 190.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 196.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 196.
 Package rerunfilecheck Info: File `report_transcriptomics.out' has not changed.
 
 (rerunfilecheck)             Checksum: 54F1C9B3143E1A2E1529A1A68F868576;882.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 190.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 196.
  ) 
 Here is how much of TeX's memory you used:
- 15307 strings out of 492616
- 299025 string characters out of 6129482
- 403379 words of memory out of 5000000
- 18939 multiletter control sequences out of 15000+600000
+ 15314 strings out of 492616
+ 299612 string characters out of 6129482
+ 403753 words of memory out of 5000000
+ 18943 multiletter control sequences out of 15000+600000
  8241 words of font info for 29 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  55i,12n,48p,1270b,654s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1291,10 +1310,10 @@ cal/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local
 /texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/
 texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/te
 xlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on report_transcriptomics.pdf (9 pages, 6644797 bytes).
+Output written on report_transcriptomics.pdf (10 pages, 7025058 bytes).
 PDF statistics:
- 262 PDF objects out of 1000 (max. 8388607)
- 202 compressed objects within 3 object streams
- 33 named destinations out of 1000 (max. 500000)
- 176 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 269 PDF objects out of 1000 (max. 8388607)
+ 206 compressed objects within 3 object streams
+ 35 named destinations out of 1000 (max. 500000)
+ 181 words of extra memory for PDF output out of 10000 (max. 10000000)
 

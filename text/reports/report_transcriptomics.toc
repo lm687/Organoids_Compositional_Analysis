@@ -5,13 +5,13 @@
 \contentsline {subsection}{\numberline {2.1}Organoids $vs$ normal ovarian tissue DE}{3}{subsection.2.1}% 
 \contentsline {subsection}{\numberline {2.2}Sensitive organoids $vs$ resistant organoids DE}{3}{subsection.2.2}% 
 \contentsline {subsection}{\numberline {2.3}Comparison with TCGA}{4}{subsection.2.3}% 
-\contentsline {subsection}{\numberline {2.4}(Resistant $vs$ sensitive in organoids) $vs$ (complete remission or response $vs$ progressive disease in TCGA) }{5}{subsection.2.4}% 
-\contentsline {section}{\numberline {3}Correlation of gene expression (GE) and copy number (CN)}{5}{section.3}% 
-\contentsline {subsection}{\numberline {3.1}Genome-wide correlations}{5}{subsection.3.1}% 
-\contentsline {subsection}{\numberline {3.2}Correlation of specific genes}{8}{subsection.3.2}% 
-\contentsline {paragraph}{Row 1, Column 1}{8}{section*.2}% 
-\contentsline {paragraph}{Row 1, Column 2}{8}{section*.3}% 
-\contentsline {paragraph}{Row 2, Column 1}{8}{section*.4}% 
-\contentsline {paragraph}{Row 2, Column 2}{8}{section*.5}% 
-\contentsline {paragraph}{Row 3, Column 1}{8}{section*.6}% 
-\contentsline {paragraph}{Row 3, Column 2}{8}{section*.7}% 
+\contentsline {subsection}{\numberline {2.4}(Resistant $vs$ sensitive in organoids) $vs$ (complete remission or response $vs$ progressive disease in TCGA) }{6}{subsection.2.4}% 
+\contentsline {section}{\numberline {3}Correlation of gene expression (GE) and copy number (CN)}{6}{section.3}% 
+\contentsline {subsection}{\numberline {3.1}Genome-wide correlations}{6}{subsection.3.1}% 
+\contentsline {subsection}{\numberline {3.2}Correlation of specific genes}{9}{subsection.3.2}% 
+\contentsline {paragraph}{Row 1, Column 1}{9}{section*.2}% 
+\contentsline {paragraph}{Row 1, Column 2}{9}{section*.3}% 
+\contentsline {paragraph}{Row 2, Column 1}{9}{section*.4}% 
+\contentsline {paragraph}{Row 2, Column 2}{9}{section*.5}% 
+\contentsline {paragraph}{Row 3, Column 1}{9}{section*.6}% 
+\contentsline {paragraph}{Row 3, Column 2}{9}{section*.7}% 

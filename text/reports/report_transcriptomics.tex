@@ -102,6 +102,12 @@ We compare the average gene expression values (in DESeq2 counts, but the results
 \begin{figure}[h]
 \centering
 \includegraphics[width=.42\textwidth]{../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org.pdf}
+\includegraphics[width=3.2in]{../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org_GOterms.png}
+\caption{Correlation between the mean DESeq2 counts in TCGA and in the organoids, for each gene. On the left, the outer residuals have been selected, then clustered (hierarchical clustering by mean and euclidean distance), and then GO term enrichment analysis has been run on each of the clusters with highest number of genes. TPM for genes of interest in organoids (points) and in TCGA (violin plots). Genes which have a different distribution according to a Kolmogorov-Smirnov test are marked with an asterisk.\label{tcga_org_cor_rnaseq}}
+\end{figure}
+
+\begin{figure}[h]
+\centering
 \includegraphics[width=\textwidth]{../../RNASeq_DE_resistant_sensitive/figures/Sensitive_resistant_figures/TPM_correlation_tcga_org_selected_genes.pdf}
 \caption{TPM for genes of interest in organoids (points) and in TCGA (violin plots). Genes which have a different distribution according to a Kolmogorov-Smirnov test are marked with an asterisk.\label{tcga_org_cor_rnaseq}}
 \end{figure}

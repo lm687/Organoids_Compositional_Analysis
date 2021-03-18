@@ -292,15 +292,17 @@ list_categories_cor = list()
 cutreecats_list = split(x = rownames(df_colmeans_deseqcounts_correlation_tcga_org),
       f = factor(df_colmeans_deseqcounts_correlation_tcga_org$cutreecats))
 names(cutreecats_list) = levels(factor(df_colmeans_deseqcounts_correlation_tcga_org$cutreecats))
-goterm_per_cutreecat = mclapply(cutreecats_list, function(i){
-  .x = i
-  .xentrez = t2g[match(.x, t2g$external_gene_name),'entrezgene_id']
-  .xentrez = .xentrez[!is.na(.xentrez)]
-  .xres_gosimenrich = GOSim::GOenrichment(genesOfInterest = as.character(.xentrez),
-                                        allgenes = as.character(t2g_matched_entrez[!is.na(t2g_matched_entrez)]))
-  .xres_gosim = GOSim::getGOInfo(.xentrez)
-  return(.xres_gosim)
-})
+# goterm_per_cutreecat = mclapply(cutreecats_list, function(i){
+#   .x = i
+#   .xentrez = t2g[match(.x, t2g$external_gene_name),'entrezgene_id']
+#   .xentrez = .xentrez[!is.na(.xentrez)]
+#   .xres_gosimenrich = GOSim::GOenrichment(genesOfInterest = as.character(.xentrez),
+#                                         allgenes = as.character(t2g_matched_entrez[!is.na(t2g_matched_entrez)]))
+#   .xres_gosim = GOSim::getGOInfo(.xentrez)
+#   return(.xres_gosim)
+# })
+# saveRDS(goterm_per_cutreecat, "../objects/goterm_per_cutreecat.RDS")
+goterm_per_cutreecat <- readRDS("../objects/goterm_per_cutreecat.RDS")
 
 cbind.data.frame(sapply(cutreecats_list, length), sapply(goterm_per_cutreecat, typeof))
 lapply(goterm_per_cutreecat, function(j) try(sapply(1:10, function(i) j[,i]$Term[1])))
