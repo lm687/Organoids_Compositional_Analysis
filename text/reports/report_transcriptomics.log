@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.1)  18 MAR 2021 08:03
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.1)  18 MAR 2021 11:15
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -467,7 +467,11 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 \Hy@SectionHShift=\skip45
 )
-(./report_transcriptomics.aux)
+(./report_transcriptomics.aux
+
+LaTeX Warning: Label `tcga_org_cor_rnaseq' multiply defined.
+
+)
 \openout1 = `report_transcriptomics.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
@@ -1287,14 +1291,14 @@ Package rerunfilecheck Info: File `report_transcriptomics.out' has not changed.
 (rerunfilecheck)             Checksum: 54F1C9B3143E1A2E1529A1A68F868576;882.
 
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: There were multiply-defined labels.
 
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 196.
  ) 
 Here is how much of TeX's memory you used:
  15314 strings out of 492616
  299612 string characters out of 6129482
- 403753 words of memory out of 5000000
+ 403475 words of memory out of 5000000
  18943 multiletter control sequences out of 15000+600000
  8241 words of font info for 29 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1310,7 +1314,7 @@ cal/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local
 /texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/
 texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/te
 xlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on report_transcriptomics.pdf (10 pages, 7025058 bytes).
+Output written on report_transcriptomics.pdf (10 pages, 7025027 bytes).
 PDF statistics:
  269 PDF objects out of 1000 (max. 8388607)
  206 compressed objects within 3 object streams

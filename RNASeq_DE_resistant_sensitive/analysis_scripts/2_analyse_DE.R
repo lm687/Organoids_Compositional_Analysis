@@ -229,6 +229,7 @@ colours_TME_tcga_org_cor[!is.na(colours_TME_tcga_org_cor)] = 'TME'
 colours_TME_tcga_org_cor[is.na(colours_TME_tcga_org_cor)] = 'Other'
 df_colmeans_deseqcounts_correlation_tcga_org <- cbind.data.frame(means_tcga, means_org, TME=colours_TME_tcga_org_cor)
 df_colmeans_deseqcounts_correlation_tcga_org = df_colmeans_deseqcounts_correlation_tcga_org[colSums(apply(df_colmeans_deseqcounts_correlation_tcga_org, 1, is.na)) == 0,]
+saveRDS(df_colmeans_deseqcounts_correlation_tcga_org, "../objects/fig4_df_colmeans_deseqcounts_correlation_tcga_org.RDS")
 ggplot(df_colmeans_deseqcounts_correlation_tcga_org,
        aes(x=means_tcga, y=means_org, col=TME))+geom_point()+
   scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+

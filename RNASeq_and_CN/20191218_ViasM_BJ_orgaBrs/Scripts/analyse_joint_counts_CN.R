@@ -202,12 +202,12 @@ ggsave("../../figures/joint_counts_CN_TPM_all_loglog.pdf", width=10, height=8)
 ggplot(joint_counts_CN %>% filter(CN.gene_name %in% topvariable$V1), aes(x=CN.value, y=counts.value, col=CN.gene_name))+
   geom_point()
 
-pdf("../../figures/joint_counts_CN_TPM_topvar.pdf")
-for(i in topvariable$V1){
-  print(ggplot(joint_counts_CN %>% filter(CN.gene_name == i), aes(x=CN.value, y=counts.value, label=CN.L1))+
-          geom_point()+geom_smooth()+ggtitle(i)+geom_label_repel()+theme_bw())
-}
-dev.off()
+# pdf("../../figures/joint_counts_CN_TPM_topvar.pdf")
+# for(i in topvariable$V1){
+#   print(ggplot(joint_counts_CN %>% filter(CN.gene_name == i), aes(x=CN.value, y=counts.value, label=CN.L1))+
+#           geom_point()+geom_smooth()+ggtitle(i)+geom_label_repel()+theme_bw())
+# }
+# dev.off()
 ##------------------------------------------------------------------------------------------------------------##
 
 ##------------------------------------------------------------------------------------------------------------##
@@ -219,12 +219,12 @@ ggplot(joint_counts_CN, aes(x=CN.value, y=DESeq.count))+geom_point()+facet_wrap(
   scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")
 ggsave("../../figures/joint_counts_CN_DESeq_all_loglog.pdf", width=10, height=8)
 
-pdf("../../figures/joint_counts_CN_DESeq_topvar.pdf")
-for(i in topvariable$V1){
-  print(ggplot(joint_counts_CN %>% filter(CN.gene_name == i), aes(x=CN.value, y=DESeq.count, label=CN.L1))+
-          geom_point()+geom_smooth()+ggtitle(i)+geom_label_repel()+theme_bw())
-}
-dev.off()
+# pdf("../../figures/joint_counts_CN_DESeq_topvar.pdf")
+# for(i in topvariable$V1){
+#   print(ggplot(joint_counts_CN %>% filter(CN.gene_name == i), aes(x=CN.value, y=DESeq.count, label=CN.L1))+
+#           geom_point()+geom_smooth()+ggtitle(i)+geom_label_repel()+theme_bw())
+# }
+# dev.off()
 
 ## raw correlation between CN and deseq count
 plot(joint_counts_CN$counts.value, joint_counts_CN$DESeq.count)
@@ -718,6 +718,7 @@ ggsave("../../figures/coordinated_CN_DESeq_goi.pdf", width = 8, height = 8)
 dim(mean_coord_CN_DESeq2)
 dim(df_gene_characteristics) 
 
+saveRDS(mean_coord_CN_DESeq2, "../output/fig4_mean_coord_CN_DESeq2.RDS")
 plot(mean_coord_CN_DESeq2$mean_coord_CN_DESeq2, df_gene_characteristics$r2_normCNnormDESeq[match(mean_coord_CN_DESeq2$Gene, df_gene_characteristics$Gene)])
 plot(df_gene_characteristics$cor_normCNnormDESeq, df_gene_characteristics$r2_normCNnormDESeq)
 plot(df_gene_characteristics$cor_normCNnormDESeq, log(df_gene_characteristics$averageCN))
@@ -797,6 +798,8 @@ ggplot(droplevels(df_average_bottomCN),
   geom_hline(yintercept = 0.5, lty='dashed')
 ggsave("../../figures/average_bottomCN_DESeq.pdf", width = 4, height = 4)
 
+saveRDS(df_average_bottomCN, "../output/fig4_df_average_bottomCN.RDS")
+
 ## For each gene, plot the CN
 
 median_CN = aggregate(data = joint_counts_CN %>% filter(CN.gene_name %in% topvariable$V1),
@@ -844,6 +847,8 @@ df_gene_characteristics = cbind.data.frame(df_gene_characteristics,
                                            df_average_bottomCN = df_average_bottomCN[match(df_gene_characteristics$Gene,
                                                                                            df_average_bottomCN$Gene),])
 
+saveRDS(df_gene_characteristics, "../output/fig4_df_gene_characteristics.RDS")
+
 plot(df_gene_characteristics$df_average_bottomCN.average_comparison_CN_DESeq,
 df_gene_characteristics$r2_normCNnormDESeq)
 
@@ -865,6 +870,7 @@ ggplot(df_gene_characteristics, aes(x=df_average_bottomCN.average_comparison_CN_
                col='blue')+
   geom_point()+geom_label_repel()
 ggsave("../../figures/r2normCNnormDESeq_vs_averagebottomCN_best.pdf", width = 6, height = 6)
+saveRDS(df_gene_characteristics, "../output/fig4_df_gene_characteristics.RDS")
 
 plot(joint_counts_CN_subset$scaled_centered_weighted_CN_mean,
      log(joint_counts_CN_subset$scaled_centered_weighted_CN))
