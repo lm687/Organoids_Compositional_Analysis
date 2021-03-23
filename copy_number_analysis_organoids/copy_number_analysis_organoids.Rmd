@@ -115,6 +115,7 @@ createBarplot(rename_rows(org, gsub('Sample ', 'PDO', rownames(org))), remove_la
   ggtitle('Exposures for the organoids')+labs(x='')+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ggsave("figures/exposures_organoids.pdf")
+saveRDS(rename_rows(org, gsub('Sample ', 'PDO', rownames(org))), "robjects/exposures.RDS")
 ```
 
 Apparently only PDO1 is a WGD sample. I see which log-ratio with any other signature shows a clear difference between this WGD sample and the rest. The ratio between s4 (WGD signature) and s2 is.
@@ -1122,6 +1123,9 @@ pdf("figures/barplot_dendrogam_impute10emin2_clr.pdf", width=10, height = 4)
 grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
 dev.off()
 
+saveRDS(p_v2, "robjects/dendrograminputclr.RDS")
+saveRDS(p2_inputclr, "robjects/heatmapinputclr.RDS")
+
 grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
 # grid.arrange(p, p3, heights=c(2,1))
 # grid.arrange(p, p3, heights=c(2,1))
@@ -1705,6 +1709,10 @@ pdf("figures/rank_ploidy_2.pdf", width = 14, height = 6)
 plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
                            Var1=rownames(ploidies)), nudge_scalar=0.02)+ggtitle("Ploidy")
 dev.off()
+
+saveRDS(plot_rank(melt(number_of_segments)), "robjects/rank_nsegments.RDS")
+saveRDS(plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
+                           Var1=rownames(ploidies)), nudge_scalar=0.02), "robjects/rank_ploidy.RDS")
 
 ```
 
