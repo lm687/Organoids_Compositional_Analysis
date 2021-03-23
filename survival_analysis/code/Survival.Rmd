@@ -24,8 +24,9 @@ ggsurvplot(s1, conf=TRUE,legend.labs = c("Ascites", "Solid", "xenograft"), pval 
 # dev.off()
 
 # png("survivalRisk.png", height = 7, width =10)
-# km.as.one <- survfit(formula=Surv(CulturedTime, Death==1) ~Tissue, data = survival, conf.type = "log-log")
-# ggsurvplot(km.as.one, conf=TRUE,legend.labs = c("Ascites", "Solid", "xenograft"), pval = TRUE, risk.table = TRUE) 
+km.as.one <- survfit(formula=Surv(CulturedTime, Death==1) ~Tissue, data = survival, conf.type = "log-log")
+saveRDS(km.as.one, "../robjects/km_as_one.RDS")
+ggsurvplot(km.as.one, conf=TRUE,legend.labs = c("Ascites", "Solid", "xenograft"), pval = TRUE, risk.table = TRUE)
 # dev.off()
 # summary(km.as.one)
 

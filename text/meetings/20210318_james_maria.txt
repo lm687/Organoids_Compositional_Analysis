@@ -1,0 +1,34 @@
+TO ASK:
+
+all orgs but one are chemonaive. Does this mean that in the TCGA transcriptomics I should be using only a subset of samples? 
+fig3 is still a mess
+
+
+------
+
+how come there are so many apoptotic genes in organoids
+
+about facets plot in GE:
+- moderate correlation with copy number states
+- mecom is not associated with gene expression
+- next thing to do: either across CN signature groups
+- james says to include pca in figure 4
+
+update readme
+
+driver file: by that he means a clean script to create the figures
+
+
+pc1
+immune cell lack of expression
+a couple of plots showing CN-RNASeq correlation
+(james says with cowplot)
+
+
+s66 and pi3k inhibittion and doxirubicin sensitibity
+
+check Felipe's paper, the predictions of which is that seeing copy number expression has an impact on the patient response
+
+change my CN exposure bit!
+
+add methods for RNASeq DONE
