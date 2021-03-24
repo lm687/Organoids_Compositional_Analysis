@@ -1,68 +1,38 @@
 rm(list = ls())
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-require(ggplot2)
-require(ggrepel)
-require(cowplot)
-require(gridExtra)
-require(latex2exp)
+set.seed(234)
 
-subset_genes_of_interest = c('MYC', 'CCNE1', 'PIK3CA', 'TERT', 'KRAS', 'PTEN', 'RB1', 'AKT1',
-                             'AKT2', 'PARP1', 'PARP2', 'ATM', 'ATR', 'WEE1', 'TOP1', 'TUBB1',
-                             'AKT3', 'CCND1', 'CCND2', 'CCND3', 'CDKN2A', 'CDKN2B', 'MECOM', 'CDK12')
+library(ggplotify)
+renaming <- readxl::read_excel("../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+ascites = readRDS("../copy_number_analysis_organoids/robjects/fig4_ascites.RDS")
+AUC_all_df = readRDS("../survival_analysis/robjects/AUC_all_df.RDS")
+PDS_PDO = readRDS("../survival_analysis/robjects/fig4_PDS_PDO.RDS")
 
-df_gene_characteristics <- readRDS("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig4_df_gene_characteristics.RDS")
-df_average_bottomCN <- readRDS("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig4_df_average_bottomCN.RDS")
-pca_with_gsva_annotation_NC <- readRDS("../RNASeq_DE_resistant_sensitive/objects/fig4_pca_with_gsva_annotation_NC.RDS")
-df_colmeans_deseqcounts_correlation_tcga_org <- readRDS("../RNASeq_DE_resistant_sensitive/objects/fig4_df_colmeans_deseqcounts_correlation_tcga_org.RDS")
+b <- ggplot(melt(ascites, id.vars=c('sample', 'bool_ascites', 'sample_paired')), aes(x=bool_ascites, y=value, fill=variable))+geom_bar(stat = "identity")+
+  facet_wrap(.~sample, scales = "free_x", nrow=2)+
+  scale_fill_brewer(palette="Dark2", name = NULL)+theme(legend.position="bottom")+labs(x=NULL, y=NULL)+
+  guides(fill=guide_legend(nrow=1))
 
-a <- ggplot(df_colmeans_deseqcounts_correlation_tcga_org,
-       aes(x=means_tcga, y=means_org, col=TME))+geom_point()+
-  scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
-  geom_abline(slope = 1, intercept = 0, lty='dashed')+facet_wrap(.~TME)+
-  theme(legend.position = "bottom")+#ggtitle('Comparison of DESeq counts between TCGA\nand organoid samples')+
-  theme_bw()+labs(x='Count means for TCGA', y='Count means for organoids')+theme(legend.position = "bottom")
 
-b <- ggplot(pca_with_gsva_annotation_NC, aes(x=PC1, y=PC2, col=factor(BRCA1), label=labels))+
-  geom_point()+
-  geom_label_repel()+theme_bw()+theme(legend.position = "bottom")+ theme(legend.title = element_blank())#+
-  ggtitle('Number of mutations in BRCA (TAMSeq)')
+PDS_PDO$sample <- renaming$PDO[match(as.character(PDS_PDO$sample), gsub("org", "", renaming$ID))]
+c <- ggplot(data = PDS_PDO, aes(auc_ll5.sph, auc_ll5.org, colour = sample))+
+  geom_point() +
+  labs(x="Patient-derived spheroids", y="Patient-derived organoids")+
+  theme_bw() +
+  geom_smooth(method=lm, se=FALSE)+facet_wrap(.~sample, ncol=1)+theme(legend.position = "bottom")
 
-c <- ggplot(droplevels(df_average_bottomCN),
-            aes(x=Gene, y=average_comparison_CN_DESeq, label=as.character(label)))+
-  geom_point()+#geom_label_repel(max.overlaps = 30, segment.size = 0.01)+
-  # geom_label()+
-  geom_text_repel(force = .01, direction = "y", nudge_x = 0, nudge_y = .1)+
-  theme(axis.text.x=element_blank(), axis.line.x.bottom =element_blank(), 
-        panel.grid.minor = element_line(size = 0.1, colour = "black"))+
-  geom_hline(yintercept = 0.5, lty='dashed')
+d <- pheatmap(data.frame(AUC_all_df[,-(c(1:7, 21:22))]), annotation_row = AUC_all_df %>% select(PFI),
+              annotation_colors = list(Resistant='red', Sensitive='purple'))
 
-d <- ggplot(df_gene_characteristics, aes(x=df_average_bottomCN.average_comparison_CN_DESeq, y=r2_normCNnormDESeq,
-                                    label=ifelse( (df_average_bottomCN.average_comparison_CN_DESeq >= .8) &
-                                                    (r2_normCNnormDESeq > 0.5),
-                                                  yes = Gene, no = NA )))+
-  geom_boxplot(aes(group=df_average_bottomCN.average_comparison_CN_DESeq),
-               width=0.5/length(unique(df_gene_characteristics$df_average_bottomCN.average_comparison_CN_DESeq)),
-               col='blue')+
-  geom_point()+geom_label_repel()+theme_bw()+labs(x='Averaged higher CN and higher GE', y=TeX('R^2 between CN and GE'))
+a <- cowplot::ggdraw()+draw_image("~/Desktop/fig4a.png", scale = 1)
 
-e <- ggplot(df_gene_characteristics, aes(x=df_average_bottomCN.average_comparison_CN_DESeq, y=r2_normCNnormDESeq,
-                                    label=ifelse( (Gene %in% subset_genes_of_interest) | ((df_average_bottomCN.average_comparison_CN_DESeq >= .8) &
-                                                    (r2_normCNnormDESeq > 0.5)),
-                                                  yes = Gene, no = NA )))+
-  geom_boxplot(aes(group=df_average_bottomCN.average_comparison_CN_DESeq),
-               width=0.5/length(unique(df_gene_characteristics$df_average_bottomCN.average_comparison_CN_DESeq)),
-               col='blue')+
-  geom_point()+geom_label_repel(aes(col=factor(ifelse( test = Gene %in% subset_genes_of_interest, yes = 'Gene of interest', no='High CN/GE correlation'))))+
-  theme_bw()+labs(x='Averaged higher CN and higher GE', y=TeX('R^2 between CN and GE'))+
-  theme(legend.title = element_blank(), legend.position = "bottom")
-
-# cowplot::
-
-pdf("fig4.pdf", width = 7, height = 7)
-grid.arrange(a, b, c, d)
+pdf("fig4.pdf", height = 9, width = 9)
+plot_grid(plot_grid(a, b, labels = c('a', 'b')),
+          plot_grid(c, ggplotify::as.grob(d), labels = c('c', 'd')),
+          label_size = 12, ncol=1, scale = 0.9, rel_heights = c(1.5,2))
 dev.off()
 
-pdf("fig4_v2.pdf", width = 12, height = 4)
-grid.arrange(a, b, e, nrow=1)
-dev.off()
+
+
+

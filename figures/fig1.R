@@ -7,6 +7,8 @@ require(cowplot)
 require(gridExtra)
 require(latex2exp)
 library(cowplot)
+library(ggpubr)
+library(survminer)
 
 source("../copy_number_analysis_organoids/helper_functions.R")
 
@@ -48,23 +50,13 @@ d <- createBarplot(exposures, remove_labels = FALSE, order_labels = gsub('Sample
                y.position = c(1.15), label = c(""),
                tip.length = 0.09
   )
-  # geom_bracket(data = head(melt(exposures)),
-  #               xmin = c("PDO3", "PDO5", "PDO7"), xmax = c("PDO9", "PDO6", "PDO8"),
-  #               y.position = c(1.1), #label = c("", "", ""),
-  #               tip.length = 0.05
-  # )
 e1 <- dendrograminputclr#+geom_label_repel(label.size = NA)
 e2 <- heatmapinputclr
-e <- plot_grid(e1, e2, nrow = 2, labels = c('E'))
+e <- plot_grid(e1, e2, nrow = 2, labels = c('e'))
 
 pdf("fig1.pdf", height = 13, width = 9)
 plot_grid(plot_grid(plot_grid(ggplotGrob(a$plot), ggplotGrob(a$table), nrow=2, rel_heights = c(7,3.5)),
-                    d, labels = c('A', 'B')),
-          plot_grid(b, c, labels = c('C', 'D')), e, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(1,.9,1.1))
+                    d, labels = c('a', 'b')),
+          plot_grid(b, c, labels = c('c', 'd')), e, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(1,.9,1.1))
 dev.off()
 
-d+geom_bracket(data = head(melt(exposures)),
-  xmin = c("PDO3"), xmax = c("PDO9"),
-  y.position = c(1.1), label = c(""),
-  tip.length = 0.05
-)

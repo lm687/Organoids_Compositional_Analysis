@@ -1,13 +1,25 @@
 rm(list = ls())
+
 library(reshape2)
 library(ggplot2)
 library(ggdendro)
 library(pheatmap)
+library(readxl)
+library(gridExtra)
+
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+
+renaming <- readxl::read_excel("../../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+
 organoid_list = c('118976org', '119148orgb', '23868org')
 
 absCN = lapply(paste0("../data/absCN_clean_", organoid_list, ".RDS"), readRDS)
 names(absCN) = organoid_list
+names(absCN) = gsub("orgb", "org", names(absCN))
+names(absCN) = renaming$PDO[match(names(absCN), renaming$ID)]
+saveRDS(absCN, "../robjects/fig2_absCN.RDS")
+organoid_list = renaming$PDO[match(gsub("orgb", "org", organoid_list), renaming$ID)]
+
 
 # image(absCN[[1]])
 # 
@@ -20,6 +32,9 @@ outliers = list()
 outliers$`118976org` = c(12, 10, 11, 7, 5, 6, 4, 3, 1, 2, 8, 9, 158)
 outliers$`119148orgb` = c(13, 1, 2, 8, 12, 9, 3, 10, 7, 6, 5, 4, 11, 379, 381)
 outliers$`23868org` = c(1,2,3, 4, 5, 6, 7, 8)
+
+names(outliers) = renaming$PDO[match(gsub("orgb", "org", names(outliers)), renaming$ID)]
+
 
 for(org_it in organoid_list){
   absCN[[org_it]] = absCN[[org_it]][-outliers[[org_it]],]
@@ -38,6 +53,9 @@ for(org_it in organoid_list){
                      color             = col_list,
                      breaks            = mat_breaks, cluster_cols = FALSE)
   ph
+  saveRDS(list(mat_breaks=mat_breaks,col_list=col_list), paste0("../robjects/fig2_colours.RDS"))
+  saveRDS(absCN[[org_it]], paste0("../robjects/fig2_subclonal_hclust", org_it, "_2.RDS"))
+  saveRDS(ph, paste0("../robjects/fig2_subclonal_hclust", org_it, ".RDS"))
   # ph$gtable$grobs[[1]]$gp <- gpar(lwd = 5)
   # ph$gtable$grobs[[2]]$gp <- gpar(col = 'blue')
   

@@ -29,6 +29,8 @@ colnames(AUC_all_df) = gsub("auc_ll5.", "", colnames(AUC_all_df))
 
 AUC_all_df = AUC_all_df %>% select(-Elescamol)
 
+saveRDS(AUC_all_df, "../robjects/AUC_all_df.RDS")
+
 pdf("../data/AUC_all_drugs.pdf")
 pheatmap(data.frame(AUC_all_df[,-(c(1:7, 21:22))]), annotation_row = AUC_all_df %>% select(PFI),
          annotation_colors = list(Resistant='red', Sensitive='purple'))
