@@ -1143,7 +1143,7 @@ additional genomic data comparing the tumours to the organoids in terms of ploid
 pcawg_CN_features = readRDS("data/pcawg_CN_features.rds")
 tcga_CN_features = readRDS("data/tcga_CN_features.rds")
 
-BriTROC_absolute_copynumber = readRDS("data/BriTROC_absolute_copynumber.rds")
+BriTROC_absolute_copynumber = readRDS("BriTROC-cnsignatures-symlink/manuscript_Rmarkdown/data/BriTROC_absolute_copynumber.rds")
 BriTROC2_CN_features = readRDS("data/6_TCGA_Signatures_on_BRITROC/0_BRITROC_absolute_CN.rds")
 
 organoids_absolute_copynumber = readRDS("data/organoid_absolute_CN.rds")
