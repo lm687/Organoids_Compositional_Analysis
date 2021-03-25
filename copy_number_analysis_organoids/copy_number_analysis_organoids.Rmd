@@ -2155,13 +2155,13 @@ all((organoids_absolute_copynumber@assayData$copynumber) == organoids_absolute_c
 
 require(reshape2)
 require(ggplot2)
-exposures = readRDS("~/Desktop/ascites_exposures.rds")
+exposures = readRDS("data/ascites_exposures_20210125.rds")
 exposures
 ggplot(melt(cbind(org=rownames(exposures), exposures)), aes(x=org, y=value, fill=variable))+geom_bar(stat='identity')
 
 org == exposures
 
-book_ascites = readxl::read_xlsx("/Users/morril01/Documents/PhD/other_repos/b_tape/Vias_Brenton/copy_number_analysis_organoids/data/Book1.xlsx")
+book_ascites = readxl::read_xlsx("data/Book1.xlsx")
 
 exposures = exposures[match(book_ascites$`JBLAB-number`, rownames(exposures)),]
 exposures = exposures[!colSums(apply(exposures, 1, is.na)) == 7,]
