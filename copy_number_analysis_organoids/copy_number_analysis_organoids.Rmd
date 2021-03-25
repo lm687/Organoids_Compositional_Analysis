@@ -473,7 +473,7 @@ p <- ggplot(dend_data$segments) +
   scale_y_continuous(expand = c(0.5, 0, 0.05, 0))
 print(p)
 
-ggthemr::ggthemr("pale")
+# ggthemr::ggthemr("pale")
 p2 = ggplot(melt(heatmap_dendrogram_df), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+
     theme(axis.title.x=element_blank(),  legend.title=element_blank(),
           legend.text=element_text(size=18),
@@ -497,7 +497,7 @@ pdf("figures/heatmap_dendrogam2.pdf", height = 7, width = 20)
 grid.arrange(p, p3, heights=c(2,1))
 dev.off()
 
-ggthemr::ggthemr_reset()
+# ggthemr::ggthemr_reset()
 ```
 
 ```{r, print_labels_dendrogram}
@@ -1103,7 +1103,7 @@ heatmap_dendrogram_df_inputclr = t(all_natgen$UpdatedExposures[rownames(all_natg
 # heatmap_dendrogram_df_inputclr[!grepl('Sample',heatmap_dendrogram_df_inputclr)] = ""
 # heatmap_dendrogram_df_inputclr[grepl('Sample',heatmap_dendrogram_df_inputclr)] = "*"
 
-ggthemr::ggthemr("pale")
+# ggthemr::ggthemr("pale")
 extra_expand_v2 = .040
 p2_inputclr = ggplot(melt(heatmap_dendrogram_df_inputclr), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
     theme(axis.title.x=element_blank(),  legend.title=element_blank(),
@@ -1444,7 +1444,7 @@ data_NB = do.call('rbind.data.frame', lapply(c('BriTROC', 'organoids', 'pcawg', 
 give_joint_histogram(number_of_segments, bins=30)+ggtitle('Number of segments')+
   geom_line(data = data_poisson, aes(x=value, y=count))+
   geom_line(data = data_NB, aes(x=value, y=count), col='red')+
-  ggtitle('Observed number of segments and Poisson (black) and Negative Binomial (red) model')+
+  ggtitle('Observed number of segments and Poisson (black)\nand Negative Binomial (red) model')+
   theme(legend.position = "bottom")
 
 ```
@@ -1891,11 +1891,11 @@ pheatmap((all_ploidies_2_df[ann_row == 'Organoids',]), cluster_rows = FALSE, clu
 
 ```
 
-## Comparisong RNASeq and copy number
-```{r, correlation_rnaseq_absoluteCN}
+<!-- ## Comparison RNASeq and copy number -->
+```{r, correlation_rnaseq_absoluteCN, eval=FALSE}
 all_ploidies_2_df_t = t(all_ploidies_2_df)
-TPM = read.csv("../DE_resistant_sensitive/files/20191218_ViasM_BJ_orgaBrs_tpm.csv", stringsAsFactors = FALSE)
-renaming1 = read_excel("../DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+TPM = read.csv("../RNASeq_DE_resistant_sensitive/files/20191218_ViasM_BJ_orgaBrs_tpm.csv", stringsAsFactors = FALSE)
+renaming1 = read_excel("../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
 
 matching_tpm = TPM[match(colnames(all_ploidies_2_df), TPM$gene_name),]
 renaming1 = renaming1[match(colnames(matching_tpm), gsub('-', '', renaming1$sampleNameRNAseq)),]
@@ -1918,8 +1918,10 @@ df_correlation_tpm_ploidy = cbind.data.frame(ploidies=as.vector(all_ploidies_2_d
 # ggplot(df_correlation_tpm_ploidy,
 #        aes(x=ploidies, y=tpm, col=gene_name))+geom_point()+facet_wrap(.~sample_name)+scale_x_continuous(trans = "log2")
 
+ggthemr::ggthemr_reset()
 ggplot(df_correlation_tpm_ploidy,
-       aes(x=ploidies, y=tpm, col=sample_name))+geom_point()+facet_wrap(.~gene_name, scales = "free")+scale_x_continuous(trans = "log2")+
+       aes(x=ploidies, y=tpm#, col=factor(sample_name)
+           ))+geom_point()+facet_wrap(.~gene_name, scales = "free")+scale_x_continuous(trans = "log2")+
     labs(x='Absolute CN', y='TPM')
 
 # JBLAB19936 == PDO16
