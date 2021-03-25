@@ -5,4 +5,4 @@ require(readxl)
 require(readr)
 
 readxl::read_xlsx("NewOrganoidNaming.xlsx") %>%
-  write_csv("names_orgs.csv")
+  write_csv("NewOrganoidNaming.csv")
