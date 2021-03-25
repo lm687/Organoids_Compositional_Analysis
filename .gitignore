@@ -1,4 +1,4 @@
-figures/**
+
 DE_resistant_sensitive/data/
 DE_resistant_sensitive/objects/
 
@@ -7,6 +7,8 @@ nongit
 copy_number_analysis_organoids/copy_number_analysis_organoids_cache/
 copy_number_analysis_organoids/copy_number_analysis_organoids_files/
 #copy_number_analysis_organoids/data
+copy_number_analysis_organoids/figures/*
+copy_number_analysis_organoids/robjects/*
 
 RNASeq_DE_resistant_sensitive/analysis_scripts/files/Homo_sapiens.GRCh37.87.gff3
 RNASeq_DE_resistant_sensitive/objects/deaObjectFile
@@ -57,6 +59,8 @@ pushall
 *.png
 *.ppt
 *.pptx
+*.rds
+*.RDS
 *.swp
 *.synctex.gz
 *.tar.gz
@@ -72,7 +76,6 @@ pushall
 .DS_Store
 .RData
 .RData
-.RDS
 .Rhistory
 .Rhistory
 .Rprofile
