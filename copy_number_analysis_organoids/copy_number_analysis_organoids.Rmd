@@ -1718,7 +1718,7 @@ saveRDS(plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("p
 ```
 
 ```{r, xxxx_ploidies}
-saveRDS("~/Desktop/cb.RDS", object = cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
+saveRDS("robjects/cb.RDS", object = cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
                            Var1=rownames(ploidies)))
 head(melt(number_of_segments))
 head(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
