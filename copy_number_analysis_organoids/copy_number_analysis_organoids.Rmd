@@ -98,7 +98,8 @@ clr_mat <- function(X){
 ```{r, load_organoids}
 org<- as(readRDS("data/organoid_exposures.rds"), 'matrix')
 # rownames(org) <- paste0('Sample ', 1:nrow(org))
-names_orgs = readxl::read_xlsx("data/NewOrganoidNaming.xlsx")
+# names_orgs = readxl::read_xlsx("data/NewOrganoidNaming.xlsx")
+names_orgs = read_csv("data/NewOrganoidNaming.csv")
 names_orgs$`new name`[match(rownames(org), paste0(names_orgs$`old name`, 'org'))]
 rownames(org) = names_orgs$`new name`[match(rownames(org), paste0(names_orgs$`old name`, 'org'))]
 ```
