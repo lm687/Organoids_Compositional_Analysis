@@ -29,6 +29,9 @@ scDNAseq-Organoids-20201105T095527Z-001.zip
 .pushall 
 pushall
 
+data/absolute_profiles
+
+
 *.*~
 *.DS_Store
 *.RData

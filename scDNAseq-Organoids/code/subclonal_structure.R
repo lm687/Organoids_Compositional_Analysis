@@ -9,6 +9,8 @@ library(gridExtra)
 library(ggplotify)
 library(cowplot)
 
+source("helper.R")
+
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 renaming <- readxl::read_excel("../../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
@@ -35,18 +37,9 @@ outliers$`PDO3` = c(12, 10, 11, 7, 5, 6, 4, 3, 1, 2, 8, 9, 158)
 outliers$`PDO6` = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 377, 378, 379, 380, 381)
 outliers$`PDO2` = c(1,2,3, 4, 5, 6, 7, 8)
 
-# plot(hclust(dist(absCN[[org_it]][-outliers[[org_it]],])))
+saveRDS(outliers, "../robjects/scDNA_outliers.RDS")
 
-clean_chrom = function(i){
-  sapply(i, function(j){
-    if(j %in% c('X', 'Y')){
-      j
-    }else{
-      ## autosomal
-      substr(j, 2, 1000)
-    }
-  })
-}
+# plot(hclust(dist(absCN[[org_it]][-outliers[[org_it]],])))
 
 for(org_it in organoid_list){
   absCN[[org_it]] = absCN[[org_it]][-outliers[[org_it]],]
@@ -76,7 +69,6 @@ for(org_it in organoid_list){
   # ph$gtable$grobs[[2]]$gp <- gpar(col = 'blue')
   
   plot(as.dendrogram(ph$tree_row))
-  pdf(paste0("../plots/subclonal_hclust", org_it, ".pdf"))
   # quartz()
   # print(grid.arrange(ggdendrogram(as.dendrogram(ph$tree_row), no.margin = TRUE)+
   #                theme(axis.line=element_blank(),axis.text.x=element_blank(),
@@ -92,8 +84,9 @@ for(org_it in organoid_list){
   #         axis.title.y=element_blank(),legend.position="none",
   #         panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
   #         panel.grid.minor=element_blank(),plot.background=element_blank()), nrow=2, top=org_it))
-  
-  ph
+  pdf(paste0("../plots/subclonal_hclust", org_it, ".pdf"))
+  print(ph)
+  dev.off()
   # dendro <- ggdendrogram(as.dendrogram(ph$tree_row), no.margin = TRUE)+
   #                  theme(axis.line=element_blank(),axis.text.x=element_blank(),
   #                        axis.text.y=element_blank(),axis.ticks=element_blank(),

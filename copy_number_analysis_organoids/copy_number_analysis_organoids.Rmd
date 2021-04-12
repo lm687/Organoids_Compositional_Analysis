@@ -2187,3 +2187,116 @@ exposures[1,]
 
 ```
 
+### Copy number status of regions of the genome which seem to be subclonal according to scDNA
+```{r, cn_regions_subclonal, echo=FALSE}
+
+give_plot_areas_of_interest = function(segtab, chrom_AOI, start_AOI, end_AOI, subclonal_line1, subclonal_line2, title){
+  region_subclonal = as(cbind.data.frame(chromosome=chrom_AOI, start=start_AOI,
+                                             end=end_AOI),
+                               "GRanges")
+  region_subclonal
+  as(data.frame(segtab),"GRanges")
+  
+  disjoin_region_subclonal <- GenomicRanges::disjoin(c(
+    region_subclonal,
+    as(data.frame(segtab),"GRanges")),
+    with.revmap=TRUE, ignore.strand=TRUE)
+  
+  disjoin_region_subclonal = disjoin_region_subclonal[sapply(disjoin_region_subclonal$revmap, function(i) 1 %in% i),]
+  
+  CN = sapply(disjoin_region_subclonal$revmap, function(i){
+    if(!is.na(i[2])){
+      as(data.frame(segtab),"GRanges")$segVal[i[2]-length(region_subclonal)]
+    }else{
+      2
+    }
+  })
+  
+  disjoin_region_subclonal$CNval = CN
+  
+  return(list(disjoin_region_subclonal,
+    ggplot(cbind.data.frame(start=start(disjoin_region_subclonal),
+     end=end(disjoin_region_subclonal),
+     CNval=disjoin_region_subclonal$CNval))+
+    # geom_segment(aes(x=start, xend=end, y=CNval, yend=CNval))+
+    geom_rect(aes(xmin=start, xmax=end, ymin=0, ymax=CNval), alpha=0.2)+
+    geom_abline(slope = 0, intercept = subclonal_line1, color='blue', lty='dashed')+
+    geom_abline(slope = 0, intercept = subclonal_line2, color='blue', lty='dashed')+
+    ggtitle(title)))
+}
+
+```
+
+```{r, cn_regions_subclonal_individual, echo=FALSE}
+give_plot_areas_of_interest_individual = function(segtab, chrom_AOI, start_AOI, end_AOI, subclonal_line1, subclonal_line2, title){
+  region_subclonal = as(cbind.data.frame(chromosome=chrom_AOI, start=start_AOI,
+                                             end=end_AOI),
+                               "GRanges")
+  disjoin_region_subclonal <- GenomicRanges::disjoin(c(
+    region_subclonal,
+    as(data.frame(segtab),"GRanges")),
+    with.revmap=TRUE, ignore.strand=TRUE)
+  
+  disjoin_region_subclonal = disjoin_region_subclonal[sapply(disjoin_region_subclonal$revmap, function(i) 1 %in% i),]
+  
+  CN = sapply(disjoin_region_subclonal$revmap, function(i){
+    if(!is.na(i[2])){
+      as(data.frame(segtab),"GRanges")$segVal[i[2]]
+    }else{
+      2
+    }
+  })
+  
+  disjoin_region_subclonal$CNval = CN
+  
+  return(disjoin_region_subclonal)
+}
+
+```
+- PDO2
+  - Check in sWGS of bulk cells whether chrom 7 has an amplification at ~2.5
+  - Same for first quarter of chrom 10
+  - Same for last 3/4 of chrom 10
+- PDO3
+  - Chromosome 5
+- PDO6  
+    - Chromosome 4, small region of extreme amplification
+```{r, cn_regions_subclonal2, echo=FALSE, dependson=c('cn_regions_subclonal', 'cn_regions_subclonal_individual')}
+
+plts_AOI_subclonal = list(give_plot_areas_of_interest(segtab=segtables_organoids_absolute_copynumber$PDO2,
+                            chrom_AOI=7, start_AOI=1,
+                            end_AOI=chrlen %>% filter(V1 == "chr7") %>% dplyr::select(V2) %>% as.integer(),
+                            subclonal_line1=2, subclonal_line2=3, title='Chrom 7 in PDO2'),
+                          give_plot_areas_of_interest(segtab=segtables_organoids_absolute_copynumber$PDO2,
+                            chrom_AOI=10, start_AOI=1,
+                            end_AOI=135534747/4,
+                            subclonal_line1=2, subclonal_line2=3, title='Chrom 10 (start) in PDO2'),
+                          give_plot_areas_of_interest(segtab=segtables_organoids_absolute_copynumber$PDO2,
+                            chrom_AOI=10,
+                            start_AOI=chrlen %>% filter(V1 == "chr10") %>% dplyr::select(V2) %>% as.integer() / 4,
+                            end_AOI=chrlen %>% filter(V1 == "chr10") %>% dplyr::select(V2) %>% as.integer(),
+                            subclonal_line1=2, subclonal_line2=3, title='Chrom 10 (start) in PDO2'),
+                          give_plot_areas_of_interest(segtab=segtables_organoids_absolute_copynumber$PDO3,
+                            chrom_AOI=5,
+                            start_AOI=51200001,
+                            end_AOI=66560000,
+                            subclonal_line1=2, subclonal_line2=1, title='Chrom 5 (start) in PDO3'),
+                          give_plot_areas_of_interest(segtab=segtables_organoids_absolute_copynumber$PDO3,
+                            chrom_AOI=5,
+                            start_AOI=chrlen %>% filter(V1 == "chr5") %>% dplyr::select(V2) %>% as.integer() * 2/3,
+                            end_AOI=chrlen %>% filter(V1 == "chr5") %>% dplyr::select(V2) %>% as.integer(),
+                            subclonal_line1=2, subclonal_line2=3, title='Chrom 5 (end) in PDO3'),
+                          give_plot_areas_of_interest(segtab=segtables_organoids_absolute_copynumber$PDO6,
+                            chrom_AOI=4,
+                            start_AOI=71680001,
+                            end_AOI=81920000,
+                            subclonal_line1=2, subclonal_line2=3, title='Chrom 4 (end) in PDO6'))
+```
+
+```{r, cn_regions_subclonal3, dependson=c('cn_regions_subclonal2'), echo=FALSE}
+do.call('grid.arrange', c(sapply(plts_AOI_subclonal, `[`, 2), list(nrow=2)))
+```
+
+```{r, cn_regions_subclonal4, dependson=c('cn_regions_subclonal2')}
+sapply(plts_AOI_subclonal, `[`, 1)
+```

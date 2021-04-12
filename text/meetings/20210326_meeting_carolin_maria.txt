@@ -1,0 +1,10 @@
+put bar for chromosome annotation fig 2
+
+sc was done in a different passage than the bulk, which contributes to the difference
+	sc was done later
+	for sWGS it looks as thouhg the profils don't change and are stable
+
+carolin explains the subclonality in genes
+
+ask Michael about the raw data
+

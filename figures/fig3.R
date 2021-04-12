@@ -11,22 +11,31 @@ subset_genes_of_interest = c('MYC', 'CCNE1', 'PIK3CA', 'TERT', 'KRAS', 'PTEN', '
                              'AKT2', 'PARP1', 'PARP2', 'ATM', 'ATR', 'WEE1', 'TOP1', 'TUBB1',
                              'AKT3', 'CCND1', 'CCND2', 'CCND3', 'CDKN2A', 'CDKN2B', 'MECOM', 'CDK12')
 
-df_gene_characteristics <- readRDS("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig4_df_gene_characteristics.RDS")
-df_average_bottomCN <- readRDS("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig4_df_average_bottomCN.RDS")
-pca_with_gsva_annotation_NC <- readRDS("../RNASeq_DE_resistant_sensitive/objects/fig4_pca_with_gsva_annotation_NC.RDS")
-df_colmeans_deseqcounts_correlation_tcga_org <- readRDS("../RNASeq_DE_resistant_sensitive/objects/fig4_df_colmeans_deseqcounts_correlation_tcga_org.RDS")
+df_gene_characteristics <- readRDS("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig3_df_gene_characteristics.RDS")
+df_average_bottomCN <- readRDS("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig3_df_average_bottomCN.RDS")
+pca_with_gsva_annotation_NC <- readRDS("../RNASeq_DE_resistant_sensitive/objects/fig3_pca_with_gsva_annotation_NC.RDS")
+df_colmeans_deseqcounts_correlation_tcga_org <- readRDS("../RNASeq_DE_resistant_sensitive/objects/fig3_df_colmeans_deseqcounts_correlation_tcga_org.RDS")
 
+.x <- df_colmeans_deseqcounts_correlation_tcga_org[df_colmeans_deseqcounts_correlation_tcga_org$TME == "TME",]
+.x$TME <- "Other"
+df_colmeans_deseqcounts_correlation_tcga_org = rbind(df_colmeans_deseqcounts_correlation_tcga_org, .x)
+df_colmeans_deseqcounts_correlation_tcga_org$TME = sapply(df_colmeans_deseqcounts_correlation_tcga_org$TME,
+   function(i) ifelse(i == 'TME', yes = 'Consensus TME', no = 'All genes'))
 a <- ggplot(df_colmeans_deseqcounts_correlation_tcga_org,
-       aes(x=means_tcga, y=means_org, col=TME))+geom_point()+
-  scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
+       aes(x=log(means_tcga), y=log(means_org), col=TME))+geom_point()+
+  # scale_x_continuous(trans = "log2")+#scale_y_continuous(trans = "log2")+
   geom_abline(slope = 1, intercept = 0, lty='dashed')+facet_wrap(.~TME)+
   theme(legend.position = "bottom")+#ggtitle('Comparison of DESeq counts between TCGA\nand organoid samples')+
-  theme_bw()+labs(x='Count means for TCGA', y='Count means for organoids')+theme(legend.position = "bottom")
+  theme_bw()+labs(x='Count means for TCGA (log2)', y='Count means for organoids (log2)')+theme(legend.position = "bottom")
 
 b <- ggplot(pca_with_gsva_annotation_NC, aes(x=PC1, y=PC2, col=factor(BRCA1), label=labels))+
   geom_point()+
   geom_label_repel()+theme_bw()+theme(legend.position = "bottom")+ theme(legend.title = element_blank())#+
   ggtitle('Number of mutations in BRCA (TAMSeq)')
+
+b0 <- ggplot(pca_with_gsva_annotation_NC, aes(x=PC1, y=PC2, col=factor(BRCA1), label=labels))+
+  geom_point()+
+  theme_bw()+theme(legend.position = "bottom")+ theme(legend.title = element_blank())
 
 c <- ggplot(droplevels(df_average_bottomCN),
             aes(x=Gene, y=average_comparison_CN_DESeq, label=as.character(label)))+
@@ -59,10 +68,14 @@ e <- ggplot(df_gene_characteristics, aes(x=df_average_bottomCN.average_compariso
 
 # cowplot::
 
-pdf("fig4.pdf", width = 7, height = 7)
+pdf("fig3.pdf", width = 7, height = 7)
 grid.arrange(a, b, c, d)
 dev.off()
 
-pdf("fig4_v2.pdf", width = 12, height = 4)
+pdf("fig3_v2.pdf", width = 12, height = 4)
 grid.arrange(a, b, e, nrow=1)
+dev.off()
+
+pdf("fig3_v3.pdf", width = 10, height = 7)
+plot_grid(plot_grid(a, b0, b, rel_widths=c(3,2,2), ncol=3), plot_grid(c, d), nrow=2)
 dev.off()

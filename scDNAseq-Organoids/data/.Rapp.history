@@ -1,0 +1,8 @@
+load("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/data/absCN_clean_118976org.RDS")
+x=readRDS("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/data/absCN_clean_118976org.RDS")
+x
+x[,grepl('X5', colnames(x))]
+colMeans(x[,grepl('X5', colnames(x))])
+pdo6=readRDS("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/data/absCN_clean_118976org.RDS")
+pdo6=readRDS("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/data/absCN_clean_119148orgb.RDS")
+colMeans(pdo6[,grepl('X4', colnames(pdo6))])

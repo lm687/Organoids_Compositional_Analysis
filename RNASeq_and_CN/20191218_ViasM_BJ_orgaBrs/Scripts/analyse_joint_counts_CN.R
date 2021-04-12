@@ -718,7 +718,7 @@ ggsave("../../figures/coordinated_CN_DESeq_goi.pdf", width = 8, height = 8)
 dim(mean_coord_CN_DESeq2)
 dim(df_gene_characteristics) 
 
-saveRDS(mean_coord_CN_DESeq2, "../output/fig4_mean_coord_CN_DESeq2.RDS")
+saveRDS(mean_coord_CN_DESeq2, "../output/fig3_mean_coord_CN_DESeq2.RDS")
 plot(mean_coord_CN_DESeq2$mean_coord_CN_DESeq2, df_gene_characteristics$r2_normCNnormDESeq[match(mean_coord_CN_DESeq2$Gene, df_gene_characteristics$Gene)])
 plot(df_gene_characteristics$cor_normCNnormDESeq, df_gene_characteristics$r2_normCNnormDESeq)
 plot(df_gene_characteristics$cor_normCNnormDESeq, log(df_gene_characteristics$averageCN))
@@ -798,7 +798,7 @@ ggplot(droplevels(df_average_bottomCN),
   geom_hline(yintercept = 0.5, lty='dashed')
 ggsave("../../figures/average_bottomCN_DESeq.pdf", width = 4, height = 4)
 
-saveRDS(df_average_bottomCN, "../output/fig4_df_average_bottomCN.RDS")
+saveRDS(df_average_bottomCN, "../output/fig3_df_average_bottomCN.RDS")
 
 ## For each gene, plot the CN
 
@@ -847,7 +847,7 @@ df_gene_characteristics = cbind.data.frame(df_gene_characteristics,
                                            df_average_bottomCN = df_average_bottomCN[match(df_gene_characteristics$Gene,
                                                                                            df_average_bottomCN$Gene),])
 
-saveRDS(df_gene_characteristics, "../output/fig4_df_gene_characteristics.RDS")
+saveRDS(df_gene_characteristics, "../output/fig3_df_gene_characteristics.RDS")
 
 plot(df_gene_characteristics$df_average_bottomCN.average_comparison_CN_DESeq,
 df_gene_characteristics$r2_normCNnormDESeq)
@@ -870,7 +870,7 @@ ggplot(df_gene_characteristics, aes(x=df_average_bottomCN.average_comparison_CN_
                col='blue')+
   geom_point()+geom_label_repel()
 ggsave("../../figures/r2normCNnormDESeq_vs_averagebottomCN_best.pdf", width = 6, height = 6)
-saveRDS(df_gene_characteristics, "../output/fig4_df_gene_characteristics.RDS")
+saveRDS(df_gene_characteristics, "../output/fig3_df_gene_characteristics.RDS")
 
 plot(joint_counts_CN_subset$scaled_centered_weighted_CN_mean,
      log(joint_counts_CN_subset$scaled_centered_weighted_CN))
