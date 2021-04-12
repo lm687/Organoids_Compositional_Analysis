@@ -1,0 +1,10 @@
+company_name	name
+AZD2014	Vistusertib
+AZD1775	Adavosertib
+#AZD8186	NA
+#AZD0156	NA
+AZD2281	Olaparib
+AZD6738	Ceralasertib
+#AZD8835	NA
+AZD5363	Capivasertib
+APR.246	Eprenetapopt
