@@ -1,5 +1,5 @@
-# rm(list = ls())
-# setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+rm(list = ls())
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 library(openxlsx, lib.loc="/home/morril01/R/x86_64-pc-linux-gnu-library/4.0/")
 library(ggrepel)
@@ -98,7 +98,7 @@ library(GenomicRanges)
 #??Variables
 #-------------
 projName <- "20191218_ViasM_BJ_orgaBrs"
-projDir <- "/mnt/scratcha/fmlab/morril01/Vias/20191218_ViasM_BJ_orgaBrs/GexVsCnGw/"
+projDir <- "/mnt/scratcha/fmlab/morril01/Vias_git/Organoids_Compositional_Analysis/RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/GexVsCnGw/"
 
 
 # Assess correlation between gene expression and copy number.
@@ -139,7 +139,7 @@ cnSegRg <- makeGRangesFromDataFrame(cbind(cnSeg,absCnDf[,-1]), keep.extra.column
 
 # Read gene list in ## this is no longer there??
 #-------------
-tmpFn <- "../RnaSeqPip/organoidAbsolute_geneList.txt"
+tmpFn <- "../Input/organoidAbsolute_geneList.txt"
 geneDf <- read.table(tmpFn, sep="\t", header=TRUE)
 geneDfRg <- makeGRangesFromDataFrame(geneDf)
 
@@ -174,16 +174,16 @@ if(!file.exists(sqlite_path)) {
   ## generate the SQLite database file
   ensembldb::ensDbFromGtf(gtf=gtf.file, path = ref_dir, outfile=sqlite_file)
 }
-EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_file)
+EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_path)
 
 # Genes, used to annotated the TPM matrix to send to Maria
 ag <- ensembldb::genes(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
 ag
 
-transc <- ensembldb::transcripts(EnsDb.Hsapiens.v96, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
+transc <- ensembldb::transcripts(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
 
 #??Transcripts:
-Tx <- ensembldb::transcripts(EnsDb.Hsapiens.v96,
+Tx <- ensembldb::transcripts(EnsDb.Hsapiens.v87,
                              columns = c("tx_id", "gene_id"),
                              return.type="DataFrame")
 ##head(Tx)
@@ -195,24 +195,25 @@ rm(Tx)
 
 # read that transcript-gene table in
 # (no need here really, but will only write the table above once)
-tx2gene <- read.csv(tmpFn)
-head(tx2gene)
+# tx2gene <- read.csv(tmpFn)
+# head(tx2gene)
 
 # Kallisto with abundance.h5
 #-------------------------
-setwd(projDir)
+# setwd(projDir)
 
 # have names of files to read in:
-files <- file.path("Kallisto2", splSht$JBLAB.number, "abundance.h5")
-names(files) <- splSht$SampleName
+# files <- file.path("Kallisto2", splSht$JBLAB.number, "abundance.h5")
+# names(files) <- splSht$SampleName
 
 # collapse transcript counts into gene counts:
 #??"We can avoid gene-level summarization by setting txOut=TRUE, giving the
 #original transcript level estimates as a list of matrices."
 # with txOut = FALSE and passing tx2gene
-candidate_kallisto_files <- unlist(sapply(list.files("../Kallisto/", full.names = T), list.files, full.names=T))
+candidate_kallisto_files <- unlist(sapply(list.files("Kallisto/", full.names = T), list.files, full.names=T))
 files <- base::subset(x = candidate_kallisto_files,
              subset=grepl('abundance.tsv', candidate_kallisto_files))
+files <- files[!grepl('scrLocal', files)]
 example_transcripts=head(read.table(files[1], h=T))
 ## tx2gene is missing. I make it up
 ##' "We first make a data.frame called tx2gene with two columns: 1) transcript ID and 2) gene ID.
@@ -223,6 +224,8 @@ tx2gene_dummy = cbind.data.frame(transcriptID=transc$tx_id, geneID=ag$gene_name[
 names(files) = make.names(gsub("/abundance.tsv", "", gsub("../Kallisto//", "", (files))))
 txi.kallisto <- tximport(files, type = "kallisto", txOut = FALSE, tx2gene = tx2gene_dummy, ignoreTxVersion = TRUE)
 head(txi.kallisto$counts)
+
+colnames(txi.kallisto$counts) = gsub("Kallisto..", "", colnames(txi.kallisto$counts))
 
 # Kallisto with with TSV files
 #-------------------------
@@ -279,7 +282,7 @@ genesToKeep <- as.character(unique(geneDf_dummy$Gene))
 tpmMatOrig <- tpmMat 
 
 tpmMat <- tpmMat %>% filter(gene_name %in% genesToKeep) %>%
-  select(gene_name, colnames((txi.kallisto$counts)))
+   select(gene_name, colnames((txi.kallisto$counts)))
 
 #??convert TPM matrix to long format to match that keeping CN sent by Maria:
 tpmMatLong <- tpmMat %>% tidyr::pivot_longer(-gene_name, names_to = "SampleName", values_to = "tpm")
@@ -289,13 +292,13 @@ tpmMatLong <- tpmMat %>% tidyr::pivot_longer(-gene_name, names_to = "SampleName"
 geneDfOrig <- geneDf
 geneDfOrig$sample <- as.character(geneDfOrig$sample)
 
-geneDf <- geneDfOrig %>% mutate(organoid_name = sample) %>%
-  left_join(splSht[, c("organoid_name", "SampleName")], by="organoid_name")
+# geneDf <- geneDfOrig %>% mutate(organoid_name = sample) %>%
+#   left_join(splSht[, c("organoid_name", "SampleName")], by="organoid_name")
 
-geneDf2 <- geneDf %>% select(Gene, segVal, SampleName) %>%
-  mutate(gene_name = Gene) %>%
-  left_join(tpmMatLong, by=c("gene_name", "SampleName"))
-
+# geneDf2 <- geneDf %>% select(Gene, segVal, SampleName) %>%
+#   mutate(gene_name = Gene) %>%
+#   left_join(tpmMatLong, by=c("gene_name", "SampleName"))
+geneDf2 <- geneDf
 #??gene of interest:
 #-------------
 
@@ -331,12 +334,12 @@ p <- p + facet_wrap(~Gene, ncol=6)
 
 # write plot to file
 tmpFn <- sprintf("%s/TpmMat/tmpVsSegValInGeneList.png", projDir)
-ggsave(tmpFn, plot=p, width = 6*4, height = 7*4, units = "cm")
+# ggsave(tmpFn, plot=p, width = 6*4, height = 7*4, units = "cm")
 
 # write geneDf2 to file
-geneDf2 <- geneDf2 %>% mutate_if(is.numeric, round, 1)
-tmpFn <- sprintf("%s/TpmMat/tmpVsSegValInGeneList.csv", projDir)
-write.csv(geneDf2, file=tmpFn, row.names = FALSE)
+# geneDf2 <- geneDf2 %>% mutate_if(is.numeric, round, 1)
+# tmpFn <- sprintf("%s/TpmMat/tmpVsSegValInGeneList.csv", projDir)
+# write.csv(geneDf2, file=tmpFn, row.names = FALSE)
 
 #---------------------------------------------------------------------------------------------------#
 # ggplot(tpmMatLong, aes(x=SampleName, y=tpm, col=gene_name))+geom_point()
@@ -429,7 +432,7 @@ tpmMat_melt = (reshape2::melt(t(tpmMat)))
 tpmMat_melt$Var1
 
 ## match names
-name_correspondence = openxlsx::read.xlsx("/mnt/scratcha/fmlab/morril01/Vias_git/Organoids_Compositional_Analysis/DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+name_correspondence = openxlsx::read.xlsx("../../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
 
 tpmMat_melt$Var1 = name_correspondence$ID[match(gsub("[.]", "", tpmMat_melt$Var1), gsub("-", "", name_correspondence$sampleNameRNAseq))]
 
