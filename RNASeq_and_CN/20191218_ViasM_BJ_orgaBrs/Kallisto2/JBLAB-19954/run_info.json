@@ -1,0 +1,13 @@
+{
+	"n_targets": 188753,
+	"n_bootstraps": 100,
+	"n_processed": 22333081,
+	"n_pseudoaligned": 16368965,
+	"n_unique": 10848766,
+	"p_pseudoaligned": 73.3,
+	"p_unique": 48.6,
+	"kallisto_version": "0.46.2",
+	"index_version": 10,
+	"start_time": "Tue Mar 24 18:07:04 2020",
+	"call": "../kallisto/kallisto quant -t 10 -b 100 -i ../KallistoIdx/homo_sapiens/transcriptome.idx -o JBLAB-19954 --single -l 200 -s 20 ../Data/fastq/SLX-18745.UDI0024.HH3NNBBXY.s_3.r_1.fq.gz ../Data/fastq/SLX-18745.UDI0024.HH3NNBBXY.s_4.r_1.fq.gz"
+}
