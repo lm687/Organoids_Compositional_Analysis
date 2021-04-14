@@ -23,6 +23,7 @@ library(reshape2)
 renaming <- readxl::read_excel("../../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
 
 organoid_list = c('PDO2', 'PDO3', 'PDO6')
+organoid_list_large = renaming$PDO; organoid_list_large = organoid_list_large[grepl('PDO', organoid_list_large)]
 
 absCN = list()
 absCN_granges = list() ## mean over all organoids
@@ -49,9 +50,9 @@ for(org_it in organoid_list){
 }
 
 organoid_absolute_CN = readRDS("../../copy_number_analysis_organoids/data/organoid_absolute_CN.rds")
-segtables_organoids_absolute_copynumber = lapply(renaming$ID[match(organoid_list, renaming$PDO)],
+segtables_organoids_absolute_copynumber = lapply(renaming$ID[match(organoid_list_large, renaming$PDO)],
                                                  function(samplename) getSegTable(organoid_absolute_CN[,samplename]))
-names(segtables_organoids_absolute_copynumber) = organoid_list
+names(segtables_organoids_absolute_copynumber) = organoid_list_large
 names(absCN_granges_perorg) = organoid_list
 
 segtables_organoids_absolute_copynumber = sapply(segtables_organoids_absolute_copynumber, as, "GRanges")
@@ -224,6 +225,10 @@ list(segtab=segtables_organoids_absolute_copynumber$PDO6,
      subclonal_line1=2, subclonal_line2=3, title='Chrom 2 in PDO6')
 )
 
+list_params[length(list_params)][[1]]$start_AOI/chrlen[2,'V2']
+list_params[length(list_params)][[1]]$end/chrlen[2,'V2']
+
+
 # give_plot_region = function(region_list_params, abs_sc_GR, return_plot){
 #   segtabGR <- as(data.frame(region_list_params$segtab),"GRanges")
 #   region_subclonal = as(cbind.data.frame(chromosome=region_list_params$chrom_AOI, start=region_list_params$start_AOI,
@@ -329,61 +334,68 @@ list(segtab=segtables_organoids_absolute_copynumber$PDO6,
 #   }
 # }
 
-give_plot_region_v2 = function(region_list_params, abs_sc_GR, return_plot, include_event_confidence=T){
+give_plot_region_v2 = function(region_list_params, abs_sc_GR, return_plot, include_event_confidence=T, include_sc=T){
+  
+  #------------------------------------------------------------------------------#
+  
   segtabGR <- as(data.frame(region_list_params$segtab),"GRanges")
   region_subclonal = as(cbind.data.frame(chromosome=region_list_params$chrom_AOI, start=region_list_params$start_AOI,
                                          end=region_list_params$end_AOI),
                         "GRanges")
+  len_firstGR <- length(region_subclonal)
   
-  region_subclonal
+  #------------------------------------------------------------------------------#
   
   disjoin_region_subclonal_sWGS <- GenomicRanges::disjoin(c(region_subclonal, segtabGR),
                                                           with.revmap=TRUE, ignore.strand=TRUE)
+  disjoin_region_subclonal_sWGS = disjoin_region_subclonal_sWGS[sapply(disjoin_region_subclonal_sWGS$revmap, function(i) 1 %in% i),]
+  CN_sWGS = sapply(disjoin_region_subclonal_sWGS$revmap, function(i){
+    if(!is.na(i[2])){
+      as.numeric(as.character(segtabGR[i[2]-len_firstGR]$segVal))
+    }else{
+      2
+    }
+  })
+  disjoin_region_subclonal_sWGS$CNval = CN_sWGS
   
   disjoin_region_subclonal_scDNA <- 
     GenomicRanges::disjoin(c(
       region_subclonal,
       abs_sc_GR[[region_list_params$PDO]]),
       with.revmap=TRUE, ignore.strand=TRUE)
-  
 
-  disjoin_region_subclonal_sWGS = disjoin_region_subclonal_sWGS[sapply(disjoin_region_subclonal_sWGS$revmap, function(i) 1 %in% i),]
   disjoin_region_subclonal_scDNA = disjoin_region_subclonal_scDNA[sapply(disjoin_region_subclonal_scDNA$revmap, function(i) 1 %in% i),]
   
-  CN_sWGS = sapply(disjoin_region_subclonal_sWGS$revmap, function(i){
-    if(!is.na(i[2])){
-      as(data.frame(region_list_params$segtab),"GRanges")[i[2]-length(region_subclonal)]$segVal
-    }else{
-      2
-    }
-  })
-  disjoin_region_subclonal_sWGS$CNval = as.numeric(CN_sWGS)
+  #------------------------------------------------------------------------------#
   
-  len_firstGR <- length(region_subclonal)
-  CN_scDNA = lapply(disjoin_region_subclonal_scDNA$revmap, function(i){
-      # if(!is.na(i[2])){
+  if(include_sc){
+    CN_scDNA = lapply(disjoin_region_subclonal_scDNA$revmap, function(i){
+        # if(!is.na(i[2])){
+        if(length(i) > 1){
+          as.numeric(abs_sc_GR[[region_list_params$PDO]][i[-1]-len_firstGR]$CN_value)
+        }else{
+          2
+        }
+      })
+    if(include_event_confidence){
+      event_conf = lapply(disjoin_region_subclonal_scDNA$revmap, function(i){
+        if(length(i) > 1){
+          as.numeric(abs_sc_GR[[region_list_params$PDO]][i[-1]-len_firstGR]$event_confidence)
+        }else{
+          NA
+        }
+      })
+    }
+    cell = lapply(disjoin_region_subclonal_scDNA$revmap, function(i){
       if(length(i) > 1){
-        as.numeric(abs_sc_GR[[region_list_params$PDO]][i[-1]-len_firstGR]$CN_value)
-      }else{
-        2
-      }
-    })
-  if(include_event_confidence){
-    event_conf = lapply(disjoin_region_subclonal_scDNA$revmap, function(i){
-      if(length(i) > 1){
-        as.numeric(abs_sc_GR[[region_list_params$PDO]][i[-1]-len_firstGR]$event_confidence)
+        as.numeric(abs_sc_GR[[region_list_params$PDO]][i[-1]-len_firstGR]$cell)
       }else{
         NA
       }
     })
   }
-  cell = lapply(disjoin_region_subclonal_scDNA$revmap, function(i){
-    if(length(i) > 1){
-      as.numeric(abs_sc_GR[[region_list_params$PDO]][i[-1]-len_firstGR]$cell)
-    }else{
-      NA
-    }
-  })
+  
+  #------------------------------------------------------------------------------#
   
   plt1 <- ggplot(cbind.data.frame(start=start(disjoin_region_subclonal_sWGS),
                                   end=end(disjoin_region_subclonal_sWGS),
@@ -393,28 +405,39 @@ give_plot_region_v2 = function(region_list_params, abs_sc_GR, return_plot, inclu
     geom_abline(slope = 0, intercept = region_list_params$subclonal_line2, color='blue', lty='dashed')+
     ggtitle(region_list_params$title)
   
-  disjoin_region_subclonal_scDNA_df = do.call('rbind', lapply(1:length(disjoin_region_subclonal_scDNA), function(idx_row){
-    as.data.frame(rep(disjoin_region_subclonal_scDNA[idx_row], length(cell[[idx_row]])))
-  }))
-  disjoin_region_subclonal_scDNA_df$cell = (unlist(cell))
-  disjoin_region_subclonal_scDNA_df$CNval = (unlist(CN_scDNA))
-  if(include_event_confidence){
-    disjoin_region_subclonal_scDNA_df$event_confidence = (unlist(event_conf))
-  }else{
-    disjoin_region_subclonal_scDNA_df$event_confidence = NA
-  }
-  # disjoin_region_subclonal_scDNA_df <- as.data.frame(disjoin_region_subclonal_scDNA)
+  #------------------------------------------------------------------------------#
   
-  plt2 <- ggplot(disjoin_region_subclonal_scDNA_df)+
-    geom_rect(aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=cell, col=cell),fill=NA, alpha=0.1, size=0.1)+
-    geom_abline(slope = 0, intercept = region_list_params$subclonal_line1, color='blue', lty='dashed')+
-    geom_abline(slope = 0, intercept = region_list_params$subclonal_line2, color='blue', lty='dashed')+
-    geom_rect(data=cbind.data.frame(start=start(disjoin_region_subclonal_sWGS),
-                                    end=end(disjoin_region_subclonal_sWGS),
-                                    CNval=disjoin_region_subclonal_sWGS$CNval),
-              aes(xmin=start, xmax=end, ymin=0, ymax=CNval), col='red', fill=NA, alpha=0.01)+
-    ggtitle(region_list_params$title)+
-    scale_y_continuous(trans = "log2")
+  if(include_sc){
+    disjoin_region_subclonal_scDNA_df = do.call('rbind', lapply(1:length(disjoin_region_subclonal_scDNA), function(idx_row){
+      as.data.frame(rep(disjoin_region_subclonal_scDNA[idx_row], length(cell[[idx_row]])))
+    }))
+    disjoin_region_subclonal_scDNA_df$cell = (unlist(cell))
+    disjoin_region_subclonal_scDNA_df$CNval = (unlist(CN_scDNA))
+    if(include_event_confidence){
+      disjoin_region_subclonal_scDNA_df$event_confidence = (unlist(event_conf))
+    }else{
+      disjoin_region_subclonal_scDNA_df$event_confidence = NA
+    }
+    
+    #------------------------------------------------------------------------------#
+    
+    plt2 <- ggplot(disjoin_region_subclonal_scDNA_df)+
+      geom_rect(aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=cell, col=cell),fill=NA, alpha=0.1, size=0.1)+
+      geom_abline(slope = 0, intercept = region_list_params$subclonal_line1, color='blue', lty='dashed')+
+      geom_abline(slope = 0, intercept = region_list_params$subclonal_line2, color='blue', lty='dashed')+
+      geom_rect(data=cbind.data.frame(start=start(disjoin_region_subclonal_sWGS),
+                                      end=end(disjoin_region_subclonal_sWGS),
+                                      CNval=disjoin_region_subclonal_sWGS$CNval),
+                aes(xmin=start, xmax=end, ymin=0, ymax=CNval), col='red', fill=NA, alpha=0.01)+
+      ggtitle(region_list_params$title)+
+      scale_y_continuous(trans = "log2")
+  }else{
+    plt2 <- ggplot()
+    disjoin_region_subclonal_scDNA_df = NA
+  }
+  
+  #------------------------------------------------------------------------------#
+  
   if(return_plot){
     return(list(plt1, plt2))
   }else{
@@ -476,9 +499,10 @@ all_plots_scDNA_sWGS_regions_ex3b = lapply(list_params[7], give_plot_region_v2, 
 all_plots_scDNA_sWGS_regions_ex2b = lapply(list_params[8], give_plot_region_v2, abs_sc_GR=absCN_bed.granges, return_plot = F)
 all_plots_scDNA_sWGS_regions_ex3c = lapply(list_params[9], give_plot_region_v2, abs_sc_GR=absCN_bed.granges, return_plot = F)
 all_plots_scDNA_sWGS_regions_ex3d = lapply(list_params[10], give_plot_region_v2, abs_sc_GR=absCN_bed.granges, return_plot = F)
+all_plots_scDNA_sWGS_regions_ex3d_largebins = lapply(list_params[10], give_plot_region_v2, abs_sc_GR=absCN_granges_perorg, return_plot = F, include_event_confidence = F)
 
 
- plot(density(all_plots_scDNA_sWGS_regions_ex1[[1]][[1]]$event_confidence))
+plot(density(all_plots_scDNA_sWGS_regions_ex1[[1]][[1]]$event_confidence))
 
 todf = function(disjoin_region_subclonal_sWGS){
   cbind.data.frame(start=start(disjoin_region_subclonal_sWGS),
@@ -511,26 +535,76 @@ ggplot(all_plots_scDNA_sWGS_regions_ex1[[1]][[1]] %>% filter(event_confidence > 
             aes(xmin=start, xmax=end, ymin=0, ymax=CNval), col='red', fill=NA, alpha=0.01)+
   ggtitle("Chrom 10 (start) in PDO2")
 
+
+ggplot()+
+  geom_rect(data = all_plots_scDNA_sWGS_regions_ex3d_largebins[[1]][[1]],
+            aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=cell), col='blue',
+            fill=NA, alpha=0.1, size=0.1)+
+  geom_rect(data=data.frame(all_plots_scDNA_sWGS_regions_ex3d_largebins[[1]][[2]]),
+            aes(xmin=start, xmax=end, ymin=0, ymax=CNval), col='red', fill=NA, alpha=0.01)+
+  ggtitle("")
+
+ggplot()+
+  geom_rect(data = all_plots_scDNA_sWGS_regions_ex3d[[1]][[1]],
+            aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=cell), col='black',
+            fill=NA, alpha=0.1, size=0.1)+
+  geom_rect(data = all_plots_scDNA_sWGS_regions_ex3d_largebins[[1]][[1]],
+            aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=cell), col='blue',
+            fill=NA, alpha=0.1, size=0.1)+
+  geom_rect(data=data.frame(all_plots_scDNA_sWGS_regions_ex3d_largebins[[1]][[2]]),
+            aes(xmin=start, xmax=end, ymin=0, ymax=CNval), col='red', fill=NA, alpha=0.01)+
+  ggtitle("")
+
+ggplot()+
+  geom_rect(data = all_plots_scDNA_sWGS_regions_ex3d[[1]][[1]] %>%
+              filter(event_confidence > 10),
+            aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=cell), col='black',
+            fill=NA, alpha=0.1, size=0.1)
+  
+.xx <- all_plots_scDNA_sWGS_regions_ex3d[[1]][[1]] %>%
+  filter(event_confidence > 10)
+plot(0, xlim=c(min(.xx$start), max(.xx$end)), ylim=c(min(.xx$CNval), max(.xx$CNval)))
+for(i in 1:nrow(.xx)){
+  segments(x0 = .xx$start[i], x1 = .xx$end[i], y0 = .xx$CNval[i], y1 = .xx$CNval[i], col=alpha(colour = "black", alpha = 0.01))
+}
+
+.xx2 <- .xx %>% group_by(cell) %>% dplyr::summarise(sum(CNval*width)/sum(width))
+plot(density(.xx2$`sum(CNval * width)/sum(width)`))
+
+## a single cell in chrom 2 of PDO6
+ggplot(absCN_bed$PDO6 %>% filter(V1 == 2, V4 %in% 100:102), aes(x=V2, y=V5, col=V4))+
+  geom_step()+lims(y=c(-1,10))+
+  geom_segment(aes(x = specific_regions[[2]][[2]][[1]]$start_AOI, xend= specific_regions[[2]][[2]][[1]]$end_AOI,
+                   y=-0.5, yend=-0.5))
+
+# .xx <- all_plots_scDNA_sWGS_regions_ex3d[[1]][[1]] %>%
+#   filter(event_confidence > 10)
+# plot(0, xlim=c(min(.xx$start), max(.xx$end)), ylim=c(min(.xx$CNval), max(.xx$CNval)))
+# for(i in 1:nrow(.xx)){
+#   segments(x0 = .xx$start[i], x1 = .xx$end[i], y0 = .xx$CNval[i], y1 = .xx$CNval[i], col=alpha(colour = "black", alpha = 0.01))
+# }
+
+
 #---------------------------------------------------------------------------------------#
 ## Look at the genes in the regions of interest
 
-specific_regions <- readRDS("../scDNAseq-Organoids/robjects/fig2_regions_subclonalb.RDS")
+specific_regions <- readRDS("../../scDNAseq-Organoids/robjects/fig2_regions_subclonalb.RDS")
 specific_regions[[2]] ## pdo2
 specific_regions[[6]] ## pdo3
 specific_regions[[8]] ## pdo6
 
-gtf.file <- file.path("../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh38.100.chr.gtf.gz")
-sqlite_file <- '../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh38.100.sqlite'
+gtf.file <- file.path("../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh37.87.gtf.gz")
+sqlite_file <- '../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh37.87.sqlite'
 sqlite_path <- file.path(sqlite_file)
 
 if(!file.exists(sqlite_path)) {
   ## generate the SQLite database file
   ensembldb::ensDbFromGtf(gtf=gtf.file, path=ref_dir, outfile=sqlite_file)
 }
-EnsDb.Hsapiens.v100 <- ensembldb::EnsDb(sqlite_file)
+EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_file)
 
 # Genes, used to annotated the TPM matrix to send to Maria
-ag <- ensembldb::genes(EnsDb.Hsapiens.v100, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
+ag <- ensembldb::genes(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
 ag
 
 specific_regions[[2]]
@@ -586,6 +660,27 @@ pdo2specific <- ggplot(specific_regions[[2]][[1]][[1]] %>% filter(event_confiden
   lims(y=c(0,6))
 pdo2specific
 
+add_extra_rows_step_percell <- function(df2){
+  do.call('rbind', lapply(unique(df2$cell), function(i){
+    df = df2[df2$cell == i,]
+    df = df[order(df$start),]
+    rbind.data.frame(c(df[1,1], -Inf, df[1,2], NA, NA, NA, df[1,7]),
+                     df,
+                     c(df[nrow(df),1], df[nrow(df),3], Inf, NA, NA, NA, df[nrow(df),7]))
+  }))
+}
+
+pdo6specific <- ggplot(add_extra_rows_step_percell(specific_regions[[8]][[1]][[1]] %>%
+                         filter(event_confidence > 10, width >1)))+
+  geom_step(aes(x=start, y=CNval,group=cell))+
+  geom_step(data=add_extra_rows_step(as(specific_regions[[8]][[1]][[2]], "data.frame")),
+            aes(x=start, y=CNval), col='red', fill=NA)+
+  geom_rect(data = all_plots_scDNA_sWGS_regions_ex3d_largebins[[1]][[1]],
+            aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=cell), col='blue',
+            fill=NA, alpha=0.1, size=0.1)+
+  ggtitle(specific_regions[[8]][[2]][[1]]$title)#+lims(y=c(0,4))
+pdo6specific
+
 # give_subset_in_interval = function(gr_obj, start_int, end_int, chrom_int){
 #   .region_subclonal = as(cbind.data.frame(chromosome=chrom_int, start=start_int,
 #                                          end=end_int), "GRanges")
@@ -610,3 +705,85 @@ pdo2specific
 #             fill=NA, alpha=0.01, size=0.1)+
 #   ggtitle("Chrom 4 in PDO6")+
 #   lims(y=c(0,13))
+
+
+ZWINT_PD06 <- list(segtab=segtables_organoids_absolute_copynumber$PDO6,
+     PDO='PDO6',
+     chrom_AOI=as.numeric(ag[ag$symbol == 'ZWINT','seq_name']),
+     start_AOI=ag[ag$symbol == 'ZWINT','gene_seq_start'],
+     end_AOI=ag[ag$symbol == 'ZWINT','gene_seq_end'],
+     subclonal_line1=NA, subclonal_line2=NA, title='ZWINT in PDO6')
+ZWINT_PD010 <- list(segtab=segtables_organoids_absolute_copynumber$PDO10,
+                   PDO='PDO10',
+                   chrom_AOI=as.numeric(ag[ag$symbol == 'ZWINT','seq_name']),
+                   start_AOI=ag[ag$symbol == 'ZWINT','gene_seq_start'],
+                   end_AOI=ag[ag$symbol == 'ZWINT','gene_seq_end'],
+                   subclonal_line1=NA, subclonal_line2=NA, title='ZWINT in PD10')
+MIEN1_PD014 <- list(segtab=segtables_organoids_absolute_copynumber$PDO14,
+                    PDO='PDO14',
+                    chrom_AOI=as.numeric(ag[ag$symbol == 'MIEN1','seq_name']),
+                    start_AOI=ag[ag$symbol == 'MIEN1','gene_seq_start'],
+                    end_AOI=ag[ag$symbol == 'MIEN1','gene_seq_end'],
+                    subclonal_line1=NA, subclonal_line2=NA, title='MIEN1 in PD14')
+
+give_params_gene <- function(gene, pdo){
+  list(segtab=segtables_organoids_absolute_copynumber[[pdo]],
+                      PDO=pdo,
+                      chrom_AOI=as.numeric(ag[ag$symbol == gene,'seq_name']),
+                      start_AOI=ag[ag$symbol == gene,'gene_seq_start'],
+                      end_AOI=ag[ag$symbol == gene,'gene_seq_end'],
+                      subclonal_line1=NA, subclonal_line2=NA, title=paste0(gene, ' in ', pdo))
+}
+
+# MYC_PD06 <- list(segtab=segtables_organoids_absolute_copynumber$PDO14,
+#                     PDO='PDO6',
+#                     chrom_AOI=as.numeric(ag[ag$symbol == 'ZWINT','seq_name']),
+#                     start_AOI=ag[ag$symbol == 'MIEN1','gene_seq_start'],
+#                     end_AOI=ag[ag$symbol == 'MIEN1','gene_seq_end'],
+#                     subclonal_line1=NA, subclonal_line2=NA, title='MIEN1 in PD14')
+
+# region_list_params = ZWINT_PD06
+# abs_sc_GR=absCN_granges_perorg
+# return_plot = F
+# include_event_confidence = FALSE
+all_plots_scDNA_sWGS_regions_ZWINT_PDO6 = give_plot_region_v2(region_list_params = ZWINT_PD06,
+                                                         abs_sc_GR=absCN_granges_perorg,
+                                                         return_plot = T, include_event_confidence = FALSE)
+all_plots_scDNA_sWGS_regions_ZWINT_PDO6[[1]]
+all_plots_scDNA_sWGS_regions_ZWINT_PDO6[[2]]
+
+all_plots_scDNA_sWGS_regions_ZWINT_PDO10 = give_plot_region_v2(region_list_params = ZWINT_PD010,
+                                                         abs_sc_GR=absCN_granges_perorg,
+                                                         return_plot = T, include_event_confidence = FALSE, include_sc = FALSE)
+all_plots_scDNA_sWGS_regions_ZWINT_PDO10[[1]]
+
+all_plots_scDNA_sWGS_regions_MIEN1_PD014 = give_plot_region_v2(region_list_params = MIEN1_PD014,
+                                                               abs_sc_GR=absCN_granges_perorg,
+                                                               return_plot = T, include_event_confidence = FALSE, include_sc = FALSE)
+all_plots_scDNA_sWGS_regions_MIEN1_PD014[[1]]
+
+give_plot_region_v2(region_list_params = give_params_gene(gene = 'ZWINT', pdo = 'PDO2'),
+                    abs_sc_GR=absCN_granges_perorg,
+                    return_plot = T, include_event_confidence = FALSE)
+
+give_plot_region_v2(region_list_params = give_params_gene(gene = 'ZWINT', pdo = 'PDO5'),
+                    abs_sc_GR=absCN_granges_perorg,
+                    return_plot = T, include_event_confidence = FALSE, include_sc = F)[[1]]
+
+give_plot_region_v2(region_list_params = give_params_gene(gene = 'ZWINT', pdo = 'PDO6'),
+                    abs_sc_GR=absCN_granges_perorg,
+                    return_plot = T, include_event_confidence = FALSE)
+
+ZWINT_PDO6 <- give_plot_region_v2(region_list_params = give_params_gene(gene = 'ZWINT', pdo = 'PDO6'),
+                    abs_sc_GR=absCN_granges_perorg,
+                    return_plot = F, include_event_confidence = FALSE)
+
+ag[ag$gene_name == 'ZWINT',]
+x[grepl('ZWINT', x$Gene),]
+ZWINT_PDO6
+# x[grepl('Gene', x$Gene),]
+head(x[grepl('^10:', rownames(x)),][-(1:1555),])
+
+max(as.numeric(segtables_organoids_absolute_copynumber$PDO6$segVal))
+# [174]       10 58110001-58710000      * |    37.5732330396688
+
