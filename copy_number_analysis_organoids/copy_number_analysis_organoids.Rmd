@@ -1747,8 +1747,26 @@ head(organoids_absolute_copynumber)
 ```
 
 ## Comparing amplified/deleted genes between organoids and TCGA
-```{r, compare_amplification}
-data("geneInfo")
+
+```{r, annotate_genes}
+
+gtf.file <- file.path("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh37.87.gtf.gz")
+sqlite_file <- '../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh37.87.sqlite'
+sqlite_path <- file.path(sqlite_file)
+
+if(!file.exists(sqlite_path)) {
+  ## generate the SQLite database file
+  ensembldb::ensDbFromGtf(gtf=gtf.file, path=ref_dir, outfile=sqlite_file)
+}
+EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_file)
+
+# Genes, used to annotated the TPM matrix to send to Maria
+ag <- ensembldb::genes(EnsDb.Hsapiens.v87,  return.type="DataFrame") 
+geneInfo = cbind.data.frame(chrom=ag$seq_name, start=ag$gene_seq_start, end=ag$gene_seq_end, geneid=ag$entrezid, genename=ag$symbol)
+```
+
+```{r, compare_amplification, dependson=c('annotate_genes')}
+# data("geneInfo")
 gr_BriTROC <- lapply(segtables_BriTROC_absolute_copynumber, function(i) as(data.frame(i), "GRanges"))
 gr_genes_of_interest = as(data.frame(geneInfo[!(geneInfo$chrom %in% c('X', 'Y')), c('chrom', 'start', 'end', 'genename', 'geneid' )]), "GRanges")
 
@@ -1782,7 +1800,7 @@ all_ranges = c(gr_BriTROC,
                lapply(segtables_organoids_absolute_copynumber, function(i) as(data.frame(rename_cols(i)), "GRanges")))
 subsample_samples = sample(1:length(all_ranges), 10)
 subset_genes = c('MYC', 'CCNE1', 'PIK3CA', 'TERT', 'KRAS', 'PTEN', 'RB1', 'AKT1',
-                 'AKT2', 'PARP1', 'PARP2', 'ATM', 'ATR', 'WEE1', 'TOP1', 'TUBB1')
+                 'AKT2', 'PARP1', 'PARP2', 'ATM', 'ATR', 'WEE1', 'TOP1', 'TUBB1', 'ZWINT', 'ERBB2')
 # subsample_samples = sort(subsample_samples)
 subsample_samples = 1:length(all_ranges)
 # all_ploidies = outer(X = 1:length(gr_genes_of_interest),
@@ -1795,14 +1813,16 @@ subsample_samples = 1:length(all_ranges)
 
 ```
 
-```{r, compare_amplification_generalised, echo=FALSE, eval=TRUE}
+```{r, compare_amplification_generalised, echo=FALSE, eval=TRUE, dependson=c('compare_amplification')}
 ## scaling up to multiple genes (I have a problem with runtime)
-give_ploidy_gene_scaling <- function(sample){
+give_ploidy_gene_scaling <- function(sample, subset_genes_arg){
   
   # GRanges object with a row for each entry in subset_genes (sorted)
-  gr_genes_of_interest_subset = as(geneInfo[which(geneInfo$genename %in% subset_genes),], 'GRanges')
-  gr_genes_of_interest_subset = gr_genes_of_interest_subset[match(subset_genes, gr_genes_of_interest_subset$genename),]
-  all(gr_genes_of_interest_subset$genename == subset_genes)
+  gr_genes_of_interest_subset = as(geneInfo[which(geneInfo$genename %in% subset_genes_arg),], 'GRanges')
+  idx_genes <- match(subset_genes_arg, gr_genes_of_interest_subset$genename)
+  gr_genes_of_interest_subset = gr_genes_of_interest_subset[idx_genes[!is.na(idx_genes)],]
+  subset_genes_arg <- subset_genes_arg[!is.na(idx_genes)]
+  all(gr_genes_of_interest_subset$genename == subset_genes_arg)
   
   ## Both the genes and the samples, so that they can be split
   full_GRanges = c(gr_genes_of_interest_subset, sample)
@@ -1829,7 +1849,7 @@ give_ploidy_gene_scaling <- function(sample){
   
   ## for each of the rows in revmap_short, get the segVal (unrounded CN). The first element of each row is going to be NA, as
   ## the first elements in revmap_short correspond to the genes, and the second to the CN segments
-  r_scores = extractList(mcols(full_GRanges)$segVal, revmap_short)
+  r_scores = extractList(mcols(full_GRanges)$segVal, sapply(revmap_short, function(i) i[length(i)] ))
 
   ## for each of the genes of interest, which are indexed by gene_idx, and which are ordered as in subset_genes,
   ## we get the rows in revmap_short that contain them (which are stored in the index vector genes_idx).
@@ -1842,17 +1862,17 @@ give_ploidy_gene_scaling <- function(sample){
     ploidies_short = diploidifNA(sapply(1:length(genes_idx), function(j){
       ## we get the first(and only) element in the list by [[1]] and we get the second index [2],
       ## which is the only that has a CN value (the first one corresponds to the gene)
-      r_scores[genes_idx,][j,][[1]][2]
+      r_scores[genes_idx,][j,][[1]]
     }))
     return(weighted_ploidy(ploidies_short,
                     widths_disjoint_short[genes_idx]))
   })
-  names(weights) = subset_genes
+  names(weights) = subset_genes_arg
   return(weights)
 }
 
 subsample_samples = all_ranges
-all_ploidies_2 = mclapply(subsample_samples, give_ploidy_gene_scaling)
+all_ploidies_2 = mclapply(subsample_samples, give_ploidy_gene_scaling, subset_genes_arg=subset_genes)
 all_ploidies_2_df_original = data.frame(do.call('rbind', all_ploidies_2))
 all_ploidies_2_df = all_ploidies_2_df_original
 image(do.call('rbind', all_ploidies_2))
@@ -1886,11 +1906,45 @@ pheatmap((all_ploidies_2_df), annotation_row = ann_row, cluster_rows = FALSE, cl
 
 ```
 
-```{r, heatmap_ampldel_organoids}
+
+
+```{r, heatmap_ampldel_organoids, dependson=c('compare_amplification_generalised')}
 pheatmap((all_ploidies_2_df[ann_row == 'Organoids',]), cluster_rows = FALSE, cluster_cols = FALSE,
          show_rownames = TRUE, scale = "none", color=myColor, breaks=myBreaks)
 
 ```
+
+```{r, heatmap_ampldel_organoids_v2, dependson=c('compare_amplification_generalised')}
+subsetgenes_2 <- c('ZWINT', 'CASC8', 'ERBB2', 'FAM84B', 'IKZF3', 'KIAA0196', 'LINC00964', 'MIEN1',
+                   'MIR1204', 'MIR1205', 'MIR1206', 'MIR1207', 'MIR1208', 'MTSS1', 'MYC', 'NSMCE2',
+                   'PCAT1', 'PGAP3', 'POU5F1B', 'PVT1', 'SQLE', 'TRIB1', 'ZNF536', 'ZNF572')
+# subsetgenes_2 <- c('ZWINT', 'CASC8', 'ERBB2', 'FAM84B', 'ZNFN1A3', 'KIAA0196', 'LINC00964', 'MIEN1',
+#                    'MIR1204', 'MIR1205', 'MIR1206', 'MIR1207', 'MIR1208', 'MTSS1', 'MYC', 'NSMCE2',
+#                    'PCAT1', 'PGAP3', 'POU5F1B', 'PVT1', 'SQLE', 'TRIB1', 'ZNF536', 'ZNF572')
+all_ploidies_batch2 = lapply(subsample_samples[grepl("^PDO", names(subsample_samples))],
+                             give_ploidy_gene_scaling, subset_genes_arg=subsetgenes_2)
+```
+
+```{r, heatmap_ampldel_organoids_v2_b, dependson=c('heatmap_ampldel_organoids_v2')}
+all_ploidies_batch2b <- do.call('rbind', lapply(1:length(all_ploidies_batch2), function(j) cbind.data.frame(PDO=names(all_ploidies_batch2)[j], gene=names(all_ploidies_batch2[[j]]), CNval=all_ploidies_batch2[[j]]) ))
+
+give_ploidy_gene_scaling(sample = subsample_samples$PDO14, subset_genes_arg = "MIEN1")
+all_ploidies_batch2b %>% filter(PDO == 'PDO14', gene == 'MIEN1')
+
+levels_pdo <- c('PDO14', 'PDO5', 'PDO6', 'PDO11', 'PDO9')
+ggplot(all_ploidies_batch2b[all_ploidies_batch2b$PDO %in% levels_pdo,], aes(y=CNval, x=gene))+geom_bar(stat = "identity")+coord_flip()+
+  facet_wrap(.~factor(PDO, levels=levels_pdo), nrow=1)+geom_hline(yintercept = 2, col='blue')
+ggsave("~/Desktop/genes_CN.pdf") 
+crop <- function(a, thresh){
+  a[,'cropped_bool'] = (a[,'CNval'] > thresh)
+  a[a[,'CNval'] > thresh,'CNval'] = thresh
+  a
+}
+ggplot(crop(all_ploidies_batch2b[all_ploidies_batch2b$PDO %in% levels_pdo,], 6),  aes(y=CNval, x=gene, col=cropped_bool))+geom_bar(stat = "identity")+coord_flip()+lims(y=c(0,6))+
+  facet_wrap(.~factor(PDO, levels=levels_pdo), nrow=1)+geom_hline(yintercept = 2, col='blue')
+ggsave("~/Desktop/genes_CN_cropx.pdf")
+```
+
 
 <!-- ## Comparison RNASeq and copy number -->
 ```{r, correlation_rnaseq_absoluteCN, eval=FALSE}
@@ -1964,7 +2018,7 @@ sort(TPM[which(TPM$gene_name == 'MYC'),])
 ```
 
 
-```{r, gene_ploidy_cosmic_plot, echo=FALSE}
+```{r, gene_ploidy_cosmic_plot, echo=FALSE, dependson=c('correlation_rnaseq_absoluteCN')}
 names(ploidies)
 names(ploidies[[1]])
 rownames(all_ploidies_2_df_original[match(rownames(ploidies), rownames(all_ploidies_2_df_original)),])[1:10]
@@ -2004,7 +2058,7 @@ all_ploidies_2_df_cat = sapply(1:nrow(all_ploidies_2_df_original), function(row_
 
 ```
 
-```{r, plot_cosmic, echo=FALSE}
+```{r, plot_cosmic, echo=FALSE, dependson=c('gene_ploidy_cosmic_plot')}
 # all_ploidies_2_df_cat
 # t(apply((all_ploidies_2_df_cat), 1, function(i) as.numeric(as.factor(i))))
 all_ploidies_2_df_cat[all_ploidies_2_df_cat == 'other'] = NA
@@ -2027,7 +2081,7 @@ all_ploidies_2_df_cat_factors[ann_row == 'Organoids',]
 ```
 
 Amplifications/deletions of selected genes in organoids
-```{r, genes_discrete_organoids_ampdel, echo=FALSE}
+```{r, genes_discrete_organoids_ampdel, echo=FALSE, dependson=c('plot_cosmic', 'gene_ploidy_cosmic_plot')}
 # subset_all_ploidies_2_df_cat_factors = all_ploidies_2_df_cat_factors[ann_row %in% c('TCGA', 'Organoids'),]
 # 
 # pheatmap(sapply(subset_all_ploidies_2_df_cat_factors, as.numeric),

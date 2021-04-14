@@ -18,7 +18,8 @@ remove_samples = rbind(c('PDO14', 'PDO16', 'PDO18'), c('54288org', '119025org', 
 ##------------------------------------------------------------------------------------------------------------##
 
 ##------------------------------------------------------------------------------------------------------------##
-joint_counts_CN = readRDS("../output/joint_counts_CN_TPM_20210301210511.RDS")
+# joint_counts_CN = readRDS("../output/joint_counts_CN_TPM_20210301210511.RDS")
+joint_counts_CN = readRDS("../output_GRCh37/joint_counts_CN_TPM_20210414162734.RDS")
 joint_counts_CN = joint_counts_CN %>% filter( !(counts.Var1 %in% remove_samples[2,]))
 topvariable = read.table("../../top_variable.txt", comment.char = "#")
 
@@ -45,7 +46,7 @@ t2g = readRDS("~/Desktop/t2g.RDS")
 genename_ensmid_matched = t2g[match(deseq_counts$Gene, t2g$ensembl_gene_id),'external_gene_name']
 deseq_counts$Gene = genename_ensmid_matched
 
-renaming = readxl::read_xlsx("/Users/morril01/Documents/PhD/other_repos/b_tape/Vias_Brenton/RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+renaming = readxl::read_xlsx("../../../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
 
 deseq_counts$DESEq.sample = renaming$ID[match(gsub("[.]", "-", deseq_counts$DESEq.sample), renaming$sampleNameRNAseq)]
 
