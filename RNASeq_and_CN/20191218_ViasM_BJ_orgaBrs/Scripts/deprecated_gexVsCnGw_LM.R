@@ -165,19 +165,19 @@ if(FALSE){ #??not using featureConts anymore
 
 # projDir
 setwd("../")
-ref_dir <- 'Data/'
-gtf.file <- file.path(ref_dir, "Homo_sapiens.GRCh37.87.gtf.gz")
-sqlite_file <- 'Homo_sapiens.GRCh37.87.sqlite'
+ref_dir <- 'Kallisto/homo_sapiens'
+gtf.file <- file.path(ref_dir, "Homo_sapiens.GRCh38.96.gtf.gz")
+sqlite_file <- 'Homo_sapiens.GRCh38.96.sqlite'
 sqlite_path <- file.path(ref_dir, sqlite_file)
 
 if(!file.exists(sqlite_path)) {
   ## generate the SQLite database file
   ensembldb::ensDbFromGtf(gtf=gtf.file, path = ref_dir, outfile=sqlite_file)
 }
-EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_file)
+EnsDb.Hsapiens.v96 <- ensembldb::EnsDb(sqlite_file)
 
 # Genes, used to annotated the TPM matrix to send to Maria
-ag <- ensembldb::genes(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
+ag <- ensembldb::genes(EnsDb.Hsapiens.v96, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
 ag
 
 transc <- ensembldb::transcripts(EnsDb.Hsapiens.v96, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
@@ -212,7 +212,7 @@ names(files) <- splSht$SampleName
 # with txOut = FALSE and passing tx2gene
 candidate_kallisto_files <- unlist(sapply(list.files("../Kallisto/", full.names = T), list.files, full.names=T))
 files <- base::subset(x = candidate_kallisto_files,
-             subset=grepl('abundance.tsv', candidate_kallisto_files))
+                      subset=grepl('abundance.tsv', candidate_kallisto_files))
 example_transcripts=head(read.table(files[1], h=T))
 ## tx2gene is missing. I make it up
 ##' "We first make a data.frame called tx2gene with two columns: 1) transcript ID and 2) gene ID.
@@ -301,7 +301,7 @@ geneDf2 <- geneDf %>% select(Gene, segVal, SampleName) %>%
 
 #??plot single gene
 if(FALSE){ # single gene
-
+  
   tmpCn <- geneDf %>% filter(Gene == "BRCA1") %>% pull(segVal)
   
   library(ggplot2)
@@ -360,7 +360,7 @@ CN_averages = mclapply(colnames(absCnDf)[-1], function(org_it){
   
   gr_CN = gr_CN0
   values(gr_CN) = absCnDf[,org_it]
-
+  
   ## do per organoid
   gr_CN_org = gr_CN
   seqlevels(gr_CN) ## necessary for mcolAsRleList
@@ -438,7 +438,7 @@ averaged_CN_df_melt$L1 = gsub("^X", "", averaged_CN_df_melt$L1)
 # tpmMat_melt = tpmMat_melt[match(averaged_CN_df_melt$L1, tpmMat_melt$Var1),]
 
 joint_counts_CN = cbind.data.frame(counts=tpmMat_melt[match(paste0(averaged_CN_df_melt$L1, averaged_CN_df_melt$gene_name),
-paste0(tpmMat_melt$Var1, tpmMat_melt$Var2)),], CN=averaged_CN_df_melt)
+                                                            paste0(tpmMat_melt$Var1, tpmMat_melt$Var2)),], CN=averaged_CN_df_melt)
 
 joint_counts_CN$counts.value = as.numeric(as.character(joint_counts_CN$counts.value))
 saveRDS(joint_counts_CN, file = paste0("../robjects/joint_counts_CN_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
@@ -472,5 +472,4 @@ ggplot(joint_counts_CN %>% filter(CN.L1 == '119025org' ), aes(x=CN.value, y=coun
 # averaged_CN = cbind.data.frame(gene_name=averageCN$gene_name, CN=averageCN$CN_bin_averaged)
 # 
 # CN_and_counts = cbind.data.frame(averaged_CN[match(tpmMat$gene_name, averaged_CN$gene_name),], tpmMat)
-
 
