@@ -1,0 +1,4 @@
+load("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/RNASeq_DE_resistant_sensitive/objects/deaObjectFile_organoids_cluster.RDA")
+ls()
+aa=`~cluster`
+aa

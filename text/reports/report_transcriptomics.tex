@@ -147,10 +147,10 @@ A couple of important considerations are: gene expression values are correlated 
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=1.7in]{../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_nonormal.png}
-\includegraphics[width=1.7in]{../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normTPM_nonormal.png}
-\includegraphics[width=2.8in]{../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2_subsetorgs.png}\\
-\includegraphics[width=\textwidth]{../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_perorg2.png}
+\includegraphics[width=1.7in]{../../RNASeq_and_CN/figures_GRCh37/scatterplot_normCNweighted_normDESeq_nonormal.png}
+\includegraphics[width=1.7in]{../../RNASeq_and_CN/figures_GRCh37/scatterplot_normCNweighted_normTPM_nonormal.png}
+\includegraphics[width=2.8in]{../../RNASeq_and_CN/figures_GRCh37/scatterplot_normCNweighted_normDESeq_perorg2_subsetorgs.png}\\
+\includegraphics[width=\textwidth]{../../RNASeq_and_CN/figures_GRCh37/scatterplot_normCNweighted_normDESeq_perorg2.png}
 %\includegraphics[width=1.7in]{../../RNASeq_and_CN/figures/scatterplot_normCNweighted_normDESeq_nonormal_onlyamp.png}
 \caption{Scaled and centered CN and GE (DESeq2 and TPM respectively). Right: same, color-coded per organoid, but only for organoids which show a positive trend between CN and GE. Below: split per organoid. The same results are found when normal segments are kept. \label{fig:scaled_CN_GE}} %When only looking at amplifications (third plot; for DESeq2 counts) the trend is even clearer}
 \end{figure}
@@ -158,7 +158,7 @@ A couple of important considerations are: gene expression values are correlated 
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=3in]{../../RNASeq_and_CN/figures/rankplot_CNweighted_deseq.pdf}
+\includegraphics[width=3in]{../../RNASeq_and_CN/figures_GRCh37/rankplot_CNweighted_deseq.pdf}
 \caption{Normalised matrix of ranks. I.e., for each gene, the organoid samples are ranked by CN and GE,  independently,  in ascending order. The correlation between these two ranks can be seen as a matrix that contains 15 entries of value 1 (one for each column and each row), and in which all other entries are zero. If there is a complete agreement between the ranks of GE and CN, we have a diagonal matrix (entries of 1 in the diagonal, and of 0 in the off-diagonal). This procedure is repeated for each gene. Then all the matrices are added together to give a matrix of counts. The sum of all entries is the number of organoids (15) times the number of genes. This matrix is then normalised by this number, so that the entries add up to one, which is plotted here. A bright diagonal indicates a very good agreement between the rank of GE and rank of CN across organoids.\label{fig:rank_CN_GE} The off-diagonal entries at GE ranks 1 and 2 indicate that there are many genes for which the rank of CN is high (high copy number, relative to other organoids) but the rank of GE is low (low gene expression values, relative to other organoids).}
 \end{figure}
 
@@ -184,13 +184,36 @@ After the genome-wide analyses of the previous section, here we focus on the gen
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=.45\textwidth]{../../RNASeq_and_CN/figures/CN_violinplots_goi.pdf}
-\includegraphics[width=.45\textwidth]{../../RNASeq_and_CN/figures/CN_violinplots_goi_2.pdf}
-\includegraphics[width=3in]{../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN.pdf}
-\includegraphics[width=3in]{../../RNASeq_and_CN/figures/r2normCNnormDESeq_vs_averagebottomCN_best.pdf}
-\includegraphics[width=2.5in]{../../RNASeq_and_CN/figures/example_KRT6B.pdf}
-\includegraphics[width=3in]{../../RNASeq_and_CN/figures/average_bottomCN_DESeq.pdf}
+\includegraphics[width=.45\textwidth]{../../RNASeq_and_CN/figures_GRCh37/CN_violinplots_goi.pdf}
+\includegraphics[width=.45\textwidth]{../../RNASeq_and_CN/figures_GRCh37/CN_violinplots_goi_2.pdf}
+\includegraphics[width=3in]{../../RNASeq_and_CN/figures_GRCh37/r2normCNnormDESeq_vs_averagebottomCN.pdf}
+\includegraphics[width=3in]{../../RNASeq_and_CN/figures_GRCh37/r2normCNnormDESeq_vs_averagebottomCN_best.pdf}
+\includegraphics[width=2.5in]{../../RNASeq_and_CN/figures_GRCh37/example_KRT6B.pdf}
+\includegraphics[width=3in]{../../RNASeq_and_CN/figures_GRCh37/average_bottomCN_DESeq.pdf}
 \caption{Fraction of samples with gene expression higher than the bottom three samples of lowest copy number. Higher values indicate a correlation between copy number and gene expression.\label{cn_ge_specific_genes}}
 \end{figure}
+
+\clearpage
+
+\section{PCA}
+PC1 separates PDO5 and PDO6 from the others
+
+\begin{itemize}
+\item PDO15 and PDO10 show a higher enrichment in KEGG HOMOLOGOUS RECOMBINATION than the other organoids. They are the ones which have high s7.
+\item PDO15, PDO10, and PDO3, have high KEGG MISMATCH REPAIR and KEGG BASE EXCISION REPAIR
+\item All genes
+\begin{itemize}
+\item DNM2 microtubules (cytoskeleton)
+\end{itemize}
+\item Tier1 genes
+\begin{itemize}
+\item POLQ and POLE have negative loadings in PC2
+\item POLQ is related to microhomology-mediated end-joining (MMEJ)
+\item MSI2 is related to cell cycle development. ATRX regulates growth
+\item The protein encoded by this CLIP1 links endocytic vesicles to microtubule
+\item EP300 does chromatin remodeling 
+\end{itemize}
+\item PDO5 and PDO6: ERBB signalling, and possibly cell adhesion (GO:0007160)
+\end{itemize}
 
 \end{document}

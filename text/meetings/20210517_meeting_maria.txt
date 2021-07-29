@@ -1,0 +1,14 @@
+Maria Vias
+
+- for RNASeq
+	stephane had done resistant vs sensitive
+	pathway analysis of the DE between resistant vs sensitive
+	the analyses from Stephane are all correct; he had the correct organoid naming.
+
+remove PFI from the figure, and keep the clustering from the organoids. remove PFI
+
+only use the without 3' analysis
+
+WGD vs non-WGD: send to Carolin to do pathway analysis too
+
+
