@@ -8,6 +8,7 @@ library(ggplot2)
 library(cowplot)
 library(parallel)
 source("../../../cnsignatures/main_functions.R")
+source("../../../cnsignatures/helper_functions.R")
 source("../../copy_number_analysis_organoids/helper_functions.R")
 source("helper.R")
 library(dplyr)
@@ -778,12 +779,74 @@ ZWINT_PDO6 <- give_plot_region_v2(region_list_params = give_params_gene(gene = '
                     abs_sc_GR=absCN_granges_perorg,
                     return_plot = F, include_event_confidence = FALSE)
 
+ZWINT_neighbour_PDO6 <- give_plot_region_v2(region_list_params = list(segtab=segtables_organoids_absolute_copynumber[["PDO6"]],
+                                                                     PDO="PDO6",
+                                                                     chrom_AOI=10,
+                                                                     start_AOI=58110001,
+                                                                     end_AOI=58140000,
+                                                                     subclonal_line1=NA, subclonal_line2=NA, title=paste0('Neighbouring 30kb region of ZWINT in PDO6')),
+                                  abs_sc_GR=absCN_granges_perorg,
+                                  return_plot = F, include_event_confidence = FALSE)
+ZWINT_neighbour_PDO6[[2]]
+segtables_organoids_absolute_copynumber$PDO6[seqnames(segtables_organoids_absolute_copynumber$PDO6) == 10,][10]
+
 ag[ag$gene_name == 'ZWINT',]
 x[grepl('ZWINT', x$Gene),]
-ZWINT_PDO6
+ZWINT_PDO6[[2]]
 # x[grepl('Gene', x$Gene),]
 head(x[grepl('^10:', rownames(x)),][-(1:1555),])
 
 max(as.numeric(segtables_organoids_absolute_copynumber$PDO6$segVal))
 # [174]       10 58110001-58710000      * |    37.5732330396688
+
+
+##############################
+
+## plotting Chrom 8 in PDO3
+chrom8_PDO3_sc = absCN_granges_perorg$PDO3[seqnames(absCN_granges_perorg$PDO3) == 8,]
+chrom8_PDO3_sWGD <- segtables_organoids_absolute_copynumber$PDO3[seqnames(segtables_organoids_absolute_copynumber$PDO3) == 8,]
+chrom8_PDO3_sWGD_df <- data.frame(chrom8_PDO3_sWGD)
+chrom8_PDO3_sWGD_df$segVal = as.numeric(chrom8_PDO3_sWGD_df$segVal)
+chrom8_PDO3_sWGD_df$start = as.numeric(chrom8_PDO3_sWGD_df$start)
+chrom8_PDO3_sWGD_df$end = as.numeric(chrom8_PDO3_sWGD_df$end)
+colnames(chrom8_PDO3_sWGD_df)[colnames(chrom8_PDO3_sWGD_df) == 'segVal'] = 'CN_value'
+
+chrom8_PDO3_sc_df <- data.frame(chrom8_PDO3_sc)
+chrom8_PDO3_sc_df$CN_value = as.numeric(chrom8_PDO3_sc_df$CN_value)
+chrom8_PDO3_sc_df$cell = as.numeric(chrom8_PDO3_sc_df$cell)
+chrom8_PDO3_sc_df$start = as.numeric(chrom8_PDO3_sc_df$start)
+chrom8_PDO3_sc_df$end = as.numeric(chrom8_PDO3_sc_df$end)
+
+length(chrom8_PDO3_sc)
+length(chrom8_PDO3_sWGD)
+chrom8_PDO3_sc
+
+chrom8_PDO3_sWGD
+plt1 <- ggplot(chrom8_PDO3_sWGD_df)+
+  # geom_rect(aes(xmin=start, xmax=end, ymin=0, ymax=CNval,group=`names_cells[i]`), col='black',
+  #           fill=NA, alpha=0.1, size=0.1)+
+  geom_step(aes(x=start, y=CN_value),
+            alpha=1)+
+  theme_bw()+
+  geom_hline(yintercept = 2, lty='dashed', col='blue')+
+  labs(x='Genomic position of chromosome 8',y='Absolute CN value in PDO3')
+plt1$theme$plot.margin[2] = unit(.8, "cm")
+plt1
+ggsave("../plots/chromothripsis_PDO3_onlyWGD.pdf", width = 5, height = 3)
+
+
+ggplot(chrom8_PDO3_sc_df)+
+  geom_step(aes(x=start, y=CN_value, group=cell,col=cell),
+            alpha=1)+
+  labs(x='Genomic position')
+
+ggplot(rbind.data.frame(cbind.data.frame(chrom8_PDO3_sc_df[,c('start', 'end', 'CN_value', 'cell')], id='Single cell'),
+                        cbind.data.frame(chrom8_PDO3_sWGD_df[,c('start', 'end', 'CN_value')], cell=-1, id='sWGS')))+
+  geom_step(aes(x=start, y=CN_value, group=cell,col=id),
+            alpha=1)+#facet_wrap(.~id, nrow=2)+
+  labs(x='Genomic position of chromosome 8', y='Absolute CN value in PDO3')+
+  labs(col='')+
+  theme_bw()
+  # guides(col=F)
+ggsave("../plots/chromothripsis_PDO3.pdf", width = 4.5, height = 3)
 

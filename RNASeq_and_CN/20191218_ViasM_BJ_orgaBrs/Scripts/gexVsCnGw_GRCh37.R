@@ -56,6 +56,7 @@ projDir <- setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 #projDir <- "/mnt/scratchb/bioinformatics/baller01/20191218_ViasM_BJ_orgaBrs"
 setwd(projDir)
 setwd("../")
+getwd()
 
 # Assess correlation between gene expression and copy number.
 #-------------
@@ -73,39 +74,22 @@ splSht <- splSht %>% mutate(SampleName=gsub("-","",JBLAB.number))
 # Annotation
 #-------------
 
-setwd(projDir)
+# setwd(projDir)
 
-# GRCh38
-if(FALSE)
-{
-  ref_dir <- '../Kallisto/homo_sapiens'
-  gtf.file <- file.path(ref_dir, "Homo_sapiens.GRCh37")
-  sqlite_file <- 'Homo_sapiens.GRCh38.96.sqlite'
+  ref_dir <- 'Data/'
+  gtf.file <- file.path(ref_dir, "Homo_sapiens.GRCh37.87.gtf.gz")
+  sqlite_file <- 'Homo_sapiens.GRCh37.87.sqlite'
   sqlite_path <- file.path(ref_dir, sqlite_file)
   
   if(!file.exists(sqlite_path)) {
     ## generate the SQLite database file
-    ensembldb::ensDbFromGtf(gtf=gtf.file, path=ref_dir, outfile=sqlite_file)
+    ensembldb::ensDbFromGtf(gtf=gtf.file, path = ref_dir, outfile=sqlite_file)
   }
-  EnsDb.Hsapiens.v96 <- ensembldb::EnsDb(sqlite_path)
+  EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_path)
   
-  # Genes, used to annotate the TPM matrix to send to Maria
-  ag <- ensembldb::genes(EnsDb.Hsapiens.v96, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
+  # Genes, used to annotated the TPM matrix to send to Maria
+  ag <- ensembldb::genes(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
   ag
-}
-
-# GRCh37
-# Not from kallisto
-ref_dir <- 'Data'
-gtf.file <- file.path(ref_dir, "Homo_sapiens.GRCh37.87.gtf.gz")
-sqlite_file <- 'Homo_sapiens.GRCh37.87.sqlite'
-sqlite_path <- file.path(ref_dir, sqlite_file)
-
-if(!file.exists(sqlite_path)) {
-  ## generate the SQLite database file
-  ensembldb::ensDbFromGtf(gtf=gtf.file, path=ref_dir, outfile=sqlite_file)
-}
-EnsDb.Hsapiens <- ensembldb::EnsDb(sqlite_path)
 
 # Genes, used to annotate the TPM matrix to send to Maria
 ag <- ensembldb::genes(EnsDb.Hsapiens, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 

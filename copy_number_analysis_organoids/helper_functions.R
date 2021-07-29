@@ -203,3 +203,67 @@ remove_infty = function(i){
   i = i[!is.infinite(i)]
   return(i)
 }
+
+impute = function(mat, inputation_value){
+  mat[mat == 0] = inputation_value
+  normalise_rw(mat)
+}
+
+give_dendrogram_generalised = function(df, modify_labels=T, keep_only_PDO, plot_dendro=T){
+  if(keep_only_PDO & modify_labels){stop('Only one can be true: keep_only_PDO, modify_labels')}
+  
+  x = hclust(dist(df))
+  if(modify_labels){
+    x$labels[!grepl("PDO", x$labels)] = ''
+    x$labels[grepl("PDO", x$labels)] = '*'
+  }
+  
+  if(keep_only_PDO){
+    x$labels[!grepl("PDO", x$labels)] = ''
+  }
+  
+  y = x
+  y$labels = gsub("Sample ", "PDO", x$labels)
+  # plot(x)
+  
+  labelCol <- function(x) {
+    if (is.leaf(x)) {
+      ## fetch label
+      label <- attr(x, "label")
+      ## set label color to red for A and B, to blue otherwise
+      attr(x, "nodePar") <- list(lab.col="blue")
+    }
+    return(x)
+  }
+  d <- dendrapply(as.dendrogram(x), labelCol)
+  if(plot_dendro)  plot(d)
+  return(y)
+  
+}
+
+plot_rank = function(df_rank, nudge_scalar=1, size_labels=10){
+  df_rank$value = as.numeric(df_rank$value)
+  # df_rank = df_rank[(df_rank$Var1),]
+  df_rank$L1= factor(df_rank$L1, levels = c('BriTROC', 'organoids', 'pcawg', 'tcga'))
+  df_rank$labels = ifelse(as.character(df_rank$L1) == 'organoids', as.character(df_rank$Var1), NA)
+  
+  df_rank = cbind.data.frame(df_rank, organoids= grepl("organoids", df_rank$L1))
+  ggplot(df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                      y=value, label=labels))+
+    geom_bar(stat = "identity", aes( fill= organoids), width=0.5)+
+    geom_bar(data = df_rank[df_rank$L1 == "organoids",], stat = "identity",
+             aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                 y=value, label=labels, width=5), width=100)+
+    lims(y=c(-max(df_rank$value)*0.3, 2+max(df_rank$value)))+
+    geom_label_repel(data=df_rank[c(T,F),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                                                y=value/2, label=labels), nudge_y=400*nudge_scalar, size=size_labels)+
+    geom_label_repel(data=df_rank[c(F,T),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                                                y=value/2, label=labels), nudge_y=-400*nudge_scalar, size=size_labels)+
+    scale_x_discrete(expand = c(.05, 0, .05, 0))+
+    scale_fill_manual(values = c("#f2a5a5", "black"))+
+    theme_cowplot()+
+    theme(legend.position = "bottom", axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+  
+}

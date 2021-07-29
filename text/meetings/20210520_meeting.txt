@@ -1,0 +1,16 @@
+## 20210520 meeting James Maria Carolin
+
+mistmatch repair: these are Lynch syndrome genes. Microsatellite instability, whih is a feature of colorectal cancer and ovarian that arises from endometriosis. So that is not something we expect to find in HGSOC!
+
+
+TO DO which gene expression signatures has Ruben been using for his paper? (i.e. pathways_heatmap_orgs.pdf)
+
+
+MYC has very high CN in both PDO3 and PDO9, but drug sensitivity-wise they are very different. Why?
+
+TO DO do the off-diagonal genes on either side
+
+these are models of resistant organoids
+
+there are some samples that have bimodal AUC
+

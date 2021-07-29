@@ -63,6 +63,7 @@ library(GenomicRanges)
 require(ggthemr)
 # source("../../../../other_repos/BriTROC-cnsignatures-bfb69cd72c50/main_functions.R")
 source("../../cnsignatures/main_functions.R")
+# source("../../cnsignatures/helper_functions.R")
 source("helper_functions.R")
 ```
 
@@ -132,7 +133,6 @@ grid.arrange(ggplot(melt_exposures_WGD, aes(x=Var2, y=value, col=Var1))+geom_poi
 
 ```{r, zeros_organoids}
 apply(org, 2, function(j) table(factor(j==0, levels=c(T,F))))
-
 table(apply(org[,-5], 1, function(j) paste0(j==0,collapse='-')))
 
 ```
@@ -198,7 +198,6 @@ stopifnot(dim(natgen[[2]])[1] == dim(natgen_metadata[[2]])[1])
 bool_tcga = lapply(natgen, function(i) grepl('TCGA', rownames(i))) ## re-compute
 ```
 
-
 ### Number of zeros in exposures
 We have two dataframes: with the previous TCGA samples and with the current ones. Both contain the BriTROC and ICGC to this as well (which are shared).
 
@@ -235,7 +234,8 @@ num_exposures_tcga_current = length(rownames(natgen[[2]])[bool_tcga[[2]]]) ## ne
 
 We are only selecting the updated exposures, now
 ```{r, which_signatures, eval=TRUE}
-which_natgen = 'UpdatedSignatures'
+which_natgens = c('UpdatedExposures')
+which_natgen = 'UpdatedExposures'
 ```
 
 # PCA
@@ -249,12 +249,12 @@ org_clr_robustzeroes <- as(compositions::clr(org), 'matrix')
 rownames(org_clr_robustzeroes) <- rownames(org_clr) <- paste0('Organoid ', rownames(org_clr))
 ```
 
+
 ## Creating a PCA with the data from the clinical cohorts, and projecting the organoids
 
 ```{r, princomp, echo=FALSE, eval=TRUE, fig.height=6, fig.width=10}
 
 pca_from_projection = prcomp_all = df_prcomp_exposures = list()
-which_natgens = c('UpdatedExposures')
 for(which_natgen in which_natgens){
   prcomp_all[[which_natgen]] <- princomp(as(clr(natgen[[which_natgen]]), 'matrix'))
   
@@ -364,6 +364,7 @@ all_clr <- lapply(natgen_clr, function(i) rbind(i, org_clr_robustzeroes))
 names(all_clr) = names(all_metadata) = names(all_natgen) =  names(natgen)
 ```
 
+
 ```{r, dendrogram_aitchisondistance_function,echo=FALSE, eval=TRUE, dependson=c('princomp_clr_implementation')}
 give_dendrogram <- function(which_natgen){
   rm_infinite <- apply(all_clr[[which_natgen]], 1, function(x) any(is.infinite(x)))
@@ -421,7 +422,6 @@ par(mar=c(8,4,4,4))
 plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures', which_label="not_symbol")
 dev.off()
 ```
-
 
 ### Heatmap of the samples in the dendrogram
 ```{r, heatmap_dendrogram, echo=FALSE}
@@ -793,13 +793,6 @@ give_pca(as(compositions::clr(normalise_rw(1e-4+all_natgen[[which_natgen]])), 'm
          groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))), ncol=3)
 ```
 
-```{r, inputation_fun, echo=FALSE}
-impute = function(mat, inputation_value){
-  mat[mat == 0] = inputation_value
-  normalise_rw(mat)
-}
-```
-
 - PCA of all samples, with three variations, and with an inputation of 1e-4 in all samples. As expected, the results are essentially the same as adding the same value to all elements (zero or non-zero).
 
 ```{r, compositional8, fig.height=3, dependson=c('compositional', 'inputation_fun'), echo=FALSE}
@@ -973,41 +966,6 @@ give_pca(data_matrix = as(compositions::clr(normalise_rw(cbind(natgen[[which_nat
 - If the raw values are used (which I think there should be no problem using), there is no big difference either.
 
 ## Hierarchical clustering
-```{r, hierarchical_compositional}
-
-give_dendrogram_generalised = function(df, modify_labels=T, keep_only_PDO){
-  if(keep_only_PDO & modify_labels){stop('Only one can be true: keep_only_PDO, modify_labels')}
-  
-  x = hclust(dist(df))
-  if(modify_labels){
-    x$labels[!grepl("PDO", x$labels)] = ''
-    x$labels[grepl("PDO", x$labels)] = '*'
-  }
-  
-  if(keep_only_PDO){
-    x$labels[!grepl("PDO", x$labels)] = ''
-  }
-  
-  y = x
-  y$labels = gsub("Sample ", "PDO", x$labels)
-  # plot(x)
-
-  labelCol <- function(x) {
-    if (is.leaf(x)) {
-      ## fetch label
-      label <- attr(x, "label")
-      ## set label color to red for A and B, to blue otherwise
-      attr(x, "nodePar") <- list(lab.col="blue")
-    }
-    return(x)
-  }
-  d <- dendrapply(as.dendrogram(x), labelCol)
-  plot(d)
-  return(y)
-
-}
-```
-
 
 ## Plot showing differences in amalgamation ratios
 
@@ -1059,21 +1017,7 @@ dendroimputclr_pdo = give_dendrogram_generalised(as(compositions::clr(impute(all
 dendroimputclr_all = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = F)
 ```
 
-```{r, tanglegram, eval=FALSE}
-library(dendextend) # for comparing two dendrograms
-dend1comparison <- as.dendrogram (dendroraw_pdo)
-dend2comparison <- as.dendrogram (dendroclr_pdo)
-dend3comparison <- as.dendrogram (dendroimput_pdo)
-dend4comparison <- as.dendrogram (dendroimputclr_pdo)
-
-tanglegram(dend1comparison, dend2comparison)
-tanglegram(dend1comparison, dend3comparison)
-tanglegram(dend1comparison, dend4comparison)
-tanglegram(dend2comparison, dend4comparison)
-```
-
-```{r, raw_hclust}
-give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = T)
+```{r, raw_hclust, dependson=c('dendrogram_gen_impute', 'hierarchical_compositional')}
 
 dend_data_inputclr <- dendro_data(dendroimputclr_all, type = "rectangle")
 dend_data_inputclr$labels$label = as.character(dend_data_inputclr$labels$label)
@@ -1126,11 +1070,106 @@ grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
 dev.off()
 
 saveRDS(p_v2, "robjects/dendrograminputclr.RDS")
+saveRDS(dendroimputclr_all, "robjects/dendrograminputclr_tree.RDS")
 saveRDS(p2_inputclr, "robjects/heatmapinputclr.RDS")
 
 grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
 # grid.arrange(p, p3, heights=c(2,1))
 # grid.arrange(p, p3, heights=c(2,1))
+
+```
+
+Now doing the same with a different imputation vlaue
+```{r, raw_hclust_lowerinput, dependson=c('dendrogram_gen_impute', 'hierarchical_compositional')}
+give_dendrogram_from_imputation <- function(impute_VALUE){
+  dendroimputclr_all_lowerinput = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]], impute_VALUE)), 'matrix'), modify_labels=F, keep_only_PDO = F)
+  
+  dend_data_inputclr0004 <- dendro_data(dendroimputclr_all_lowerinput, type = "rectangle")
+  dend_data_inputclr0004$labels$label = as.character(dend_data_inputclr0004$labels$label)
+  dend_data_inputclr0004$labels$label[!grepl('PDO', dend_data_inputclr0004$labels$label)] = ""
+  p_v2_0004 <- ggplot(dend_data_inputclr0004$segments) +
+    geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
+    geom_label_repel(data = dend_data_inputclr0004$labels, aes(x, y, label = gsub('Organoid ', '', label)),
+              hjust = 0, size = 3, vjust=0, nudge_y = -2)+
+    ylim(-3, 15)+
+    theme_bw()+
+    theme(axis.title.x=element_blank(),
+      axis.text.x=element_blank(),
+      axis.ticks.x=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      panel.grid = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank())+
+      scale_x_continuous(expand = c(extra_expand, extra_expand))+
+    scale_y_continuous(expand = c(0.5, 0, 0.05, 0))
+  
+  heatmap_dendrogram_df_inputclr0004 = t(all_natgen$UpdatedExposures[rownames(all_natgen$UpdatedExposures)[match(gsub("Organoid ", "", labels(dendroimputclr_all_lowerinput)),rownames(all_natgen$UpdatedExposures))],])
+  
+  p2_inputclr_0004 = ggplot(melt(heatmap_dendrogram_df_inputclr0004), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+      theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+            legend.text=element_text(size=10),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank(),  legend.position = "bottom",
+          panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.border = element_blank())+
+    scale_fill_brewer(palette="Dark2")+
+        scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
+    guides(fill = guide_legend(nrow = 1))
+  
+  grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE))
+}
+
+give_dendrogram_from_imputation(1/250)
+give_dendrogram_from_imputation(1/100)
+
+```
+
+
+
+```{r, tanglegram, eval=FALSE, dependson='hierarchical_compositional'}
+library(dendextend) # for comparing two dendrograms
+dend1comparison <- as.dendrogram (dendroraw_pdo)
+dend2comparison <- as.dendrogram (dendroclr_pdo)
+dend3comparison <- as.dendrogram (dendroimput_pdo)
+dend4comparison <- as.dendrogram (dendroimputclr_pdo)
+
+tanglegram(dend1comparison, dend2comparison)
+tanglegram(dend1comparison, dend3comparison)
+tanglegram(dend1comparison, dend4comparison)
+tanglegram(dend2comparison, dend4comparison)
+```
+
+
+## Comparison of exposures between exposures clusterings, and with and RNA-Seq data
+
+The imputation+clr dendrograms are not the same when considering only the organoids than when using all samples from TCGA, but in general the two agree in which organoids get clustered and the overal structure of the dendrogram.
+
+```{r, dendrogram_gen_impute, eval=TRUE, dependson=c('hierarchical_compositional')}
+# dendroimputclr_all = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = F)
+dendroimputclrimpute_org <- give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]][grepl('PDO', rownames(all_natgen[[which_natgen]])),], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = T, plot_dendro=F)
+```
+
+```{r, tanglegram_with_rnaseq, eval=TRUE, dependson=c('dendrogram_gen_impute', 'hierarchical_compositional')}
+
+hclust_rnaseq <- readRDS("../RNASeq_DE_resistant_sensitive/objects/hclust_rnaseq.RDS")
+tanglegram(as.dendrogram (dendroimputclrimpute_org), as.dendrogram(dendroimputclr_all), main='PDO-only clustering vs all exposures')
+tanglegram(as.dendrogram (dendroimputclrimpute_org), as.dendrogram(hclust_rnaseq), main='PDO-only clustering vs RNA-Seq clustering')
+tanglegram(as.dendrogram (dendroimputclr_all), as.dendrogram(hclust_rnaseq), main='All exposures clustering vs RNA-Seq clustering')
+
+```
+
+Now with TPM
+```{r, tanglegram_with_rnaseq_TPM, eval=TRUE, dependson=c('dendrogram_gen_impute', 'hierarchical_compositional')}
+
+hclust_rnaseq_TPM <- readRDS("../RNASeq_DE_resistant_sensitive/objects/hclust_rnaseq_TPM.RDS")
+tanglegram(as.dendrogram (dendroimputclrimpute_org), as.dendrogram(hclust_rnaseq_TPM), main='PDO-only clustering vs RNA-Seq TPM clustering')
+tanglegram(as.dendrogram (dendroimputclr_all), as.dendrogram(hclust_rnaseq_TPM), main='All exposures clustering vs RNA-Seq TPM clustering')
+tanglegram(as.dendrogram (hclust_rnaseq), as.dendrogram(hclust_rnaseq_TPM), main='RNA-Seq clustering vs RNA-Seq TPM clustering')
 
 ```
 
@@ -1538,7 +1577,7 @@ sapply(list(segtables_TCGA_absolute_copynumber, segtables_ICGC_absolute_copynumb
 ```
 
 
-```{r, getploidy, dependson=c('get_segtables', 'get_segtables2'), echo=FALSE}
+```{r, getploidy, dependson=c('get_segtables', 'get_segtables2'), echo=FALSE, eval=TRUE}
 GRanges_chroms = as(droplevels(data.frame(chrom=gsub("chr", "", chrlen$V1), start=1, end=chrlen$V2)[!chrlen$V1 %in% c('chrX', 'chrY'),]),
                     "GRanges")
 rename_cols <- function(df){
@@ -1671,32 +1710,6 @@ ggplot(ploidies, aes(x=organoids_bool, y=ploidy))+geom_boxplot()
 ```{r, rank_plots, fig.width=10, echo=FALSE}
 #  hierarchical clustering or ranking for the number of copy number events
 
-plot_rank = function(df_rank, nudge_scalar=1){
-  df_rank$value = as.numeric(df_rank$value)
-  # df_rank = df_rank[(df_rank$Var1),]
-  df_rank$L1= factor(df_rank$L1, levels = c('BriTROC', 'organoids', 'pcawg', 'tcga'))
-  df_rank$labels = ifelse(as.character(df_rank$L1) == 'organoids', as.character(df_rank$Var1), NA)
-
-  df_rank = cbind.data.frame(df_rank, organoids= grepl("organoids", df_rank$L1))
-  ggplot(df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                      y=value, label=labels))+
-    geom_bar(stat = "identity", aes( fill= organoids), width=0.5)+
-    geom_bar(data = df_rank[df_rank$L1 == "organoids",], stat = "identity",
-             aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                      y=value, label=labels, width=5), width=100)+
-    lims(y=c(-max(df_rank$value)*0.3, 2+max(df_rank$value)))+
-    geom_label_repel(data=df_rank[c(T,F),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                                                y=value/2, label=labels), nudge_y=400*nudge_scalar)+
-    geom_label_repel(data=df_rank[c(F,T),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                                                y=value/2, label=labels), nudge_y=-400*nudge_scalar)+
-    scale_x_discrete(expand = c(.05, 0, .05, 0))+
-    scale_fill_manual(values = c("#f2a5a5", "black"))+
-    theme_cowplot()+
-    theme(legend.position = "bottom", axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-}
 # BriTROC2 (now deleted) was the same as BriTROC
 # all(num_segs_rank[num_segs_rank$L1 == 'BriTROC','value'] == num_segs_rank[num_segs_rank$L1 == 'BriTROC2','value'])
 
@@ -1715,6 +1728,10 @@ dev.off()
 saveRDS(plot_rank(melt(number_of_segments)), "robjects/rank_nsegments.RDS")
 saveRDS(plot_rank(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
                            Var1=rownames(ploidies)), nudge_scalar=0.02), "robjects/rank_ploidy.RDS")
+
+saveRDS(melt(number_of_segments), "robjects/rank_nsegments_df.RDS")
+saveRDS(cbind.data.frame(value=as.numeric(ploidies$ploidy), L1=gsub("ploidy_", "", as.character(ploidies$cohort)),
+                           Var1=rownames(ploidies)), "robjects/rank_ploidy_df.RDS")
 
 ```
 
@@ -1746,9 +1763,9 @@ ggplot(df_plotting, aes(y=value, x=x))+geom_line(aes(group=L1))+facet_wrap(.~L1,
 head(organoids_absolute_copynumber)
 ```
 
-## Comparing amplified/deleted genes between organoids and TCGA
+<!-- ## Comparing amplified/deleted genes between organoids and TCGA -->
 
-```{r, annotate_genes}
+```{r, annotate_genes, eval=FALSE}
 
 gtf.file <- file.path("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh37.87.gtf.gz")
 sqlite_file <- '../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Data/Homo_sapiens.GRCh37.87.sqlite'
@@ -1765,7 +1782,7 @@ ag <- ensembldb::genes(EnsDb.Hsapiens.v87,  return.type="DataFrame")
 geneInfo = cbind.data.frame(chrom=ag$seq_name, start=ag$gene_seq_start, end=ag$gene_seq_end, geneid=ag$entrezid, genename=ag$symbol)
 ```
 
-```{r, compare_amplification, dependson=c('annotate_genes')}
+```{r, compare_amplification, dependson=c('annotate_genes'), eval=FALSE}
 # data("geneInfo")
 gr_BriTROC <- lapply(segtables_BriTROC_absolute_copynumber, function(i) as(data.frame(i), "GRanges"))
 gr_genes_of_interest = as(data.frame(geneInfo[!(geneInfo$chrom %in% c('X', 'Y')), c('chrom', 'start', 'end', 'genename', 'geneid' )]), "GRanges")
@@ -1813,7 +1830,7 @@ subsample_samples = 1:length(all_ranges)
 
 ```
 
-```{r, compare_amplification_generalised, echo=FALSE, eval=TRUE, dependson=c('compare_amplification')}
+```{r, compare_amplification_generalised, echo=FALSE, eval=FALSE, dependson=c('compare_amplification')}
 ## scaling up to multiple genes (I have a problem with runtime)
 give_ploidy_gene_scaling <- function(sample, subset_genes_arg){
   
@@ -1908,13 +1925,13 @@ pheatmap((all_ploidies_2_df), annotation_row = ann_row, cluster_rows = FALSE, cl
 
 
 
-```{r, heatmap_ampldel_organoids, dependson=c('compare_amplification_generalised')}
+```{r, heatmap_ampldel_organoids, dependson=c('compare_amplification_generalised'), eval=FALSE}
 pheatmap((all_ploidies_2_df[ann_row == 'Organoids',]), cluster_rows = FALSE, cluster_cols = FALSE,
          show_rownames = TRUE, scale = "none", color=myColor, breaks=myBreaks)
 
 ```
 
-```{r, heatmap_ampldel_organoids_v2, dependson=c('compare_amplification_generalised')}
+```{r, heatmap_ampldel_organoids_v2, eval=FALSE, dependson=c('compare_amplification_generalised')}
 subsetgenes_2 <- c('ZWINT', 'CASC8', 'ERBB2', 'FAM84B', 'IKZF3', 'KIAA0196', 'LINC00964', 'MIEN1',
                    'MIR1204', 'MIR1205', 'MIR1206', 'MIR1207', 'MIR1208', 'MTSS1', 'MYC', 'NSMCE2',
                    'PCAT1', 'PGAP3', 'POU5F1B', 'PVT1', 'SQLE', 'TRIB1', 'ZNF536', 'ZNF572')
@@ -1925,16 +1942,26 @@ all_ploidies_batch2 = lapply(subsample_samples[grepl("^PDO", names(subsample_sam
                              give_ploidy_gene_scaling, subset_genes_arg=subsetgenes_2)
 ```
 
-```{r, heatmap_ampldel_organoids_v2_b, dependson=c('heatmap_ampldel_organoids_v2')}
+```{r, heatmap_ampldel_organoids_v2_b, dependson=c('heatmap_ampldel_organoids_v2'), eval=FALSE}
 all_ploidies_batch2b <- do.call('rbind', lapply(1:length(all_ploidies_batch2), function(j) cbind.data.frame(PDO=names(all_ploidies_batch2)[j], gene=names(all_ploidies_batch2[[j]]), CNval=all_ploidies_batch2[[j]]) ))
 
 give_ploidy_gene_scaling(sample = subsample_samples$PDO14, subset_genes_arg = "MIEN1")
 all_ploidies_batch2b %>% filter(PDO == 'PDO14', gene == 'MIEN1')
 
 levels_pdo <- c('PDO14', 'PDO5', 'PDO6', 'PDO11', 'PDO9')
+
 ggplot(all_ploidies_batch2b[all_ploidies_batch2b$PDO %in% levels_pdo,], aes(y=CNval, x=gene))+geom_bar(stat = "identity")+coord_flip()+
   facet_wrap(.~factor(PDO, levels=levels_pdo), nrow=1)+geom_hline(yintercept = 2, col='blue')
-ggsave("~/Desktop/genes_CN.pdf") 
+
+ggplot(all_ploidies_batch2b, aes(y=log2(CNval), x=gene))+geom_bar(stat = "identity")+coord_flip()+
+  facet_wrap(.~(PDO), nrow=1)+geom_hline(yintercept = log2(2), col='blue')+labs('CN (log2)')
+  # scale_y_continuous(trans = "log2")
+ggsave("../figures/genes_amplified.pdf", width=12) 
+
+ggplot(all_ploidies_batch2b %>% filter(PDO %in% levels_pdo, CNval > 4.4), aes(y=log2(CNval), x=gene))+geom_bar(stat = "identity")+coord_flip()+
+  facet_wrap(.~factor(PDO, levels=levels_pdo), nrow=1)+geom_hline(yintercept = 2, col='blue')
+ggsave("~/Desktop/genes_CN_log2_gt4.pdf") 
+
 crop <- function(a, thresh){
   a[,'cropped_bool'] = (a[,'CNval'] > thresh)
   a[a[,'CNval'] > thresh,'CNval'] = thresh
@@ -2018,7 +2045,7 @@ sort(TPM[which(TPM$gene_name == 'MYC'),])
 ```
 
 
-```{r, gene_ploidy_cosmic_plot, echo=FALSE, dependson=c('correlation_rnaseq_absoluteCN')}
+```{r, gene_ploidy_cosmic_plot, echo=FALSE, dependson=c('correlation_rnaseq_absoluteCN'), eval=FALSE}
 names(ploidies)
 names(ploidies[[1]])
 rownames(all_ploidies_2_df_original[match(rownames(ploidies), rownames(all_ploidies_2_df_original)),])[1:10]
@@ -2058,7 +2085,7 @@ all_ploidies_2_df_cat = sapply(1:nrow(all_ploidies_2_df_original), function(row_
 
 ```
 
-```{r, plot_cosmic, echo=FALSE, dependson=c('gene_ploidy_cosmic_plot')}
+```{r, plot_cosmic, echo=FALSE, dependson=c('gene_ploidy_cosmic_plot'), eval=FALSE}
 # all_ploidies_2_df_cat
 # t(apply((all_ploidies_2_df_cat), 1, function(i) as.numeric(as.factor(i))))
 all_ploidies_2_df_cat[all_ploidies_2_df_cat == 'other'] = NA
@@ -2081,7 +2108,7 @@ all_ploidies_2_df_cat_factors[ann_row == 'Organoids',]
 ```
 
 Amplifications/deletions of selected genes in organoids
-```{r, genes_discrete_organoids_ampdel, echo=FALSE, dependson=c('plot_cosmic', 'gene_ploidy_cosmic_plot')}
+```{r, genes_discrete_organoids_ampdel, echo=FALSE, dependson=c('plot_cosmic', 'gene_ploidy_cosmic_plot'), eval=FALSE}
 # subset_all_ploidies_2_df_cat_factors = all_ploidies_2_df_cat_factors[ann_row %in% c('TCGA', 'Organoids'),]
 # 
 # pheatmap(sapply(subset_all_ploidies_2_df_cat_factors, as.numeric),
@@ -2242,8 +2269,8 @@ exposures[1,]
 
 ```
 
-### Copy number status of regions of the genome which seem to be subclonal according to scDNA
-```{r, cn_regions_subclonal, echo=FALSE}
+<!-- ### Copy number status of regions of the genome which seem to be subclonal according to scDNA -->
+```{r, cn_regions_subclonal, echo=FALSE, eval=F}
 
 give_plot_areas_of_interest = function(segtab, chrom_AOI, start_AOI, end_AOI, subclonal_line1, subclonal_line2, title){
   region_subclonal = as(cbind.data.frame(chromosome=chrom_AOI, start=start_AOI,
@@ -2282,7 +2309,7 @@ give_plot_areas_of_interest = function(segtab, chrom_AOI, start_AOI, end_AOI, su
 
 ```
 
-```{r, cn_regions_subclonal_individual, echo=FALSE}
+```{r, cn_regions_subclonal_individual, echo=FALSE, eval=FALSE}
 give_plot_areas_of_interest_individual = function(segtab, chrom_AOI, start_AOI, end_AOI, subclonal_line1, subclonal_line2, title){
   region_subclonal = as(cbind.data.frame(chromosome=chrom_AOI, start=start_AOI,
                                              end=end_AOI),
@@ -2316,7 +2343,7 @@ give_plot_areas_of_interest_individual = function(segtab, chrom_AOI, start_AOI, 
   - Chromosome 5
 - PDO6  
     - Chromosome 4, small region of extreme amplification
-```{r, cn_regions_subclonal2, echo=FALSE, dependson=c('cn_regions_subclonal', 'cn_regions_subclonal_individual')}
+```{r, cn_regions_subclonal2, echo=FALSE, dependson=c('cn_regions_subclonal', 'cn_regions_subclonal_individual'), eval=FALSE}
 
 plts_AOI_subclonal = list(give_plot_areas_of_interest(segtab=segtables_organoids_absolute_copynumber$PDO2,
                             chrom_AOI=7, start_AOI=1,
@@ -2348,10 +2375,10 @@ plts_AOI_subclonal = list(give_plot_areas_of_interest(segtab=segtables_organoids
                             subclonal_line1=2, subclonal_line2=3, title='Chrom 4 (end) in PDO6'))
 ```
 
-```{r, cn_regions_subclonal3, dependson=c('cn_regions_subclonal2'), echo=FALSE}
+```{r, cn_regions_subclonal3, dependson=c('cn_regions_subclonal2'), echo=FALSE, eval=FALSE}
 do.call('grid.arrange', c(sapply(plts_AOI_subclonal, `[`, 2), list(nrow=2)))
 ```
 
-```{r, cn_regions_subclonal4, dependson=c('cn_regions_subclonal2')}
+```{r, cn_regions_subclonal4, dependson=c('cn_regions_subclonal2'), eval=FALSE}
 sapply(plts_AOI_subclonal, `[`, 1)
 ```
