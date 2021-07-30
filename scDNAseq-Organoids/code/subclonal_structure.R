@@ -79,6 +79,7 @@ for(org_it in organoid_list){
   ph_nosexchrom$gtable$grobs[[6]]$children[[1]]$vjust = 0.45
   saveRDS(list(mat_breaks=mat_breaks,col_list=col_list), paste0("../robjects/fig2_colours.RDS"))
   saveRDS(absCN[[org_it]], paste0("../robjects/fig2_subclonal_hclust", org_it, "_2.RDS"))
+  saveRDS(absCN[[org_it]][,!sexchrom_bool], paste0("../robjects/fig2_subclonal_hclust_nosexchrom", org_it, "_2.RDS"))
   saveRDS(ph, paste0("../robjects/fig2_subclonal_hclust", org_it, ".RDS"))
   saveRDS(ph_nosexchrom, paste0("../robjects/fig2_subclonal_hclust_nosexchrom", org_it, ".RDS"))
   # ph$gtable$grobs[[1]]$gp <- gpar(lwd = 5)
@@ -227,3 +228,22 @@ pvals_chisq <- lapply(organoid_list, function(org){
 })
 names(pvals_chisq) <- organoid_list
 xtable::xtable(data.frame(fraction_heterogeneous=sapply(pvals_chisq, function(j) mean(j < 0.05))))
+
+data_orgs_centered_CI$pvalstat = NA ## init
+for(org_it in organoid_list){
+  data_orgs_centered_CI[data_orgs_centered_CI$L1 == org_it,'pvalstat'] = pvals_chisq[[org_it]] < 0.05
+}
+sum(is.na(data_orgs_centered_CI$pvalstat))
+table(data_orgs_centered_CI$pvalstat)
+
+ggplot(data_orgs_centered_CI)+
+  geom_ribbon(aes(x=pos_num, ymin=censoredX5, ymax=censoredX95, group=L1))+
+  geom_point(aes(x=pos_num, y=0, col=( pvalstat )), size=0.1)+
+  facet_nested(L1~chrom, scales = "free", space="free_x")+theme_bw()+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  lims(y=c(-1, 1))+theme(legend.position = "bottom")+
+  labs(x='90% confidence intervals of the scaled CN values of bins, across organoids',
+       y='Value of scaled CN of bin')+labs(col='Subclonal bin')
+ggsave(paste0("../plots/subclonal_hclust_CI_across_genome_3_test.pdf"), width = 14)
