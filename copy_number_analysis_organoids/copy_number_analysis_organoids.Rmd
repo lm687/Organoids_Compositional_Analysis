@@ -1081,51 +1081,10 @@ grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
 
 Now doing the same with a different imputation vlaue
 ```{r, raw_hclust_lowerinput, dependson=c('dendrogram_gen_impute', 'hierarchical_compositional')}
-give_dendrogram_from_imputation <- function(impute_VALUE){
-  dendroimputclr_all_lowerinput = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]], impute_VALUE)), 'matrix'), modify_labels=F, keep_only_PDO = F)
-  
-  dend_data_inputclr0004 <- dendro_data(dendroimputclr_all_lowerinput, type = "rectangle")
-  dend_data_inputclr0004$labels$label = as.character(dend_data_inputclr0004$labels$label)
-  dend_data_inputclr0004$labels$label[!grepl('PDO', dend_data_inputclr0004$labels$label)] = ""
-  p_v2_0004 <- ggplot(dend_data_inputclr0004$segments) +
-    geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
-    geom_label_repel(data = dend_data_inputclr0004$labels, aes(x, y, label = gsub('Organoid ', '', label)),
-              hjust = 0, size = 3, vjust=0, nudge_y = -2)+
-    ylim(-3, 15)+
-    theme_bw()+
-    theme(axis.title.x=element_blank(),
-      axis.text.x=element_blank(),
-      axis.ticks.x=element_blank(),
-      axis.title.y=element_blank(),
-      axis.text.y=element_blank(),
-      axis.ticks.y=element_blank(),
-      panel.grid = element_blank(),
-      panel.border = element_blank(),
-      panel.background = element_blank())+
-      scale_x_continuous(expand = c(extra_expand, extra_expand))+
-    scale_y_continuous(expand = c(0.5, 0, 0.05, 0))
-  
-  heatmap_dendrogram_df_inputclr0004 = t(all_natgen$UpdatedExposures[rownames(all_natgen$UpdatedExposures)[match(gsub("Organoid ", "", labels(dendroimputclr_all_lowerinput)),rownames(all_natgen$UpdatedExposures))],])
-  
-  p2_inputclr_0004 = ggplot(melt(heatmap_dendrogram_df_inputclr0004), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
-      theme(axis.title.x=element_blank(),  legend.title=element_blank(),
-            legend.text=element_text(size=10),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank(),
-          axis.title.y=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks.y=element_blank(),  legend.position = "bottom",
-          panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-          panel.border = element_blank())+
-    scale_fill_brewer(palette="Dark2")+
-        scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
-    guides(fill = guide_legend(nrow = 1))
-  
-  grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE))
-}
-
 give_dendrogram_from_imputation(1/250)
 give_dendrogram_from_imputation(1/100)
+
+saveRDS(all_natgen[[which_natgen]], file = paste0("robjects/allnatgen_", which_natgen, ".RDS"))
 
 ```
 
