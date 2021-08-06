@@ -267,3 +267,77 @@ plot_rank = function(df_rank, nudge_scalar=1, size_labels=10){
           axis.ticks.x=element_blank())
   
 }
+
+give_distance_from_imputation <- function(impute_VALUE){
+  dist(as(compositions::clr(impute(all_natgen[[which_natgen]], impute_VALUE)), 'matrix'))
+}
+
+give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL, return_grob=F, expand_vec=c(0.5, 0, 0.05, 0), ...){
+  
+  if(!plot & return_grob){
+    stop('You cannot have plot=F and return_grob=T')
+  }
+  
+  if(is.null(exposures)){
+    .exposures <- all_natgen[[which_natgen]]
+  }else{
+    .exposures <- exposures
+  }
+  
+  dendroimputclr_all_lowerinput = give_dendrogram_generalised(as(compositions::clr(impute(.exposures, impute_VALUE)), 'matrix'), modify_labels=F, keep_only_PDO = F, ...)
+  
+  dend_data_inputclr0004 <- dendro_data(dendroimputclr_all_lowerinput, type = "rectangle")
+  dend_data_inputclr0004$labels$label = as.character(dend_data_inputclr0004$labels$label)
+  dend_data_inputclr0004$labels$label[!grepl('PDO', dend_data_inputclr0004$labels$label)] = ""
+  
+    if(plot){
+    p_v2_0004 <- ggplot(dend_data_inputclr0004$segments) +
+      geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
+      geom_label_repel(data = dend_data_inputclr0004$labels, aes(x, y, label = gsub('Organoid ', '', label)),
+                       hjust = 0, size = 3, vjust=0, nudge_y = -2)+
+      ylim(-3, 15)+
+      theme_bw()+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),
+            axis.title.y=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks.y=element_blank(),
+            panel.grid = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank())+
+      scale_x_continuous(expand = c(extra_expand, extra_expand))+
+      scale_y_continuous(expand = expand_vec)
+    
+    ## here there used  to be a probelm in that I used "labels", but now using "label" the order needs to be changed
+    heatmap_dendrogram_df_inputclr0004 = t(.exposures[rownames(.exposures)[match(gsub("Organoid ", "", label(dendroimputclr_all_lowerinput)[dendroimputclr_all_lowerinput$order]),rownames(.exposures))],])
+    
+    p2_inputclr_0004 = ggplot(melt(heatmap_dendrogram_df_inputclr0004), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+      theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+            legend.text=element_text(size=10),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),
+            axis.title.y=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks.y=element_blank(),  legend.position = "bottom",
+            panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.border = element_blank())+
+      scale_fill_brewer(palette="Dark2")+
+      scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
+      guides(fill = guide_legend(nrow = 1))
+    
+    grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE))
+    
+    if(return_grob){
+      return(grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE)))
+    }
+    
+    }else{
+      return(list(plot_data=dend_data_inputclr0004,
+                  dendogram_data=dendroimputclr_all_lowerinput))
+    }
+  
+}
+
+## make sure that our conclusions stand for several imputation values
+## need to find the large subclades without organoids
