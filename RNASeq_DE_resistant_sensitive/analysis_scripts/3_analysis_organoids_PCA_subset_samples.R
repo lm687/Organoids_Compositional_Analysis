@@ -139,6 +139,33 @@ coding <- readRDS("../../copy_number_analysis_organoids/robjects/coding_genes.RD
 #--------------------------------------------------------------------------------#
 #--------------------------------------------------------------------------------#
 data(c2BroadSets) ## from GSVAdata
+#--------------------------------------------------------------------------------#
+
+# Are the normalised counts normally-distributed?
+png("../figures/pairs_for_PCA_MVN_DESeq2counts.png")
+pairs(normalised_counts, col=alpha('black', 0.02), pch=19)
+dev.off()
+png("../figures/pairs_for_PCA_MVN_DESeq2countlog2s.png")
+pairs(log2(normalised_counts+1), col=alpha('black', 0.02), pch=19)
+dev.off()
+
+pairs(t(normalised_counts[1:4,]))
+pairs(t(log2(normalised_counts[1:4,])))
+
+# for(i in 1:nrow(normalised_counts)){
+plot(0, 0, xlim=c(-2, 2), ylim=c(-3, 5))
+for(i in 1:4){
+  b <- qqnorm(normalised_counts[i,], plot.it = F)
+  b <- lapply(b, function(i) i[order(b$x)])
+  b$x <- as.vector(scale(b$x))
+  b$y <- as.vector(scale(b$y))
+  lines(b$x, b$y, type='l')
+}
+
+## prcompw ith log2 normalised counts
+prcomp_log2 <- prcomp(t(log2(normalised_counts+1)))
+ggplot(cbind.data.frame(prcomp_log2$x[,1:2], lab=rownames(prcomp_log2$x)), aes(x=PC1, y=PC2, label=lab))+geom_point()+geom_label_repel()
+#--------------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------------#
 ## same with normalised counts
@@ -160,6 +187,7 @@ ggplot(pca_with_gsva_annotation_NC, aes(x=PC1, y=PC2, col=KAUFFMANN_DNA_REPAIR_G
 ggsave("../figures/PCA_RNASeq/PCA_counts_subset_KAUFFMANN_DNA_REPAIR_GENES.png", width = 6.5, height = 5)
 
 saveRDS(pca_with_gsva_annotation_NC, "../objects/fig4_pca_with_gsva_annotation_NC.RDS")
+saveRDS(prcomp_normalisedcounts, "../objects/fig4_pca_with_gsva_annotation_NC_prcomp.RDS")
 ggplot(pca_with_gsva_annotation_NC, aes(x=PC1, y=PC2, col=OUELLET_CULTURED_OVARIAN_CANCER_INVASIVE_VS_LMP_UP, label=labels))+
   geom_point()+
   geom_label_repel()+

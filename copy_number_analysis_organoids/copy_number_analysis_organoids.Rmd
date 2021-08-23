@@ -353,6 +353,9 @@ Signatures 3 and 6 seem to be quite important for the underrepresented groups
 
 ## Dendrogram based on the signatures
 The colour of the labels shows whether there is any zero exposure in the vector of exposures of the sample.
+
+**This section has been deprecated - we are not using robust cle anymore, we are using imputation.**
+
 ```{r, princomp_clr_implementation, eval=TRUE, dependson=c('princomp_clr'), warning=FALSE, echo=FALSE}
 all_natgen = lapply(natgen, function(i) rbind(i, org))
 natgen_clr = lapply(natgen, function(i) as(clr(i), 'matrix'))
@@ -424,7 +427,7 @@ dev.off()
 ```
 
 ### Heatmap of the samples in the dendrogram
-```{r, heatmap_dendrogram, echo=FALSE}
+```{r, heatmap_dendrogram, echo=FALSE, include=FALSE}
 heatmap_dendrogram_df = t(all_natgen$UpdatedExposures[rownames(all_natgen$UpdatedExposures)[match(gsub("Organoid ", "", labels(dendro_UpdatedExposures)),rownames(all_natgen$UpdatedExposures))],])
 colnames_heatmap_dendrogram_df = colnames(heatmap_dendrogram_df)
 # colnames_heatmap_dendrogram_df[1:10]
@@ -526,7 +529,7 @@ plot(dendro_UpdatedExposures)
 
 Which cohorts are these samples from?
 ```{r, print_underrepresented_labels}
-underrepresented_labels
+cat(paste0(underrepresented_labels, sep=', '))
 ```
 
 
@@ -625,7 +628,7 @@ sum(apply(all_natgen$UpdatedExposures[!as.logical(df_logistic$bool_underrepresen
 ```
 
 ```{r, compositional}
-give_pca = function(data_matrix, center = T, title='', names, names_bool=T, give_loadings=F, print_labels=T, groups=NULL,groups_shape=NULL, nrow_legend=3, size_points=1, print_both_labels=FALSE){
+give_pca = function(data_matrix, center = T, title='', names, names_bool=T, give_loadings=F, print_labels=T, groups=NULL,groups_shape=NULL, nrow_legend=3, size_points=1, print_both_labels=FALSE, group_is_factor=T){
   prcomp_res = prcomp(data_matrix, scale. = TRUE, center = center)
   eigs <- prcomp_res$sdev^2
   if(!names_bool){
@@ -653,7 +656,11 @@ give_pca = function(data_matrix, center = T, title='', names, names_bool=T, give
     a
   }else{
     if(!is.null(groups)){
-      df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=as.factor(groups))
+      if(group_is_factor){
+        df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=as.factor(groups))
+      }else{
+        df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=(groups))
+      }
     }else{
       df = cbind.data.frame(prcomp_res$x[,1:2], names=names)
     }
@@ -704,7 +711,8 @@ PCA of organoids with three variations
 ```{r, compositional3, fig.height=3, dependson=c('compositional'), echo=FALSE}
 grid.arrange(give_pca(org, title='Untransformed, centered', names=rownames(org)),
 give_pca(org, center = F, title='Untransformed, uncentered', names=rownames(org)),
-give_pca(as(compositions::clr(org), 'matrix'), title='CLR, centered', names=rownames(org)), ncol=3)
+give_pca(as(compositions::clr(org), 'matrix'), title='CLR, centered', names=rownames(org)),
+give_pca(as(compositions::clr(impute(org, 1e-2)), 'matrix'), title='CLR+imp, centered', names=rownames(org)), ncol=4)
 ```
 
 Plot the loadings of the organoids (PCA only with organoids)
@@ -820,6 +828,8 @@ give_pca(as(compositions::clr(normalise_rw(1e-2+all_natgen[[which_natgen]])), 'm
          groups=c(natgen_metadata[[which_natgen]]$study, rep('organoids', nrow(org)))), ncol=3)
 ```
 
+With imputation of 0.01
+
 ```{r, compositional7b, fig.height=3, dependson=c('compositional'), echo=FALSE}
 grid.arrange(give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), title='Untransformed, centered',
                       names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
@@ -829,8 +839,13 @@ give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), center = F, title='Untra
          groups=grouping_cohort_all_basic, nrow_legend=1),
 give_pca(as(compositions::clr(normalise_rw(1e-2+all_natgen[[which_natgen]])), 'matrix'), title='CLR, centered',
          names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
-         groups=grouping_cohort_all_basic, nrow_legend=1), ncol=3)
+         groups=grouping_cohort_all_basic, nrow_legend=1),
+give_pca(as(compositions::clr(normalise_rw(1e-2+all_natgen[[which_natgen]])), 'matrix'), title='CLR, centered',
+         names=c(rownames(all_natgen[[which_natgen]])), give_loadings = F, print_labels=F,
+         groups=all_natgen[[which_natgen]][,'s3'], group_is_factor=F, groups_shape=NULL, nrow_legend=1), ncol=4)
 ```
+
+With imputation of 0.01
 
 ```{r, compositional7_loading, fig.height=3, dependson=c('compositional'), echo=FALSE}
 grid.arrange(give_pca(normalise_rw(1e-2+all_natgen[[which_natgen]]), title='Untransformed, centered',
@@ -851,8 +866,29 @@ createBarplot((org/org[,1])[,-1], remove_labels = TRUE, order_labels = names(sor
   ggtitle('ALR with s1 as baseline')
 ```
 
+PCA with imputation of 0.01, as in the dendrogram
+```{r, pca_imputation, fig.height=4, dependson=c('compositional'), echo=FALSE}
+grid.arrange(give_pca(as(compositions::clr(impute(org, 1e-2)), 'matrix'), title='CLR+imp, centered', names=rownames(org)),
+give_pca(as(compositions::clr(impute(org, 1e-2)), 'matrix'), title='CLR+imp, centered', names=rownames(org), give_loadings = T), ncol=2)
+```
+
+PCA of ALR with imputation of 0.01, as in the dendrogram
+```{r, pca_imputationALR, fig.height=4, dependson=c('compositional'), echo=FALSE}
+alr_first_cat <- function(i){
+  (log(i)/log(i)[,1])[,-1]
+}
+grid.arrange(give_pca(as((alr_first_cat(impute(impute(org, 1e-2), 1e-2))), 'matrix'), title='ALR+imp, centered', names=rownames(org)),
+give_pca(as(alr_first_cat(impute(org, 1e-2)), 'matrix'), title='ALR+imp, centered', names=rownames(org), give_loadings = T), ncol=2)
+```
+
+
 ```{r, pairs_alr}
 pairs( (org/org[,1])[,-1])
+```
+
+```{r, scatterplots}
+grid.arrange(ggplot(cbind.data.frame(s2=org[,'s2'], s4=org[,'s4'], lab=rownames(org)), aes(x=s2, y=s4, label=lab))+geom_point()+geom_label_repel(),
+ggplot(cbind.data.frame(s2s1=org[,'s2']/org[,'s1'], s4s1=org[,'s4']/org[,'s1'], lab=rownames(org)), aes(x=s2s1, y=s4s1, label=lab))+geom_point()+geom_label_repel(), nrow=1)
 ```
 
 ```{r, pairs_alr_cohort}
@@ -1017,6 +1053,12 @@ dendroimputclr_pdo = give_dendrogram_generalised(as(compositions::clr(impute(all
 dendroimputclr_all = give_dendrogram_generalised(as(compositions::clr(impute(all_natgen[[which_natgen]], 1e-2)), 'matrix'), modify_labels=F, keep_only_PDO = F)
 ```
 
+Number of samples for this clustering analysis:
+
+```{r, num_samples_cluster}
+dim(all_natgen[[which_natgen]])
+```
+
 ```{r, raw_hclust, dependson=c('dendrogram_gen_impute', 'hierarchical_compositional')}
 
 dend_data_inputclr <- dendro_data(dendroimputclr_all, type = "rectangle")
@@ -1063,6 +1105,18 @@ p2_inputclr = ggplot(melt(heatmap_dendrogram_df_inputclr), aes(x=Var2, y=value, 
   scale_fill_brewer(palette="Dark2")+
       scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
   guides(fill = guide_legend(nrow = 1))
+
+p2_inputclr_with_ticks = ggplot(melt(heatmap_dendrogram_df_inputclr), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+    theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+          legend.text=element_text(size=10),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "bottom",
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.border = element_blank())+
+  scale_fill_brewer(palette="Dark2")+
+      scale_x_discrete(expand = c(0, extra_expand_v2))+
+  guides(fill = guide_legend(nrow = 1))
 # 
 
 pdf("figures/barplot_dendrogam_impute10emin2_clr.pdf", width=10, height = 4)
@@ -1072,6 +1126,7 @@ dev.off()
 saveRDS(p_v2, "robjects/dendrograminputclr.RDS")
 saveRDS(dendroimputclr_all, "robjects/dendrograminputclr_tree.RDS")
 saveRDS(p2_inputclr, "robjects/heatmapinputclr.RDS")
+saveRDS(p2_inputclr_with_ticks, "robjects/heatmapinputclr_with_ticks.RDS")
 
 grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
 # grid.arrange(p, p3, heights=c(2,1))

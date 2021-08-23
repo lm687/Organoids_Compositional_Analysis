@@ -218,27 +218,103 @@ rect6 <- rectGrob(
 pdf("fig2_v3.pdf", height = 9, width = 7)
 plot_grid(plot_grid(b+draw_grob(rect4), plot_grid(a)+draw_grob(rect)+
                       draw_line(
+                        x = c(.22, .27),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+draw_line(
                         x = c(.47, .51),
                         y = c(-0.05, 0.0),
                         color = "red", size = .5,
                         arrow = arrow(length = unit(0.03, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.35, .40),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.26, .31),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.77, .82),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
                       ),
                       # draw_image(img , x = 1, y = 1, scale = .9),
                pdo2specific2+ggtitle(''), nrow=1, rel_widths = c(4,4,1.6)),
           plot_grid(d+draw_grob(rect5), plot_grid(c)+draw_grob(rect2)+
                       draw_line(
-                        x = c(.41, .44),
+                        x = c(.22, .27),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+draw_line(
+                        x = c(.39, .44),
                         y = c(-0.05, 0.0),
                         color = "red", size = .5,
                         arrow = arrow(length = unit(0.03, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.35, .40),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.26, .31),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.77, .82),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.44, .49),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.61, .66),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
                       ), pdo3specific2+ggtitle(''), nrow=1, rel_widths = c(4,4,1.6)),
           plot_grid(f+draw_grob(rect6), plot_grid(e)+draw_grob(rect3)+
                       draw_line(
-                        x = c(.31, .33),
+                        x = c(.22, .27),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+draw_line(
+                        x = c(.28, .33),
                         y = c(-0.05, 0.0),
                         color = "red", size = .5,
                         arrow = arrow(length = unit(0.03, "npc"))
-                      ), pdo6specific2+ggtitle(''), nrow=1, rel_widths = c(4,4,1.6)),
+                      )+
+                      draw_line(
+                        x = c(.44, .49),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )+
+                      draw_line(
+                        x = c(.61, .66),
+                        y = c(-0.05, 0.0),
+                        color = "black", size = .5,
+                        arrow = arrow(length = unit(0.02, "npc"))
+                      )
+                      , pdo6specific2+ggtitle(''), nrow=1, rel_widths = c(4,4,1.6)),
           g, nrow=4, labels = c('PDO2', 'PDO3', 'PDO6'), 
           rel_heights = c(4,4,4,1))
 dev.off()
