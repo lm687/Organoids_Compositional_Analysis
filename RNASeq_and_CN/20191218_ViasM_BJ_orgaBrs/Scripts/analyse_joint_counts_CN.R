@@ -1111,6 +1111,11 @@ plot(remove_na(joint_counts_CN$scaled_centered_weighted_CN[joint_counts_CN$Gene 
 cor(remove_na(joint_counts_CN$scaled_centered_weighted_CN[joint_counts_CN$Gene == 'MYC',]),
      remove_na(joint_counts_CN$scaled_centered_DESeq[joint_counts_CN$Gene == 'MYC',]))
 
+TP53 <- joint_counts_CN %>% filter(CN.gene_name == 'TP53')
+ggplot(TP53, aes(x=log2(CN.value), y=DESeq.count, label=PDO))+geom_point()+
+  geom_label_repel(alpha=0.2)+
+  ggtitle('TP53')+labs(x='Absolute CN (log2)', y='DESeq2 counts')
+ggsave("../../figures_GRCh37/TP53.pdf", height = 4, width = 4)
 
 ZWINT <- joint_counts_CN %>% filter(CN.gene_name == 'ZWINT')
 ggplot(ZWINT, aes(x=log2(CN.value), y=DESeq.count, label=PDO))+geom_point()+
