@@ -141,50 +141,41 @@ I would run the files in the order they appear above.
 
 ### General R packages
 ```
-library(AnnotationHub)
-library(Biobase)
-library(CNTools)
-library(CompSign)
-library(DESeq2)
-library(EnvStats)
-library(GSVA)
-library(GSVAdata)
-library(GenomicRanges)
-library(MASS)
-library(QDNAseq)
-library(RColorBrewer)
-library(ReactomePA)
-library(biomaRt)
-library(compositions)
-library(cowplot)
-library(dendextend)
-library(dplyr)
-library(fgsea)
-library(ggdendro)
-library(ggh4x)
-library(ggplot2)
-library(ggplotify)
-library(ggrepel)
-library(ggthemr)
-library(grid)
-library(gridExtra)
-library(jcolors)
-library(latex2exp)
-library(lsa)
-library(parallel)
-library(pheatmap)
-library(readxl)
-library(reshape2)
-library(tidyverse)
-library(viridis)
-require(GSVA)
-require(GSVAdata)
-require(biomaRt)
-require(dplyr)
-require(ggplot2)
-require(ggrepel)
-require(gridExtra)
-require(jcolors)
-require(pheatmap)
-require(reshape2)
+library(AnnotationHub) ## Bioconductor
+library(Biobase) ## Bioconductor
+library(biomaRt) ## Bioconductor
+library(CNTools) ## Bioconductor
+library(CompSign) ## github
+library(DESeq2) ## Bioconductor
+library(EnvStats) ## CRAN
+library(GSVA) ## Bioconductor
+library(GSVAdata) ## Bioconductor
+library(GenomicRanges) ## Bioconductor
+library(MASS) ## CRAN
+library(QDNAseq) ## Bioconductor
+library(RColorBrewer) ## CRAN
+library(ReactomePA) ## Bioconductor
+library(biomaRt) ## Bioconductor
+library(compositions) ## CRAN
+library(cowplot) ## CRAN
+library(dendextend) ## CRAN
+library(dplyr) ## CRAN
+library(fgsea) ## Bioconductor
+library(ggdendro) ## CRAN
+library(ggh4x) ## CRAN
+library(ggplot2) ## CRAN
+library(ggplotify) ## CRAN
+library(ggrepel) ## CRAN
+library(ggthemr) ## github
+library(grid) ## CRAN
+library(gridExtra) ## CRAN
+library(jcolors) ## CRAN
+library(latex2exp) ## CRAN
+library(lsa) ## CRAN
+library(parallel) ## CRAN
+library(pheatmap) ## CRAN
+library(readxl) ## CRAN
+library(reshape2) ## CRAN
+library(tidyverse) ## CRAN
+library(viridis) ## CRAN
 ```
