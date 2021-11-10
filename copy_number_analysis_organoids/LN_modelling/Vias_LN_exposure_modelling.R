@@ -13,9 +13,9 @@ library(optparse)
 library(reshape2)
 library(pheatmap)
 library(bayesplot)
-source("../../../../../GlobalDA/code/2_inference/helper/helper_DA_stan.R")
-source("../../../../../GlobalDA/code/3_analysis/helper/helper_analyse_posteriors.R")
-source("../../../../../GlobalDA/code/2_inference_TMB/helper_TMB.R")
+source("../../../../GlobalDA/code/2_inference/helper/helper_DA_stan.R")
+source("../../../../GlobalDA/code/3_analysis/helper/helper_analyse_posteriors.R")
+source("../../../../GlobalDA/code/2_inference_TMB/helper_TMB.R")
 Nits = 2500
 
 model_file_name = "../../../../../ProjectOvarianMultisampleTree/code/files_analysis/modelling_LN/stan_fit_simple_LN.stan"

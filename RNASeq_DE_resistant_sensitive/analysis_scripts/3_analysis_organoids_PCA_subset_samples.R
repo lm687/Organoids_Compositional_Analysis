@@ -100,10 +100,12 @@ normalised_counts <- renormalised_counts
 #--------------------------------------------------------------------------------#
 ## Removing samples with 3' bias
 
-normalised_counts = normalised_counts[,!(colnames(normalised_counts) %in% c('PDO14', 'PDO16', 'PDO18',
-                                                                            'PDO13', 'PDO4', 'PDO9',
-                                                                            'PDO17'))]
+## subset done above
+# normalised_counts = normalised_counts[,!(colnames(normalised_counts) %in% c('PDO14', 'PDO16', 'PDO18',
+#                                                                             'PDO13', 'PDO4', 'PDO9',
+#                                                                             'PDO17'))]
 normalised_counts = normalised_counts[rowSums(normalised_counts)>0,]
+saveRDS(normalised_counts, "../objects/normalised_counts_RNASeq.RDS")
 prcomp_normalisedcounts = prcomp(t(normalised_counts), scale. = TRUE, center = TRUE)
 #--------------------------------------------------------------------------------#
 
@@ -605,13 +607,28 @@ ssgsea <- gsva(as(rename_rows(normalised_counts), 'matrix'), c2BroadSets, method
 ssgsea_repair <- ssgsea[c('KEGG_HOMOLOGOUS_RECOMBINATION', 'KEGG_MISMATCH_REPAIR',
          'KEGG_BASE_EXCISION_REPAIR', 'KEGG_NUCLEOTIDE_EXCISION_REPAIR',
          'KEGG_NON_HOMOLOGOUS_END_JOINING',
-         'KEGG_ERBB_SIGNALING_PATHWAY'),]
+         'KEGG_ERBB_SIGNALING_PATHWAY', 'KEGG_WNT_SIGNALING_PATHWAY', 'WNT_SIGNALING' ),]
 saveRDS(ssgsea_repair, "../objects/fig3_ssgsea_repair.RDS")
 
+# reactome_pa <- ReactomePA::enrichPathway(normalised_counts)
 
 pdf("../figures/other_DE/pathways_heatmap_orgs.pdf", height = 4, width = 7)
 pheatmap(ssgsea_repair)
 dev.off()
+pdf("../figures/other_DE/pathways_heatmap_orgs_withWNT.pdf", height = 4, width = 7)
+pheatmap(ssgsea_repair)
+dev.off()
+
+wnt_expression <- normalised_counts[match(t2g$ensembl_gene_id[match(t2g$external_gene_name[grep('WNT', t2g$external_gene_name)],
+                                                  t2g$external_gene_name)], rownames(normalised_counts)),]
+rownames(wnt_expression) <- t2g$external_gene_name[match(rownames(wnt_expression), t2g$ensembl_gene_id)]
+wnt_expression <- wnt_expression[!is.na(rownames(wnt_expression)),]
+ggplot(melt(wnt_expression),
+       aes(x=factor(Var1, levels=unique(rownames(wnt_expression)[order(rowSums(wnt_expression))])),
+           y=value, group=Var2, col=Var2))+geom_line()+scale_y_continuous(trans = "log2")+
+  labs(x='WNT genes', y='Gene expression (normalised counts)', col='PDO')+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+ggsave("../figures/PCA_RNASeq/WNT_genes.png", width = 5, height = 5)
 
 ggplot(cbind.data.frame(prcomp_normalisedcounts$x[,1:2], PDO=colnames(normalised_counts),
                         GAPDH=log(unlist(normalised_counts[gene_to_ensembl('POLE'),]))),
