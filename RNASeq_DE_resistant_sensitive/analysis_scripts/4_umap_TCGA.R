@@ -16,6 +16,8 @@ library(jcolors)
 
 set.seed(1325)
 
+load_data <- T
+
 if(load_data){
   load("../objects/umap_image.RData")
 }else{
@@ -51,7 +53,7 @@ if(load_data){
   
   ## Clustering of TCGA
   
-  umap_TCGA <- umap(counts_DESeq_TCGA)
+  # umap_TCGA <- umap(counts_DESeq_TCGA)
   umap_2 <- umap(t(counts_DESeq_TCGA))
   
   annotation_umap <- cbind.data.frame(Gene=rownames(counts_DESeq_TCGA))
@@ -85,8 +87,12 @@ if(load_data){
   matched_exposures <- exposures_TCGA[match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA), query_GDC$results[[1]]$id)], 1, 12),
                                             rownames(exposures_TCGA)),]
   
-  matched_group_WGD <- cutree(cluster_fig1, k=2)[match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA), query_GDC$results[[1]]$id)], 1, 12),
-                                                       names(cutree(cluster_fig1, k=2)))]
+  cutree_hclust <- cutree(cluster_fig1, k=2)
+  match_counts_cluster <- match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA),
+                                                                             query_GDC$results[[1]]$id)],
+                                          1, 12),
+                                names(cutree_hclust))
+  matched_group_WGD <- cutree_hclust[match_counts_cluster]
   matched_group_genes <- TCGA_genes[match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA), query_GDC$results[[1]]$id)], 1, 12),
                                           TCGA_genes$Sample)]
   TCGA_genes
@@ -107,6 +113,8 @@ if(load_data){
   colnames(df_umap_2)
   df_umap_2$brca_status = brca$Status[match(df_umap_2$case_submitter_id, brca$Sample)]
   
+  table(df_umap_2$group_clr)
+  table(df_umap_2$X2 < -4)
   
   ## there seems to be a very clear split by the second umap component
   ggplot(df_umap_2,
@@ -139,7 +147,12 @@ if(load_data){
          aes(x=X1, y=X2, col=consensusTME.Fibroblasts))+geom_point() ## 
   ggplot(df_umap_2,
          aes(x=X1, y=X2, col=brca_status))+geom_point() ## no separation by brca status
+
+  ggplot(df_umap_2,
+         aes(x=X1, y=X2, col=as.numeric(age_at_diagnosis)))+geom_point() ##age
   
+  ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[grepl('__alignment_not_unique', rownames(counts_DESeq_TCGA)),]),
+         aes(x=X1, y=X2, col=log(gene)))+geom_point() ## alignment not unique
   
   ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[grepl('ENSG00000136997', rownames(counts_DESeq_TCGA)),]),
          aes(x=X1, y=X2, col=gene))+geom_point() ## not separated by MYC
@@ -169,6 +182,12 @@ if(load_data){
   ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[grepl(to_ens('AL355075.4'), rownames(counts_DESeq_TCGA)),]),
          aes(x=X1, y=X2, col=log(gene)))+geom_point()+labs(col='AL355075.4')+scale_colour_jcolors_contin("pal3")+theme(legend.position = 'bottom'), nrow=1)
   dev.off()
+  
+  hist(counts_DESeq_TCGA[grepl(to_ens('STAT1'), rownames(counts_DESeq_TCGA)),], breaks=200)
+  ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[grepl(to_ens('STAT1'), rownames(counts_DESeq_TCGA)),]),
+         aes(x=X1, y=X2, col=log(gene)))+geom_point()+labs(col='STAT1')+scale_colour_jcolors_contin("pal3")+theme(legend.position = 'bottom')
+  ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[grepl(to_ens('CDKN1C'), rownames(counts_DESeq_TCGA)),]),
+         aes(x=X1, y=X2, col=log(gene)))+geom_point()+labs(col='CDKN1C')+scale_colour_jcolors_contin("pal3")+theme(legend.position = 'bottom')
   
   ggplot(cbind(df_umap_2),
          aes(x=X1, y=X2, col=s1))+geom_point() ## not separated by s1
@@ -385,3 +404,179 @@ if(load_data){
   save.image("../objects/umap_image.RData")
 }
 
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=factor(group_clr)))+geom_point() ## not separated by WGD (clustering by clr)
+gene = 'MYC'
+ggplot(cbind(df_umap_TPM, gene=counts_DESeq_TCGA[grepl(to_ens(gene),
+                                                       rownames(counts_DESeq_TCGA)),]),
+       aes(x=X1, y=X2, col=log(gene)))+geom_point()+labs(col=gene)+
+  scale_colour_jcolors_contin("pal3")+theme(legend.position = 'bottom')
+
+
+#-------------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------------#
+if(remove_nonaligned){
+  
+  rownames(counts_DESeq_TCGA_raw)[!grep('ENSG', rownames(counts_DESeq_TCGA_raw))]
+  rownames(counts_DESeq_TCGA)[!grep('ENSG', rownames(counts_DESeq_TCGA))]
+  counts_DESeq_TCGA[grepl('__', rownames(counts_DESeq_TCGA)), ]
+  counts_DESeq_TCGA_raw[grepl('__', rownames(counts_DESeq_TCGA_raw)), ]
+  counts_DESeq_TCGA_genes <- counts_DESeq_TCGA_raw[!grepl('__', rownames(counts_DESeq_TCGA_raw)), ]
+  counts_DESeq_TCGA_genes[grepl('__', rownames(counts_DESeq_TCGA_genes)), ]
+  counts_DESeq_TCGA_genes
+  
+  ## all good with raw_counts0
+  raw_counts0 = read.csv("../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/RnaSeqPip/counts/counts_raw_subsetno3pbias.csv", stringsAsFactors = FALSE)
+  raw_counts0[grepl('__', rownames(raw_counts0)), ]
+  
+  # counts_DESeq_TCGA_genes <- DESeq2::counts(counts_DESeq_TCGA_genes, normalized=F)
+  counts_DESeq_TCGA_genes <- DESeqDataSetFromMatrix(countData = counts_DESeq_TCGA_genes,
+                                colData = cbind.data.frame(Sample=colnames(counts_DESeq_TCGA_genes),
+                                                           Group=1),
+                                design = ~ 1)
+  counts_DESeq_TCGA_genes <- estimateSizeFactors(counts_DESeq_TCGA_genes)
+  counts_DESeq_TCGA_genes_raw <- counts(counts_DESeq_TCGA_genes, normalized=F)
+  counts_DESeq_TCGA_genes <- counts(counts_DESeq_TCGA_genes, normalized=T)
+
+  umap_onlygenes <- umap(t(counts_DESeq_TCGA_genes))
+  save(umap_onlygenes, file = "../objects/umap_onlygenes.RDS")
+  plot(umap_onlygenes$layout)
+  
+  cut_tree <- cutree(cluster_fig1, k=2)
+  
+  match(rownames(umap_onlygenes$layout), names(cut_tree))
+  
+  matched_clinical <- clinical_tcga[match(query_GDC$results[[1]]$cases.submitter_id[match(colnames(counts_DESeq_TCGA_genes),
+                               query_GDC$results[[1]]$id)], clinical_tcga$case_submitter_id),]
+  match(matched_clinical$case_id, names(cut_tree))
+  
+  colnames(counts_DESeq_TCGA_genes)
+  colnames(counts_DESeq_TCGA)
+  
+  cut_tree <- cut_tree[match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA_genes), query_GDC$results[[1]]$id)], 1, 12),
+        names(cut_tree))]
+  ggplot(cbind.data.frame(umap_onlygenes$layout, cut_tree), aes(x=`1`, y=`2`, col=cut_tree))+
+    geom_point()
+}
+
+## genes that correlate with the two groups in the hclust
+dim(counts_DESeq_TCGA[grepl('__', rownames(counts_DESeq_TCGA)),])
+dim(counts_DESeq_TCGA_genes[grepl('__', rownames(counts_DESeq_TCGA_genes)),])
+
+all(colnames(counts_DESeq_TCGA) == colnames(counts_DESeq_TCGA_genes)) ## necessary for matching
+
+counts_DESeq_TCGA
+matched_group_WGD == 1
+
+ttests_groups <- lapply(1:nrow(counts_DESeq_TCGA_genes), function(idx_gene){
+  t.test(counts_DESeq_TCGA_genes[idx_gene, matched_group_WGD == 1],
+       counts_DESeq_TCGA_genes[idx_gene, matched_group_WGD == 2])
+})
+ttests_groups_pvals <- sapply(ttests_groups, `[`, 'p.value')
+sorted_genes_ttests_groups_pvals <- order(unlist(ttests_groups_pvals))
+
+plot_by_group <- function(idx_gene){plot(boxplot(list(group1=counts_DESeq_TCGA_genes[idx_gene, matched_group_WGD == 1],
+                                                      group2=counts_DESeq_TCGA_genes[idx_gene, matched_group_WGD == 2])))}
+
+from_ens <- function(i){
+  t2g$external_gene_name[match(i, t2g$ensembl_gene_id)]
+}
+
+plot_by_group <- function(idx_gene){return(ggplot(melt(list(group1=counts_DESeq_TCGA_genes[idx_gene, matched_group_WGD == 1],
+                                                     group2=counts_DESeq_TCGA_genes[idx_gene, matched_group_WGD == 2])),
+                                           aes(x=L1, y=value))+geom_violin()+geom_jitter()+
+    ggtitle(paste0(from_ens(gsub("\\..*", "", rownames(counts_DESeq_TCGA_genes)[idx_gene])), '\n',
+                   ttests_groups_pvals[idx_gene]))+theme_bw())}
+
+
+ttests_groups_pvals[sorted_genes_ttests_groups_pvals[1]]
+plot_by_group(sorted_genes_ttests_groups_pvals[1])
+plot_by_group(sorted_genes_ttests_groups_pvals[2])
+plots_genes_correlation <- lapply(1:10, function(i_sort) plot_by_group(sorted_genes_ttests_groups_pvals[i_sort]))
+
+pdf("../figures/genes_ correlated_with_hclust_classes_of_WGD.pdf", height = 10, width = 8)
+do.call('grid.arrange', plots_genes_correlation)
+dev.off()
+
+
+pdf("../figures/genes_ correlated_with_hclust_classes_of_WGD_CCNE1.pdf", height = 3, width = 3)
+plot_by_group(which(grepl(to_ens('CCNE1'), rownames(counts_DESeq_TCGA_genes))))
+dev.off()
+
+plot_by_group
+
+## now do the analysis properly with DESeq2
+DESeq2::counts_DESeq_TCGA_genes
+
+
+colData = cbind.data.frame(cases=colnames(counts_DESeq_TCGA),
+                           id=substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA),
+                                                                        query_GDC$results[[1]]$id)],
+                                        1, 12))
+all(colData$id == names(matched_group_WGD), na.rm = T)
+
+counts_DESeq_TCGA_genes_for_clustering <- counts_DESeq_TCGA_genes_raw[,!is.na(names(matched_group_WGD))]
+counts_DESeq_TCGA_genes_for_clustering <- counts_DESeq_TCGA_genes_for_clustering[rowSums(counts_DESeq_TCGA_genes_for_clustering) > 0,]
+
+mat <- (DESeqDataSetFromMatrix(countData=counts_DESeq_TCGA_genes_for_clustering,
+                               colData=cbind.data.frame(sample=names(matched_group_WGD)[!is.na(names(matched_group_WGD))],
+                                                        group=factor(matched_group_WGD[!is.na(names(matched_group_WGD))])),
+                               design=~group))
+mat <- estimateSizeFactors(mat)
+mat <- (estimateDispersions(mat,fitType="local"))
+mat_res <- nbinomWaldTest(mat)
+
+mat_res2 <- DESeq2::results(mat_res)
+saveRDS(mat_res2, "../objects/DESeq2_results_two_clusters_WGD.RDS")
+mat_res2_names <- from_ens(gsub("\\..*", "", rownames(mat_res2)))
+mat_res2_df <- cbind.data.frame(mat_res2, gene_names=mat_res2_names)
+
+head(mat_res2_df[order(mat_res2_df$padj),], n=10)
+mat_res2_df[which(mat_res2_df$gene_names == "CDKN1C"),]
+
+
+rankData <- -log10(mat_res2_df$pvalue) * sign(mat_res2_df$log2FoldChange)
+
+anns <- readRDS("../../../Vias_Brenton/copy_number_analysis_organoids/robjects/t2g2.RDS") ## GRCh38
+anns <- data.frame(gene_id=anns$ensembl_gene_id, gene_name=anns$external_gene_name,
+                   gene_biotype=NA, entrezid=anns$entrezgene_id)
+
+anns
+
+names(rankData) <- anns$entrezid[match(gsub("\\..*", "", rownames(mat_res2_df)), anns$gene_id)]
+# names(rankData) <- gseaDat$entrezid
+# head(rankData)
+
+#Load pathways
+load(url("http://bioinf.wehi.edu.au/software/MSigDB/human_H_v5p2.rdata"))
+# load("human_H_v5p2.rdata")
+
+#conduct GSEA analysis
+pathwaysH <- Hs.H
+
+library(fgsea)
+library(AnnotationHub)
+fgseaRes <- fgsea(pathwaysH, 
+                  rankData, 
+                  minSize=15, 
+                  maxSize = 500, 
+                  nperm=1000)
+
+
+#top 10 results
+fgseaRes %>% 
+  arrange(desc(abs(NES))) %>% 
+  top_n(10, -padj)
+
+source("../../../Vias_Brenton/RNASeq_DE_resistant_sensitive/analysis_scripts/other_scripts/utilities.R")
+plotVolcanogg(mat_res2)
+
+ggplot(mat_res2_df, aes(x=log2FoldChange, y=-log10(padj),
+                        # label=ifelse(gene_names == 'CDKN1C', gene_names, NA),
+                        label=ifelse(padj < 10e-5, gene_names, NA),
+                        col=padj < 10e-5,
+                        shape=log2FoldChange > 0))+
+  geom_point()+geom_label_repel(max.overlaps = 100, size=2)+theme_bw()+lims(x=c(-10, 10))
+ggsave("../figures/DE_clusters_WGD_volcano.pdf", height = 10, width = 10)
+#-------------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------------#
