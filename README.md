@@ -129,10 +129,12 @@ I would run the files in the order they appear above.
 ## Dependencies
 ### Specific packages
 - You have to download the bitbucket repo [CNsignatures](https://bitbucket.org/britroc/cnsignatures/src/master/) and save it in the same folder where this repo is, i.e.
-	 
+
+```
 	                 |--- this folder
 	Mother folder ---| 
 	                 |--- CNsignatures
+```
 
 - [CompSign package](https://github.com/lm687/CompSign)
 - rnaseqRpkg: internal CRUK RNA-Seq pipeline package. Send me (`lm687 at cam.ac.uk`) an email about it
