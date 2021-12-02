@@ -9,14 +9,14 @@ I only include the files which were finally used for the paper
 
 - **copy_number_analysis_organoids** Analysis of copy number exposures, and of segments
 	- `copy_number_analysis_organoids.Rmd`: R markdown file
+- **RNASeq_and_CN** Comparison of copy number and gene expression
+        - 20191218_ViasM_BJ_orgaBrs
+                - Scripts
+                        - `analyse_joint_counts_CN.R`
 - **RNASeq_DE_resistant_sensitive** Analysis of DE for sensitive vs resistant in TCGA samples
 	- analysis_scripts
 		- `3_analysis_organoids_PCA_subset_samples.R`: PCA for RNA-Seq data
 		- `DGE_Genepathways_RnaSeqPipAucWo3PBias_MVorganoids_CMS20210518.Rmd`: pathway enrichment analysis
-- **RNASeq_and_CN** Comparison of copy number and gene expression
-	- 20191218_ViasM_BJ_orgaBrs
-		- Scripts
-			- `analyse_joint_counts_CN.R`
 - **scDNAseq-Organoids** Scripts to create single cell DNA plots
 	- code
 		- `plotting_nosexchrom.R`: plotting scDNA data without sex chromosomes

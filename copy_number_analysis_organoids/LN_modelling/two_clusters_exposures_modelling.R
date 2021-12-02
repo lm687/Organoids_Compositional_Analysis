@@ -2,6 +2,10 @@ rm(list = ls())
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 library(TMB)
+library(ggplot2)
+library(cowplot)
+library(tikzDevice)
+library(ggrepel)
 
 cluster_fig1 <- readRDS("../../copy_number_analysis_organoids/robjects/dendrograminputclr_tree.RDS")
 exposures_fig1 <- readRDS("../../copy_number_analysis_organoids/robjects/allnatgen_UpdatedExposures.RDS")
@@ -16,6 +20,38 @@ rowSums(exposures_fig1)
 .cutree <- .cutree[match(rownames(exposures_fig1), names(.cutree))]
 length(.cutree)
 dim(exposures_fig1)
+
+cluster_fig1
+
+dendrograminputclr <- readRDS("../../copy_number_analysis_organoids/robjects/dendrograminputclr.RDS")
+heatmapinputclr <- readRDS("../../copy_number_analysis_organoids/robjects/heatmapinputclr_with_ticks.RDS")
+
+e1 <- dendrograminputclr#+geom_label_repel(label.size = NA)
+e2 <- heatmapinputclr+  theme(axis.title.x=element_text(), axis.title.y=element_text(angle=90))+
+  labs(x='Public tumour datasets (TCGA, PCAWG and BriTROC) and organoids', y='Copy number signature activity')+
+  theme(axis.text.y = element_text(size = 8), axis.title.y = element_text(vjust=3))
+# e <- plot_grid(e1, e2, nrow = 2, labels = c('e'), rel_widths = c(3,5))
+e2_v2 <- e2#+geom_label_repel(fill='white', col='black',nudge_x = 0, nudge_y = -5,
+           #                  aes(y=0,label=ifelse(grepl('PDO', Var2) & Var1 == 's1',
+           #                                       as.character(Var2), NA)))+
+  scale_y_continuous(expand=c(0,0))+lims(y=c(-1.6, 1))
+e1_v2 <- e1; e1_v2$layers[[2]] = NULL; e1_v2$scales$scales[[2]] <- NULL
+e1_v2$theme$plot.margin[3] = unit(0.0, "cm")
+e1_v2$theme$plot.margin[2] = unit(-25, "points")
+e1_v2$theme$plot.margin
+# e1_v2 <- e1_v2+scale_y_continuous(expand=c(0,0))
+e1_v2
+
+e2_v2$theme$plot.margin[1] = unit(0, "cm")
+# e_v2 <- plot_grid(plot_grid(plot.new(), e1_v2, rel_widths=c(0.07, 5), rel_heights = c(3,5)),
+e_v2 <- plot_grid(plot_grid(e1_v2),
+                  e2_v2, nrow = 2)
+e_v2
+
+# system("open ../../../../CDA_in_Cancer/text/thesis/figures/")
+tikz( '../../../../CDA_in_Cancer/text/thesis/figures/general_compositional/partial_fig1_2.tex', height = 4, width = 6)
+e_v2
+dev.off()
 
 #----------------------------
 source("../../../mcneish/code/models/functions.R")
