@@ -1149,6 +1149,18 @@ ggplot( joint_counts_CN %>% filter(CN.gene_name == 'CCNE1'), aes(x=log2(CN.value
   ggtitle('CCNE1')+labs(x='Absolute CN (log2)', y='DESeq2 counts')
 ggsave("../../figures_GRCh37/CCNE1.pdf", height = 4, width = 4)
 
+ccne1 <- joint_counts_CN %>% filter(CN.gene_name == 'CCNE1')
+brcamut <- c(PDO4='BRCAmut', PDO5='BRCAmut', PDO6='BRCAmut', PDO7='BRCAmut', PDO8='BRCAmut',
+             PDO10='BRCAmut', PDO13='BRCAmut', PDO17='BRCAmut')
+ccne1$brcamut = brcamut[match(ccne1$PDO, names(brcamut))]
+ccne1$brcamut[is.na(ccne1$brcamut)] <- 'WT'
+ggplot( ccne1, aes(x=log2(CN.value), shape=brcamut, y=DESeq.count, col=PDO, label=PDO))+geom_point()+
+  # geom_label_repel(alpha=0.5, col='black')+
+  scale_colour_manual(values = col_vector)+
+  ggtitle('CCNE1')+labs(x='Absolute CN (log2)', y='DESeq2 counts')+theme_bw()
+ggsave("../../figures_GRCh37/CCNE1_brca_mut.pdf", height = 4, width = 4.5)
+
+
 ggplot( joint_counts_CN %>% filter(CN.gene_name == 'MYC'), aes(x=log2(CN.value), y=DESeq.count, label=PDO))+geom_point()+
   geom_label_repel(alpha=0.2)+
   ggtitle('MYC')+labs(x='Absolute CN (log2)', y='DESeq2 counts')
@@ -1375,6 +1387,98 @@ ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
   scale_colour_manual(values = col_vector)+
   geom_hline(yintercept = 2, lty='dashed', col='blue')+theme_bw()
 ggsave("../../figures_GRCh37/genes_of_interest_CN.pdf", width = 7)
+
+ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
+       aes(x=CN.gene_name, y=log2(CN.value)))+geom_violin()+
+  geom_jitter(aes(col=PDO))+
+  # geom_label(aes(label=PDO))+
+  facet_wrap(.~CN.gene_name, scales = "free")+
+  scale_colour_manual(values = col_vector)+
+  geom_hline(yintercept = log2(2), lty='dashed', col='blue')+theme_bw()
+  # scale_y_continuous(trans = "log2")
+ggsave("../../figures_GRCh37/genes_of_interest_CN_log2.pdf", width = 7)
+
+GOI_summary <- joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest) %>%
+  dplyr::group_by(CN.gene_name) %>% dplyr::summarise(median_cn=median(log2(CN.value)))
+ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
+       aes(x=factor(CN.gene_name, levels=as.character(GOI_summary$CN.gene_name[order(GOI_summary$median_cn)])),
+           y=log2(CN.value)))+geom_boxplot()+
+  geom_jitter(aes(col=PDO), alpha=0.2)+
+  scale_colour_manual(values = col_vector)+
+  geom_hline(yintercept = log2(2), lty='dashed', col='blue')+theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  labs(x='Gene', y='Absolute CN (log2)', col='')
+ggsave("../../figures_GRCh37/genes_of_interest_CN_log2_boxplot.pdf", width = 5.25, height = 5)
+
+ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
+       aes(x=factor(CN.gene_name, levels=as.character(GOI_summary$CN.gene_name[order(GOI_summary$median_cn)])),
+           y=log2(CN.value)))+geom_violin()+
+  geom_jitter(alpha=0.2)+
+  scale_colour_manual(values = col_vector)+
+  geom_hline(yintercept = log2(2), lty='dashed', col='blue')+theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  labs(x='Gene', y='Absolute CN (log2)')
+ggsave("../../figures_GRCh37/genes_of_interest_CN_log2_violin.pdf", width = 5.25, height = 5)
+
+
+ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
+       aes(x=factor(CN.gene_name, levels=as.character(GOI_summary$CN.gene_name[order(GOI_summary$median_cn)])),
+           y=log2(CN.value), fill=PDO))+geom_bar(stat='identity')+
+  scale_fill_manual(values = col_vector)+
+  facet_wrap(.~PDO, ncol=4)+
+  geom_hline(yintercept = log2(2), lty='dashed', col='blue')+theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  labs(x='Gene', y='Absolute CN (log2)', col='')+guides(fill=F)
+ggsave("../../figures_GRCh37/genes_of_interest_CN_log2_barplot.pdf", width = 15, height = 11)
+
+
+joint_counts_CN0$PDO <- factor(joint_counts_CN0$PDO, levels=gtools::mixedsort(unique(joint_counts_CN0$PDO)))
+CN_genes_of_interest_mat <- (dcast(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest) %>%
+             dplyr::select(c('counts.Var2', 'CN.value', 'PDO')), CN.gene_name~PDO, value.var='CN.value'))
+write.table(CN_genes_of_interest_mat,
+              file = "../../tables_GRCh37/table_CN_genes_of_interest.csv", sep = ",",
+              row.names = F, col.names = T)
+
+rownames(CN_genes_of_interest_mat) <- CN_genes_of_interest_mat$CN.gene_name
+remove_cols_with_no_variance <- function(i)  t(i[,-1])[,!(apply(t(i[,-1]), 2, var) == 0)]
+
+pheatmap::pheatmap(cor(remove_cols_with_no_variance((CN_genes_of_interest_mat[,-1]))),
+                   cluster_cols = T, cluster_rows = T)
+cor_CN_genes_of_interest <- cor(remove_cols_with_no_variance((CN_genes_of_interest_mat[,-1])))
+library(grid)
+
+pdf("../../figures_GRCh37/correlation_CN_genes_of_interest.pdf", width = 8, height = 7.5)
+ComplexHeatmap::Heatmap(cor_CN_genes_of_interest,
+                        cell_fun = function(j, i, x, y, w, h, col) { # add text to each grid
+                          grid.text(round(cor_CN_genes_of_interest[i, j], 1), x, y)
+                        })
+dev.off()
+
+# mat_breaks <- c( 0:6, seq(8, 14, by=2)) - 0.01 ## adding a small number because otherwise the binning is done wrong
+# breaks <- mat_breaks
+# colours_vec <- c("#2670af", "#2670af", "#8daecf", "#eaeaea", "#ffd2b6", "#f5b788", "#f39d5f", "#f17e37", "#ee1200", "#b60000", "#7a0e04", "#401004", "#000000")
+# ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
+#        aes(x=counts.Var2, y=PDO, fill=CN.value))+geom_tile()+
+#   # scale_fill_jcolors_contin("pal3", reverse = T, bias = 1.0)
+#   # scale_fill_gradient2(low = 1,mid = 2, high = 3, midpoint = 2)
+#   # scale_fill_gradient2(low = "red", mid = "white", high = "blue", midpoint = 1, breaks = mat_breaks)
+#   # scale_fill_gradientn(colours = c("red","white","blue"),
+#   #                        breaks = breaks, labels = format(breaks))
+#   scale_fill_steps2(low = 0, mid = 2, high = 100, midpoint = 2, )
+# ggsave("../../figures_GRCh37/genes_of_interest_CN_tile.pdf", width = 7)
+
+ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
+       aes(x=counts.Var2, y=PDO,
+           # fill=paste0((CN.value==0), (CN.value>0 & CN.value<=1),
+           #                                  (CN.value>1 & CN.value<=2), CN.value>2), size=10*log(CN.value),
+           fill=cut(round(CN.value, 1), breaks = c(0, 1.9, 2.1, 3, 5, 50, 150)),
+           label=round(CN.value, 1)))+
+  geom_tile(alpha=0.2)+
+  scale_fill_manual(values=c('blue', 'white', 'yellow', 'orange',  'red', 'purple'))+theme_bw()+
+  geom_text(col='black', size=3)+guides(fill=F, size=F)+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+labs(x='Genes', y='PDO')+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+ggsave("../../figures_GRCh37/genes_of_interest_CN_tile.pdf", width = 7, height = 5)
 
 ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
        aes(x=CN.gene_name, y=CN.value))+geom_violin()+

@@ -290,7 +290,7 @@ give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL
   dend_data_inputclr0004$labels$label = as.character(dend_data_inputclr0004$labels$label)
   dend_data_inputclr0004$labels$label[!grepl('PDO', dend_data_inputclr0004$labels$label)] = ""
   
-    if(plot){
+  if(plot){
     p_v2_0004 <- ggplot(dend_data_inputclr0004$segments) +
       geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
       geom_label_repel(data = dend_data_inputclr0004$labels, aes(x, y, label = gsub('Organoid ', '', label)),
@@ -309,7 +309,7 @@ give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL
       scale_x_continuous(expand = c(extra_expand, extra_expand))+
       scale_y_continuous(expand = expand_vec)
     
-    ## here there used  to be a probelm in that I used "labels", but now using "label" the order needs to be changed
+    ## here there used  to be a problem in that I used "labels", but now using "label" the order needs to be changed
     heatmap_dendrogram_df_inputclr0004 = t(.exposures[rownames(.exposures)[match(gsub("Organoid ", "", label(dendroimputclr_all_lowerinput)[dendroimputclr_all_lowerinput$order]),rownames(.exposures))],])
     
     p2_inputclr_0004 = ggplot(melt(heatmap_dendrogram_df_inputclr0004), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
@@ -326,12 +326,13 @@ give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL
       scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
       guides(fill = guide_legend(nrow = 1))
     
-    grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE))
+    # grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE))
     
-    if(return_grob){
-      return(grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE)))
-    }
-    
+      if(return_grob){
+        return_plt <- (arrangeGrob(p_v2_0004, p2_inputclr_0004, heights=c(2,1),
+                                                         top=paste0('Imputation: ', impute_VALUE)))
+        return(return_plt)
+      }
     }else{
       return(list(plot_data=dend_data_inputclr0004,
                   dendogram_data=dendroimputclr_all_lowerinput))
@@ -339,5 +340,90 @@ give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL
   
 }
 
-## make sure that our conclusions stand for several imputation values
-## need to find the large subclades without organoids
+give_pca = function(data_matrix, center = T, title='', names, names_bool=T, give_loadings=F, print_labels=T, groups=NULL,groups_shape=NULL, nrow_legend=3, size_points=1, print_both_labels=FALSE, group_is_factor=T,
+                    short_pdo_names=F, additional_df=NULL){
+  prcomp_res = prcomp(data_matrix, scale. = TRUE, center = center)
+  eigs <- prcomp_res$sdev^2
+  if(!names_bool){
+    names=NA
+  }
+  
+  give_loadings_alt <- FALSE
+  # if(give_loadings){
+  if(give_loadings_alt){
+    if(!is.null(groups_shape)){
+      stop('Groups shape not yet implemented for loadings')
+    }
+    a = ggplot()+
+      geom_point(data=cbind.data.frame(prcomp_res$x[,1:2], names=names), aes(x=PC1, y=PC2), size=size_points)+
+      geom_segment(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                   aes(x=0, y=0, xend=PC1*4, yend=PC2*4), col='red', arrow = arrow(length = unit(0.03, "npc")))+
+      labs(x=paste0('PC1 (', round(100*eigs[1]/sum(eigs), 2), '%)' ),
+           y=paste0('PC2 (', round(100*eigs[2]/sum(eigs), 2), '%)' ))+ggtitle(title)
+    if(print_labels){
+      a = a+geom_label_repel(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                             aes(x=PC1*3, y=PC2*3, label=names), size=3, col='red')
+      if(print_both_labels){
+        a = a+geom_label_repel(data=cbind.data.frame(prcomp_res$x[,1:2], names=rownames(prcomp_res$x)),
+                               aes(x=PC1, y=PC2, label=names), size=3, col='black')
+      }
+    }
+    a
+  }else{
+    if(!is.null(groups)){
+      if(group_is_factor){
+        # df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=as.factor(groups), additional_df)
+        df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=as.factor(groups))
+      }else{
+        # df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=(groups), additional_df)
+        df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=(groups))
+      }
+    }else{
+      # df = cbind.data.frame(prcomp_res$x[,1:2], names=names, additional_df)
+      df = cbind.data.frame(prcomp_res$x[,1:2], names=names)
+    }
+    if(short_pdo_names){
+      df$names <- gsub("PDO", "", df$names)
+    }
+    if(!is.null(groups_shape)){
+      df = cbind(df, groups_shape=groups_shape)
+    }
+    a = ggplot(df,
+               aes(x=PC1, y=PC2,label=gsub('Sample ', 'PDO', names)))+
+      labs(x=paste0('PC1 (', round(100*eigs[1]/sum(eigs), 2), '%)' ),
+           y=paste0('PC2 (', round(100*eigs[2]/sum(eigs), 2), '%)' ))+ggtitle(title)
+    if(!is.null(groups)){
+      if(!is.null(groups_shape)){
+        a = a +geom_point(aes(col=groups, shape=groups_shape), size=size_points)
+      }else{
+        a = a +geom_point(aes(col=groups), size=size_points)
+      }
+      a = a + theme(legend.position = "bottom",
+                    legend.key.size = unit(0.3, "cm"),
+                    legend.key.width = unit(0.2,"cm"),
+                    legend.title = element_blank())+
+        guides(col=guide_legend(nrow=nrow_legend,byrow=TRUE))
+    }else{
+      if(!is.null(groups_shape)){
+        a = a + geom_point(aes(shape=groups_shape), size=size_points)
+      }else{
+        a = a + geom_point(size=size_points)
+      }
+    }
+    
+    
+    if(print_labels){
+      a = a+geom_label_repel(size=3,)
+    }
+
+    if(give_loadings){
+      a <- a + geom_segment(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                   aes(x=0, y=0, xend=PC1*4, yend=PC2*4), col='red', arrow = arrow(length = unit(0.03, "npc")))+
+        geom_label_repel(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                         aes(x=PC1*3, y=PC2*3, label=names), size=3, col='red')
+    }
+    
+    a
+    
+  }
+}

@@ -34,9 +34,11 @@ maximput_char <- gsub("[.]", "", as.character(maximput))
 
 imputation_values_0 <- seq(-3, log10(maximput), length.out = lenghtout)
 imputation_values <- sapply(imputation_values_0, function(i) 10^{i})
+imputation_values_large <- sapply(seq(-3, log10(maximput), length.out = 100), function(i) 10^{i})
 imputation_values
 
 dendrogams_imputation <- lapply(imputation_values, give_distance_from_imputation)
+dendrogams_imputation_large <- lapply(imputation_values_large, give_distance_from_imputation)
 
 ## metrics; mean distance between organoids vs mean distance from organoids to primary
 ## same for median
@@ -104,6 +106,9 @@ trees <- lapply(dendrogams_imputation, function(i){
 trees_2 <- lapply(dendrogams_imputation, function(i){
   (hclust(i))
 })
+trees_3 <- lapply(dendrogams_imputation_large, function(i){ ## simpler version
+  (hclust(i))
+})
 
 NyeSimilarity(trees[[1]], trees[[2]])
 
@@ -114,7 +119,56 @@ for(i in 1:length(trees)){
   }
 }
 
+##' compute the fraction of samples which are found in the same clade from one
+##' imputation value to the next (i.e. we need to compare trees, like with the Nye similarities)
+fraction_samples_in_same_major_clade <- matrix(NA, length(trees_3), length(trees_3))
+for(i in 1:length(trees_3)){
+  for(j in 1:i){
+    .cutreei <- cutree(trees_3[[i]], k = 2)
+    .cutreej <- cutree(trees_3[[j]], k = 2)
+    fraction_samples_in_same_major_clade[i,j] = max(c(mean(.cutreei == .cutreej), mean(!.cutreei == .cutreej)))
+  }
+}
+
+relative_size_clusters <- sapply(trees_3, function(i){
+  .cutreei <- cutree(i, k = 2)
+  max(table(.cutreei))/length(.cutreei)
+})
+
+plot(trees_3[[which.max(relative_size_clusters)]])
+
+## smart way: not including the outgroup that we sometimes get
+fraction_samples_in_same_major_clade_smart <- matrix(NA, length(trees_3), length(trees_3))
+for(i in 1:length(trees_3)){
+  for(j in 1:i){
+    cat(i, '/', length(trees_3), '\t', j, '/', i, '\n')
+    .cutreei <- cutree(trees_3[[i]], k = 2)
+    .cutreej <- cutree(trees_3[[j]], k = 2)
+    
+    if((min(table(.cutreei))/length(.cutreei) < 0.1) | (min(table(.cutreej))/length(.cutreej) < 0.1)){
+      .tab <- table(.cutreej)
+      if(min(table(.cutreei))/length(.cutreei) < 0.1){
+        samples_remove <- names(which(.cutreei == names(which.min(.tab))))
+      }
+      if(min(table(.cutreej))/length(.cutreej) < 0.1){
+        samples_remove <- names(which(.cutreej == names(which.min(.tab))))
+      }
+      .i <- as(dendrogams_imputation_large[[i]],  'matrix')
+      .j <- as(dendrogams_imputation_large[[j]],  'matrix')
+
+      new_tree_i <- hclust(dist(.i[!(rownames(.i) %in% samples_remove),!(colnames(.i) %in% samples_remove)]))
+      new_tree_j <- hclust(dist(.j[!(rownames(.j) %in% samples_remove),!(colnames(.j) %in% samples_remove)]))
+      .cutreei <- cutree(new_tree_i, k = 2)
+      .cutreej <- cutree(new_tree_j, k = 2)
+    }
+    
+    fraction_samples_in_same_major_clade_smart[i,j] = max(c(mean(.cutreei == .cutreej), mean(!.cutreei == .cutreej)))
+  }
+}
+
 colnames(nyesimilarities) <- rownames(nyesimilarities) <- imputation_values
+colnames(fraction_samples_in_same_major_clade) <- rownames(fraction_samples_in_same_major_clade) <- imputation_values_large
+colnames(fraction_samples_in_same_major_clade_smart) <- rownames(fraction_samples_in_same_major_clade_smart) <- imputation_values_large
 
 image(nyesimilarities)
 
@@ -126,6 +180,52 @@ ggplot(melt(nyesimilarities), aes(x=Var1, y=Var2, fill=value))+geom_tile()+
 ggsave(paste0("figures/nyesimilarities_dendrogram_imputation_maximput_char", maximput_char, ".pdf"),
        height = 4.5, width = 5.5)
 
+fraction_samples_in_same_major_clade
+ggplot(melt(fraction_samples_in_same_major_clade), aes(x=Var1, y=Var2, fill=value))+geom_tile()+
+  scale_x_continuous(trans = "log10")+scale_y_continuous(trans = "log10")+
+  theme_bw()+labs(x='Imputation value', y='Imputation value')+
+  # guides(fill=guide_legend(title = 'NyeSimilarity'))+
+  scale_fill_jcolors_contin("pal3", reverse = TRUE, bias = 2.25) 
+
+ggplot(melt(fraction_samples_in_same_major_clade_smart), aes(x=Var1, y=Var2, fill=value))+geom_tile()+
+  scale_x_continuous(trans = "log10")+scale_y_continuous(trans = "log10")+
+  theme_bw()+labs(x='Imputation value', y='Imputation value')+
+  # guides(fill=guide_legend(title = 'NyeSimilarity'))+
+  scale_fill_jcolors_contin("pal3", reverse = TRUE, bias = 2.25) 
+
+ggplot(data.frame(fraction_in_same_clade=rev(fraction_samples_in_same_major_clade[nrow(fraction_samples_in_same_major_clade),]),
+                  imput=imputation_values_large,
+                  size_largest=relative_size_clusters),
+       aes(x=imput, y=fraction_in_same_clade))+geom_line()+
+  geom_point(aes(size=size_largest, col=size_largest))+
+  scale_x_continuous(trans = "log10")+theme_bw()
+
+
+
+ggplot(data.frame(fraction_in_same_clade=sapply(1:(nrow(fraction_samples_in_same_major_clade)-1),
+                                                function(i) fraction_samples_in_same_major_clade[i+1,i]),
+                  imput=imputation_values_large[-1],
+                  size_largest_change=relative_size_clusters[-length(relative_size_clusters)]-relative_size_clusters[-1]),
+       aes(x=imput, y=fraction_in_same_clade))+geom_line()+
+  # geom_point(aes(size=size_largest_change, col=size_largest))+
+  scale_x_continuous(trans = "log10")+theme_bw()
+
+ggplot(data.frame(fraction_in_same_clade=sapply(1:(nrow(fraction_samples_in_same_major_clade_smart)-1),
+                                                function(i) fraction_samples_in_same_major_clade_smart[i+1,i]),
+                  imput=imputation_values_large[-1],
+                  size_largest_change=relative_size_clusters[-length(relative_size_clusters)]-relative_size_clusters[-1]),
+       aes(x=imput, y=fraction_in_same_clade))+geom_line()+
+  # geom_point(aes(size=size_largest_change, col=size_largest))+
+  scale_x_continuous(trans = "log10")+theme_bw()
+
+ggplot(data.frame(fraction_in_same_clade=rev(fraction_samples_in_same_major_clade[nrow(fraction_samples_in_same_major_clade),]),
+                  size_largest=relative_size_clusters),
+       aes(x=size_largest, y=fraction_in_same_clade))+
+  geom_point()
+ggplot(data.frame(fraction_in_same_clade=rev(fraction_samples_in_same_major_clade_smart[nrow(fraction_samples_in_same_major_clade_smart),]),
+                  size_largest=relative_size_clusters),
+       aes(x=size_largest, y=fraction_in_same_clade))+
+  geom_point()+theme_bw()
 
 k_large <- 30
 ## find the big clades that don't have any organoids, for each imputation value
