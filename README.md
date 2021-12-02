@@ -129,75 +129,52 @@ I would run the files in the order they appear above.
 ## Dependencies
 ### Specific packages
 - You have to download the bitbucket repo [CNsignatures](https://bitbucket.org/britroc/cnsignatures/src/master/) and save it in the same folder where this repo is, i.e.
-	 
+
+```
 	                 |--- this folder
 	Mother folder ---| 
 	                 |--- CNsignatures
+```
 
 - [CompSign package](https://github.com/lm687/CompSign)
 - rnaseqRpkg: internal CRUK RNA-Seq pipeline package. Send me (`lm687 at cam.ac.uk`) an email about it
 
 ### General R packages
-library(grid)
-library(gridExtra)
-library(dendextend)
-library(ggrepel)
-library(cowplot)
-library(compositions)
-library(CompSign)
-library(QDNAseq)
-library(Biobase)
-library(RColorBrewer)
-library(dplyr)
-library(tidyverse)
-library(MASS)
-library(pheatmap)
-library(ggdendro)
-library(readxl)
-library(CNTools)
-library(GenomicRanges)
-library(ggthemr)
-library(ggplot2)
-library(ggrepel)
-library(reshape2)
-library(readxl)
-require(jcolors)
-library(biomaRt)
-require(GSVA)
-require(GSVAdata)
-require(pheatmap)
-library(ReactomePA)
-library(DESeq2)
-library(lsa)
-library(tidyverse)
-library(DESeq2)
-library(fgsea)
-library(AnnotationHub)
-require(ggplot2)
-require(ggrepel)
-require(dplyr)
-require(reshape2)
-require(jcolors)
-require(biomaRt)
-require(gridExtra)
-library(jcolors)
-library(parallel)
-library(latex2exp)
-library(GSVA)
-library(GSVAdata)
-library(DESeq2)
-library(viridis)
-library(grid)
-library(pheatmap)
-library(gridExtra)
-library(reshape2)
-library(ggplot2)
-library(ggdendro)
-library(pheatmap)
-library(readxl)
-library(gridExtra)
-library(ggplotify)
-library(cowplot)
-library(ggh4x)
-library(dplyr)
-library(EnvStats)
+library(AnnotationHub) ## Bioconductor
+library(Biobase) ## Bioconductor
+library(biomaRt) ## Bioconductor
+library(CNTools) ## Bioconductor
+library(CompSign) ## github
+library(DESeq2) ## Bioconductor
+library(EnvStats) ## CRAN
+library(GSVA) ## Bioconductor
+library(GSVAdata) ## Bioconductor
+library(GenomicRanges) ## Bioconductor
+library(MASS) ## CRAN
+library(QDNAseq) ## Bioconductor
+library(RColorBrewer) ## CRAN
+library(ReactomePA) ## Bioconductor
+library(biomaRt) ## Bioconductor
+library(compositions) ## CRAN
+library(cowplot) ## CRAN
+library(dendextend) ## CRAN
+library(dplyr) ## CRAN
+library(fgsea) ## Bioconductor
+library(ggdendro) ## CRAN
+library(ggh4x) ## CRAN
+library(ggplot2) ## CRAN
+library(ggplotify) ## CRAN
+library(ggrepel) ## CRAN
+library(ggthemr) ## github
+library(grid) ## CRAN
+library(gridExtra) ## CRAN
+library(jcolors) ## CRAN
+library(latex2exp) ## CRAN
+library(lsa) ## CRAN
+library(parallel) ## CRAN
+library(pheatmap) ## CRAN
+library(readxl) ## CRAN
+library(reshape2) ## CRAN
+library(tidyverse) ## CRAN
+library(viridis) ## CRAN
+
