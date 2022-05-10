@@ -31,7 +31,7 @@ for(org in c('118976org', '23868org', '119148orgb')){
   print(org_tab[org_tab[,'num_noisy'] != 0,'node_id'])
   
   org_clean = org_tab[org_tab[,1:4][,'num_noisy'] == 0,-(1:4)]
-  mat_breaks <- c(-Inf, 0:6, seq(8, 14, by=2)) #seq(min(org_clean, na.rm = T), max(org_clean, na.rm = T), length.out = 10)
+  mat_breaks <- c(-Inf, 0:6, seq(8, 14, by=2)) - 0.01 ## adding a small number because otherwise the binning is done wrong
   labels_chroms0 = sapply(colnames(org_clean), function(i) strsplit(i, '[.]')[[1]][1])
   keep = !(labels_chroms0 %in% c('X', 'Y'))
   org_clean = org_clean[,keep]
@@ -57,16 +57,19 @@ for(org in c('118976org', '23868org', '119148orgb')){
   labels_chroms$idx_first_norm =labels_chroms$idx_first/(ncol(org_clean)-4)
   annotation_chroms = data.frame(row.names = colnames(org_clean), chrom=clean_chrom(labels_chroms0))
   
-  x[[idx]] = pheatmap(org_clean, cluster_rows = FALSE, cluster_cols = FALSE, show_colnames = FALSE,
-                         color             = c("#2670af", "#8daecf", "#eaeaea", "#ffd2b6", "#f5b788", "#f39d5f", "#f17e37", "#ee1200", "#b60000", "#7a0e04", "#401004", "#000000"),
+  # previous_colours <- c("#2670af", "#8daecf", "#eaeaea", "#ffd2b6", "#f5b788", "#f39d5f", "#f17e37", "#ee1200", "#b60000", "#7a0e04", "#401004", "#000000")
+  colours_vec <- c("#2670af", "#2670af", "#8daecf", "#eaeaea", "#ffd2b6", "#f5b788", "#f39d5f", "#f17e37", "#ee1200", "#b60000", "#7a0e04", "#401004", "#000000")
+  
+  x[[idx]] = pheatmap(org_clean+0.02, cluster_rows = FALSE, cluster_cols = FALSE, show_colnames = FALSE,
+                         color             = colours_vec,
                          breaks            = mat_breaks, cellheight=cellheight_vec[org],cellwidth=cellwidth_vec[org], annotation_col = annotation_chroms, annotation_legend=F)
   if(org == '23868org'){
     legend_bool=T
   }else{
     legend_bool =F
   }
-  x_basic[[idx]] = pheatmap(org_clean, cluster_rows = FALSE, cluster_cols = FALSE, show_colnames = FALSE,
-                      color             = vec_colours,
+  x_basic[[idx]] = pheatmap(org_clean+0.02, cluster_rows = FALSE, cluster_cols = FALSE, show_colnames = FALSE,
+                      color             = colours_vec,
                       breaks            = mat_breaks, annotation_col = annotation_chroms, annotation_legend=F,
                       legend = legend_bool, cellwidth=cellwidth_vec[org], main=renaming[org], annotation_names_col = FALSE)
   pdf(paste0("../plots/basicplot_", org, "_nosexchrom.pdf"), width=15)

@@ -203,3 +203,227 @@ remove_infty = function(i){
   i = i[!is.infinite(i)]
   return(i)
 }
+
+impute = function(mat, inputation_value){
+  mat[mat == 0] = inputation_value
+  normalise_rw(mat)
+}
+
+give_dendrogram_generalised = function(df, modify_labels=T, keep_only_PDO, plot_dendro=T){
+  if(keep_only_PDO & modify_labels){stop('Only one can be true: keep_only_PDO, modify_labels')}
+  
+  x = hclust(dist(df))
+  if(modify_labels){
+    x$labels[!grepl("PDO", x$labels)] = ''
+    x$labels[grepl("PDO", x$labels)] = '*'
+  }
+  
+  if(keep_only_PDO){
+    x$labels[!grepl("PDO", x$labels)] = ''
+  }
+  
+  y = x
+  y$labels = gsub("Sample ", "PDO", x$labels)
+  # plot(x)
+  
+  labelCol <- function(x) {
+    if (is.leaf(x)) {
+      ## fetch label
+      label <- attr(x, "label")
+      ## set label color to red for A and B, to blue otherwise
+      attr(x, "nodePar") <- list(lab.col="blue")
+    }
+    return(x)
+  }
+  d <- dendrapply(as.dendrogram(x), labelCol)
+  if(plot_dendro)  plot(d)
+  return(y)
+  
+}
+
+plot_rank = function(df_rank, nudge_scalar=1, size_labels=10){
+  df_rank$value = as.numeric(df_rank$value)
+  # df_rank = df_rank[(df_rank$Var1),]
+  df_rank$L1= factor(df_rank$L1, levels = c('BriTROC', 'organoids', 'pcawg', 'tcga'))
+  df_rank$labels = ifelse(as.character(df_rank$L1) == 'organoids', as.character(df_rank$Var1), NA)
+  
+  df_rank = cbind.data.frame(df_rank, organoids= grepl("organoids", df_rank$L1))
+  ggplot(df_rank, aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                      y=value, label=labels))+
+    geom_bar(stat = "identity", aes( fill= organoids), width=0.5)+
+    geom_bar(data = df_rank[df_rank$L1 == "organoids",], stat = "identity",
+             aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                 y=value, label=labels, width=5), width=100)+
+    lims(y=c(-max(df_rank$value)*0.3, 2+max(df_rank$value)))+
+    geom_label_repel(data=df_rank[c(T,F),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                                                y=value/2, label=labels), nudge_y=400*nudge_scalar, size=size_labels)+
+    geom_label_repel(data=df_rank[c(F,T),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
+                                                y=value/2, label=labels), nudge_y=-400*nudge_scalar, size=size_labels)+
+    scale_x_discrete(expand = c(.05, 0, .05, 0))+
+    scale_fill_manual(values = c("#f2a5a5", "black"))+
+    theme_cowplot()+
+    theme(legend.position = "bottom", axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+  
+}
+
+give_distance_from_imputation <- function(impute_VALUE){
+  dist(as(compositions::clr(impute(all_natgen[[which_natgen]], impute_VALUE)), 'matrix'))
+}
+
+give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL, return_grob=F, expand_vec=c(0.5, 0, 0.05, 0), ...){
+  
+  if(!plot & return_grob){
+    stop('You cannot have plot=F and return_grob=T')
+  }
+  
+  if(is.null(exposures)){
+    .exposures <- all_natgen[[which_natgen]]
+  }else{
+    .exposures <- exposures
+  }
+  
+  dendroimputclr_all_lowerinput = give_dendrogram_generalised(as(compositions::clr(impute(.exposures, impute_VALUE)), 'matrix'), modify_labels=F, keep_only_PDO = F, ...)
+  
+  dend_data_inputclr0004 <- dendro_data(dendroimputclr_all_lowerinput, type = "rectangle")
+  dend_data_inputclr0004$labels$label = as.character(dend_data_inputclr0004$labels$label)
+  dend_data_inputclr0004$labels$label[!grepl('PDO', dend_data_inputclr0004$labels$label)] = ""
+  
+  if(plot){
+    p_v2_0004 <- ggplot(dend_data_inputclr0004$segments) +
+      geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
+      geom_label_repel(data = dend_data_inputclr0004$labels, aes(x, y, label = gsub('Organoid ', '', label)),
+                       hjust = 0, size = 3, vjust=0, nudge_y = -2)+
+      ylim(-3, 15)+
+      theme_bw()+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),
+            axis.title.y=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks.y=element_blank(),
+            panel.grid = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank())+
+      scale_x_continuous(expand = c(extra_expand, extra_expand))+
+      scale_y_continuous(expand = expand_vec)
+    
+    ## here there used  to be a problem in that I used "labels", but now using "label" the order needs to be changed
+    heatmap_dendrogram_df_inputclr0004 = t(.exposures[rownames(.exposures)[match(gsub("Organoid ", "", label(dendroimputclr_all_lowerinput)[dendroimputclr_all_lowerinput$order]),rownames(.exposures))],])
+    
+    p2_inputclr_0004 = ggplot(melt(heatmap_dendrogram_df_inputclr0004), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+      theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+            legend.text=element_text(size=10),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),
+            axis.title.y=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks.y=element_blank(),  legend.position = "bottom",
+            panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.border = element_blank())+
+      scale_fill_brewer(palette="Dark2")+
+      scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
+      guides(fill = guide_legend(nrow = 1))
+    
+    # grid.arrange(p_v2_0004, p2_inputclr_0004, heights=c(2,1), top=paste0('Imputation: ', impute_VALUE))
+    
+      if(return_grob){
+        return_plt <- (arrangeGrob(p_v2_0004, p2_inputclr_0004, heights=c(2,1),
+                                                         top=paste0('Imputation: ', impute_VALUE)))
+        return(return_plt)
+      }
+    }else{
+      return(list(plot_data=dend_data_inputclr0004,
+                  dendogram_data=dendroimputclr_all_lowerinput))
+    }
+  
+}
+
+give_pca = function(data_matrix, center = T, title='', names, names_bool=T, give_loadings=F, print_labels=T, groups=NULL,groups_shape=NULL, nrow_legend=3, size_points=1, print_both_labels=FALSE, group_is_factor=T,
+                    short_pdo_names=F, additional_df=NULL){
+  prcomp_res = prcomp(data_matrix, scale. = TRUE, center = center)
+  eigs <- prcomp_res$sdev^2
+  if(!names_bool){
+    names=NA
+  }
+  
+  give_loadings_alt <- FALSE
+  # if(give_loadings){
+  if(give_loadings_alt){
+    if(!is.null(groups_shape)){
+      stop('Groups shape not yet implemented for loadings')
+    }
+    a = ggplot()+
+      geom_point(data=cbind.data.frame(prcomp_res$x[,1:2], names=names), aes(x=PC1, y=PC2), size=size_points)+
+      geom_segment(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                   aes(x=0, y=0, xend=PC1*4, yend=PC2*4), col='red', arrow = arrow(length = unit(0.03, "npc")))+
+      labs(x=paste0('PC1 (', round(100*eigs[1]/sum(eigs), 2), '%)' ),
+           y=paste0('PC2 (', round(100*eigs[2]/sum(eigs), 2), '%)' ))+ggtitle(title)
+    if(print_labels){
+      a = a+geom_label_repel(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                             aes(x=PC1*3, y=PC2*3, label=names), size=3, col='red')
+      if(print_both_labels){
+        a = a+geom_label_repel(data=cbind.data.frame(prcomp_res$x[,1:2], names=rownames(prcomp_res$x)),
+                               aes(x=PC1, y=PC2, label=names), size=3, col='black')
+      }
+    }
+    a
+  }else{
+    if(!is.null(groups)){
+      if(group_is_factor){
+        # df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=as.factor(groups), additional_df)
+        df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=as.factor(groups))
+      }else{
+        # df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=(groups), additional_df)
+        df = cbind.data.frame(prcomp_res$x[,1:2], names=names, groups=(groups))
+      }
+    }else{
+      # df = cbind.data.frame(prcomp_res$x[,1:2], names=names, additional_df)
+      df = cbind.data.frame(prcomp_res$x[,1:2], names=names)
+    }
+    if(short_pdo_names){
+      df$names <- gsub("PDO", "", df$names)
+    }
+    if(!is.null(groups_shape)){
+      df = cbind(df, groups_shape=groups_shape)
+    }
+    a = ggplot(df,
+               aes(x=PC1, y=PC2,label=gsub('Sample ', 'PDO', names)))+
+      labs(x=paste0('PC1 (', round(100*eigs[1]/sum(eigs), 2), '%)' ),
+           y=paste0('PC2 (', round(100*eigs[2]/sum(eigs), 2), '%)' ))+ggtitle(title)
+    if(!is.null(groups)){
+      if(!is.null(groups_shape)){
+        a = a +geom_point(aes(col=groups, shape=groups_shape), size=size_points)
+      }else{
+        a = a +geom_point(aes(col=groups), size=size_points)
+      }
+      a = a + theme(legend.position = "bottom",
+                    legend.key.size = unit(0.3, "cm"),
+                    legend.key.width = unit(0.2,"cm"),
+                    legend.title = element_blank())+
+        guides(col=guide_legend(nrow=nrow_legend,byrow=TRUE))
+    }else{
+      if(!is.null(groups_shape)){
+        a = a + geom_point(aes(shape=groups_shape), size=size_points)
+      }else{
+        a = a + geom_point(size=size_points)
+      }
+    }
+    
+    
+    if(print_labels){
+      a = a+geom_label_repel(size=3,)
+    }
+
+    if(give_loadings){
+      a <- a + geom_segment(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                   aes(x=0, y=0, xend=PC1*4, yend=PC2*4), col='red', arrow = arrow(length = unit(0.03, "npc")))+
+        geom_label_repel(data=cbind.data.frame(prcomp_res$rotation[,1:2], names=paste0('n', 1:ncol(data_matrix))),
+                         aes(x=PC1*3, y=PC2*3, label=names), size=3, col='red')
+    }
+    
+    a
+    
+  }
+}

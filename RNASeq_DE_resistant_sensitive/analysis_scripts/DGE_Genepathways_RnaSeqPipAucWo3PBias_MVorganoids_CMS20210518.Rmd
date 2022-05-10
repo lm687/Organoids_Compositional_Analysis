@@ -1,0 +1,156 @@
+---
+title: "DGE_Genepathways_RnaSeqPipAucWo3PBias_MVorganoids_CMS20210518"
+author: "Carolin Sauer"
+date: "18/05/2021"
+output: html_document
+---
+
+```{r, message=F}
+#load libraries
+library(tidyverse)
+library(DESeq2)
+library(fgsea)
+library(AnnotationHub)
+```
+
+
+```{r}
+#Load Data
+
+dres <- readRDS("../../RNASeq_DE_resistant_sensitive/objects/deseq_obj_11orgs_results_sensitivity.RDS")
+dres <- as.data.frame(dres)
+dres$X = rownames(dres)
+rownames(dres) <- NULL
+dres_wrongorgs_but_annotation <- read.csv("../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/RnaSeqPipAucWo3PBias/DEAnalysis/SampleGroup/SampleGroup_DEA_resistant-vs-sensitive_all.csv")
+
+```
+
+
+```{r}
+anns <- readRDS("../../copy_number_analysis_organoids/robjects/t2g2.RDS")
+anns <- data.frame(gene_id=anns$ensembl_gene_id, gene_name=anns$external_gene_name,
+                   gene_biotype=NA, entrezid=anns$entrezgene_id)
+# ah <- AnnotationHub::AnnotationHub()
+# anns0 <- AnnotationHub::query(ah, c("EnsDb", "Hsapiens", "99"))
+# anns <- anns0[["AH78783"]]
+# # anns <- 
+# # anns <- read.table("C://Users/sauer01/Dropbox/Work/PhD Yr1/Data/Cell Work/HGSOC_CellLines_RNAseq/RNAseq_analysis/Annotation_EnsDb.Hsapiens.v99_CMS20210420.tsv", sep = "\t", header = T)
+# AnnotationHub::(anns)
+
+###Add annotations
+dres <- dres %>% 
+  column_to_rownames(var = "X") %>% 
+  rownames_to_column(var = "gene_id") %>% 
+  dplyr::filter(!is.na(gene_id)) %>% 
+  left_join(anns[,c("gene_id", "gene_name", "gene_biotype", "entrezid")], by = "gene_id")
+
+```
+
+
+
+```{r}
+#Gene Set enrichment analysis
+
+gseaDat <- dplyr::filter(dres, !is.na(entrezid), !is.na(log2FoldChange), !is.na(pvalue))
+
+# rankData <- gseaDat$log2FoldChange
+# names(rankData) <- gseaDat$entrezid
+# head(rankData)
+# 
+
+rankData <- -log10(gseaDat$pvalue) * sign(gseaDat$log2FoldChange)
+names(rankData) <- gseaDat$entrezid
+head(rankData)
+
+```
+
+
+
+```{r}
+#Load pathways
+load(url("http://bioinf.wehi.edu.au/software/MSigDB/human_H_v5p2.rdata"))
+# load("human_H_v5p2.rdata")
+
+```
+
+
+```{r}
+#conduct GSEA analysis
+pathwaysH <- Hs.H
+
+fgseaRes <- fgsea(pathwaysH, 
+                  rankData, 
+                  minSize=15, 
+                  maxSize = 500, 
+                  nperm=1000)
+
+
+#top 10 results
+fgseaRes %>% 
+    arrange(desc(abs(NES))) %>% 
+    top_n(10, -padj)
+
+```
+
+
+```{r}
+#enrich score plot
+plotEnrichment(pathwaysH[["HALLMARK_MYC_TARGETS_V1"]], rankData)
+
+plotEnrichment(pathwaysH[["HALLMARK_MYC_TARGETS_V2"]], rankData)
+
+```
+
+
+```{r}
+#GSEA table plot
+topPathways <- fgseaRes %>% 
+    dplyr::filter(padj < 0.05) %>% 
+    top_n(20, wt=-padj) %>% 
+    arrange(NES) %>% 
+    pull(pathway)
+# pdf("Orgs_AUG_DGE_GSEA_Results.pdf", width = 12, height = 7)
+plotGseaTable(pathwaysH[topPathways], 
+              rankData, 
+              fgseaRes, 
+              gseaParam = 0.5)
+# dev.off()
+```
+
+```{r}
+
+fgseaResTidy <- fgseaRes %>%
+  as_tibble() %>%
+  arrange(desc(NES)) %>% 
+  mutate(Pathway = str_replace_all(pathway, "_", " "))
+
+# pdf("Orgs_AUG_DGE_GSEA_Results_allBar.pdf", width = 7, height = 7)
+# ggplot(fgseaResTidy, aes(reorder(Pathway, NES), NES)) +
+#   geom_col(aes(fill=padj<0.05)) +
+#   coord_flip() +
+#   labs(x="Pathway", y="Normalized Enrichment Score",
+#        title="Hallmark pathways NES from GSEA") + 
+#   theme_minimal()
+# dev.off()
+# 
+# ggsave("Orgs_AUC_DGE_GSEA_Results_allPW_Bars.png", width = 8, height = 7)
+```
+
+```{r}
+saveRDS(fgseaResTidy, "../objects/fig4_fgseaResTidy.RDS")
+fgseaResTidy %>% 
+  dplyr::filter(padj < 0.05) %>% 
+ggplot(aes(x = reorder(Pathway, NES), y = NES)) +
+  geom_col(aes(fill=padj)) +
+  coord_flip() +
+  labs(x="Pathway", y="Normalized Enrichment Score",
+       title="Hallmark pathways NES from GSEA") + 
+  theme_minimal(7) +
+  theme(legend.key.size = unit(0.1, "in"))
+
+# ggsave("Orgs_AUC_DGE_GSEA_Results_allPW_Bars_sigsonly.png", width = 4.5, height = 2.5)
+# ggsave("Orgs_AUC_DGE_GSEA_Results_allPW_Bars_sigsonly.pdf", width = 4.5, height = 2.5)
+
+```
+
+

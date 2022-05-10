@@ -9,10 +9,16 @@ library(ggrepel)
 library(dplyr)
 library(DESeq2)
 library(reshape2)
+library(ConsensusTME)
+library(readxl)
 
-## Load file output from DESeq2, which has been created with 1_run_DE.sh
+renaming1 = read_excel("../files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+
+## Load file output from DESeq2 for TCGA samples, which has been created with 1_run_DE.sh
 load("../objects/deaObjectFile")
 deObj = `~response`
+
+deseq_obj_11orgs <- readRDS("../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig3_renormalised_counts_obj_11orgs.RDS")
 
 ##---------------------------------------------------------------------------------------------------------------##
 ## Run differential expression with DESeq
@@ -29,8 +35,9 @@ rownames_short = sapply(rownames(results), function(i) strsplit(i, '[.]')[[1]][1
 #                  filters = "ensembl_gene_id", values = rownames_short,
 #                  mart = mart)
 # gene_conversion = gene_conversion[match(rownames_short, gene_conversion$ensembl_gene_id),]
-saveRDS(object = gene_conversion, file = "~/Desktop/t2g2.RDS")
-t2g = readRDS("~/Desktop/t2g2.RDS")
+# saveRDS(object = gene_conversion, file = "~/Desktop/t2g2.RDS")
+t2g = readRDS("../../copy_number_analysis_organoids/robjects/t2g2.RDS")
+coding_genes = readRDS("../../copy_number_analysis_organoids/robjects/coding_genes.RDS")
 # t2g = readRDS("~/Desktop/t2g.RDS")
 gene_conversion = t2g[match(rownames_short, t2g$ensembl_gene_id),]
 dim(gene_conversion)
@@ -110,21 +117,49 @@ DE_results_TCGA = read.table("../objects/differential_all", sep = ',', header = 
 
 ## Load the organoids DE
 load("../files/deObject_SampleGroup_sensitive_vs_resistant.RData")
+SampleGroup_14orgs <- SampleGroup
+rm(SampleGroup)
 ## e.g. JBLAB-19920 is PDO18 and has been excluded based on 3' bias
-"JBLAB-19920" %in% colnames(SampleGroup)
-length(colnames(SampleGroup)) ## 3' bias have been excluded. No!!! one has been left
-## but I am not sure why there are 14 instead of 15
-"JBLAB-19939" %in% colnames(SampleGroup) ## the fourth sample with highest 3' bias
+# "JBLAB-19920" %in% colnames(SampleGroup)
+# length(colnames(SampleGroup)) ## 3' bias have been excluded. No!!! one has been left
+# ## but I am not sure why there are 14 instead of 15
+# "JBLAB-19939" %in% colnames(SampleGroup) ## the fourth sample with highest 3' bias
 
+## re-run DESeq2 with only 11 organoids
+## use the previous object to get the group of sensitive/resistant
+coldata_SampleGroup_14orgs <- colData(SampleGroup_14orgs)
+coldata_SampleGroup_14orgs$PDO = renaming1$PDO[match(coldata_SampleGroup_14orgs$SampleName,
+                                                     renaming1$sampleNameRNAseq)]
+dim(DESeq2::counts(deseq_obj_11orgs))
+deseq_obj_11orgs_normalFT <- deseq_obj_11orgs
+## remove FP as they are not sensitive/resistant, and remove PDO15 as well, because we don't
+## have drug results for it
+deseq_obj_11orgs <- deseq_obj_11orgs[,grepl('PDO', colnames(deseq_obj_11orgs))]
+deseq_obj_11orgs <- deseq_obj_11orgs[,colnames(deseq_obj_11orgs) != 'PDO15']
+deseq_obj_11orgs$responseGroup = coldata_SampleGroup_14orgs$responseGroup[match(rownames(colData(deseq_obj_11orgs)), coldata_SampleGroup_14orgs$PDO)]
+deseq_obj_11orgs_sensitivity <- DESeq2::DESeqDataSetFromMatrix(DESeq2::counts(deseq_obj_11orgs),
+                                                               colData=colData(deseq_obj_11orgs),
+                                                               design = ~responseGroup)
+rm(deseq_obj_11orgs)
+deseq_obj_11orgs_sensitivity <- estimateSizeFactors(deseq_obj_11orgs_sensitivity)
+deseq_obj_11orgs_sensitivity <- estimateDispersions(deseq_obj_11orgs_sensitivity,fitType="local")
+deseq_obj_11orgs_sensitivity <- DESeq2::DESeq(deseq_obj_11orgs_sensitivity)
+deseq_obj_11orgs_results_sensitivity <- DESeq2::results(deseq_obj_11orgs_sensitivity)
+saveRDS(deseq_obj_11orgs_results_sensitivity, "../objects/deseq_obj_11orgs_results_sensitivity.RDS")
+deseq_obj_11orgs <- deseq_obj_11orgs_sensitivity ## below we are studying sensitivity vs specificity
+
+DE_results_org <- deseq_obj_11orgs
 # remove_na = function(i)i[!is.na(i)]
+
 # SampleGroup <- SampleGroup[,-remove_na(match(c('JBLAB-19920', 'JBLAB-19925', 'JBLAB-19936'), SampleGroup$SampleName))]
 # SampleGroup = DESeq2::DESeq(SampleGroup)
 # DE_results_org = DESeq2::results(SampleGroup)
-# saveRDS(DE_results_org, file = "../objects/resultsDESeq_org.RDS")
-DE_results_org <- readRDS("../objects/resultsDESeq_org.RDS")
+# DE_results_org = DESeq2::results(deseq_obj_11orgs)
+# saveRDS(DE_results_org, file = "../objects/resultsDESeq_org_11orgs.RDS")
+# DE_results_org <- readRDS("../objects/resultsDESeq_org_11orgs.RDS") ## this is fallopian tube vs normal
 # saveRDS(SampleGroup, file = "../objects/SampleGroup_org_no3primebias.RDS")
-SampleGroup <- readRDS("../objects/SampleGroup_org_no3primebias.RDS")
-
+# SampleGroup <- readRDS("../objects/SampleGroup_org_no3primebias.RDS")
+SampleGroup <- deseq_obj_11orgs
 DE_results_org
 
 plot(DE_results_TCGA$log2FoldChange, -log(DE_results_TCGA$padj), cex=.1, pch=19)
@@ -165,16 +200,21 @@ ggsave("../figures/Sensitive_resistant_figures/tcga_org_comparison_pvals.pdf")
 ##---------------------------------------------------------------------------------------------------------------##
 ## not look at differential abundance, but simply at gene expression and whether it correlates
 ## counts for organoids
-counts_DESeq_org = read.table("../files/counts_norm.csv", sep = ",", header=T, stringsAsFactors = FALSE)
-apply(counts_DESeq_org, 2, function(i) as.numeric(i))
-rownames(counts_DESeq_org) = counts_DESeq_org[,1]; counts_DESeq_org = counts_DESeq_org[,-1]
-colnames(counts_DESeq_org) ## we have more than 18 because we also have normal samples
+# counts_DESeq_org = read.table("../files/counts_norm.csv", sep = ",", header=T, stringsAsFactors = FALSE)
+# rownames(counts_DESeq_org) = counts_DESeq_org[,1]; counts_DESeq_org = counts_DESeq_org[,-1]
 ## Remove the organoids that have a 3' bias, and the normal samples
 ## PDO14 (JBLAB-19925) PDO16 (JBLAB-19936) PDO18 (JBLAB-19920) and normal (JBLAB-19950, JBLAB-19953, JBLAB-19952
 ## JBLAB-19954, JBLAB-19955, JBLAB-19951)
-counts_DESeq_org = counts_DESeq_org[,!(colnames(counts_DESeq_org) %in% c('JBLAB.19925', 'JBLAB.19936', 'JBLAB.19920', 'JBLAB.19950',
-                                                                         'JBLAB.19953', 'JBLAB.19952',
-                                                                         'JBLAB.19954', 'JBLAB.19955', 'JBLAB.19951'))]
+# counts_DESeq_org = counts_DESeq_org[,!(colnames(counts_DESeq_org) %in% c('JBLAB.19925', 'JBLAB.19936', 'JBLAB.19920', 'JBLAB.19950',
+#                                                                          'JBLAB.19953', 'JBLAB.19952',
+#                                                                          'JBLAB.19954', 'JBLAB.19955', 'JBLAB.19951'))]
+
+counts_DESeq_org <- DESeq2::counts(deseq_obj_11orgs, normalized=T)
+## select only PDO
+counts_DESeq_org <- counts_DESeq_org[,grepl('PDO', colnames(counts_DESeq_org))]
+apply(counts_DESeq_org, 2, function(i) as.numeric(i))
+colnames(counts_DESeq_org) ## we have more than 18 because we also have normal samples
+
 list_to_df = function(a){
   .x = apply(a, 2, function(i) as.numeric(i))
   rownames(.x) = rownames(a); colnames(.x) = colnames(a)
@@ -206,7 +246,7 @@ df_all_genes <- melt(list(TCGA=counts_DESeq_TCGA,
 df_subset_genes <- melt(list(TCGA=counts_DESeq_TCGA[rownames(counts_DESeq_TCGA) %in% subset_genes,],
                              org=counts_DESeq_org[rownames(counts_DESeq_org) %in% subset_genes,]))
 
-ggplot(df_all_genes, aes(y=value, x=L1))+geom_boxplot()+geom_jitter()
+# ggplot(df_all_genes, aes(y=value, x=L1))+geom_boxplot()+geom_jitter()
 
 means_tcga <- rowMeans(counts_DESeq_TCGA)
 means_org <- rowMeans(counts_DESeq_org)
@@ -230,10 +270,14 @@ colours_TME_tcga_org_cor[is.na(colours_TME_tcga_org_cor)] = 'Other'
 df_colmeans_deseqcounts_correlation_tcga_org <- cbind.data.frame(means_tcga, means_org, TME=colours_TME_tcga_org_cor)
 df_colmeans_deseqcounts_correlation_tcga_org = df_colmeans_deseqcounts_correlation_tcga_org[colSums(apply(df_colmeans_deseqcounts_correlation_tcga_org, 1, is.na)) == 0,]
 saveRDS(df_colmeans_deseqcounts_correlation_tcga_org, "../objects/fig4_df_colmeans_deseqcounts_correlation_tcga_org.RDS")
+df_colmeans_deseqcounts_correlation_tcga_org$xidentity=rep(c(.01, max(means_tcga, na.rm=T)), nrow(df_colmeans_deseqcounts_correlation_tcga_org)/2)
+df_colmeans_deseqcounts_correlation_tcga_org$yidentity=rep(c(.01, max(means_org, na.rm=T)), nrow(df_colmeans_deseqcounts_correlation_tcga_org)/2)
 ggplot(df_colmeans_deseqcounts_correlation_tcga_org,
-       aes(x=means_tcga, y=means_org, col=TME))+geom_point()+
+       aes(x=(means_tcga), y=(means_org), col=TME))+geom_point()+
+  # geom_abline(slope = (1), intercept = 0, lty='dashed')
+  facet_wrap(.~TME)+
   scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
-  geom_abline(slope = 1, intercept = 0, lty='dashed')+facet_wrap(.~TME)+
+  geom_line(aes(x=xidentity, y=yidentity), lty='dashed', col='black')+
   theme(legend.position = "bottom")+ggtitle('Comparison of DESeq counts between TCGA\nand organoid samples')+
   theme_bw()+labs(x='DESEq count means for TCGA', y='DESEq count means for organoid samples')
 ggsave("../figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org_TME.pdf", width = 6, height = 4)
@@ -313,12 +357,12 @@ df_colmeans_deseqcounts_correlation_tcga_org = cbind.data.frame(df_colmeans_dese
                                                                 short_go=short_go[match(df_colmeans_deseqcounts_correlation_tcga_org$cutreecats, names(cutreecats_list))])
 ggplot(droplevels(df_colmeans_deseqcounts_correlation_tcga_org[!is.na(df_colmeans_deseqcounts_correlation_tcga_org$short_go),]),
        aes(x=means_tcga, y=means_org, col=cutreecats))+geom_point(alpha=0.4)+
-  scale_x_continuous(trans = "log2")+scale_y_continuous(trans = "log2")+
+  scale_y_continuous(trans = "log2")+
   geom_abline(slope = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[2],
               intercept = lm_colmeans_deseqcounts_correlation_tcga_org$coefficients[1], lty='dashed')+
   theme(legend.position = "bottom")+ggtitle('Comparison of DESeq counts between TCGA and organoid samples')+
   theme_bw()+labs(x='DESEq count means for TCGA', y='DESEq count means for organoid samples')+
-  facet_wrap(.~short_go)+guides(col=FALSE)
+  facet_wrap(.~short_go)+guides(col=FALSE)+scale_x_continuous(trans = "log2")
 ggsave("../figures/Sensitive_resistant_figures/colmeans_deseqcounts_correlation_tcga_org_GOterms.png", width = 6.5, height = 5)
 
 
@@ -386,5 +430,293 @@ colnames(counts_DESeq_TCGA_raw)
 table(deObj$response)
 deObj$response
 
+## also to confirm:
+query_GDC <- readRDS("../objects/query")
+dim(query_GDC$results[[1]])
+table(query_GDC$results[[1]]$sample_type)
+
+##---------------------------------------------------------------------------------------------------------------##
+## PCA of TCGA
+pca_tcga <- prcomp(t(counts_DESeq_TCGA[!apply(counts_DESeq_TCGA, 1, function(i) any(is.na(i)) ),]))
+genes_pca <- c('PARP2', 'TERT', 'ATR', 'AKT1', 'KRAS', 'TOP1',
+               'PIK3CA', 'ATM', 'PARP1', 'CCNE1', 'PTEN')
+plot(pca_tcga$x)
+pca_tcga2 <- pca_tcga$rotation[match(genes_pca, rownames(pca_tcga$rotation)),][,1:2]
+ggplot(cbind.data.frame(pca_tcga2, gene=rownames(pca_tcga2)),
+       aes(label=gene))+geom_segment(aes(x=0, y=0, xend=PC1, yend=PC2),
+                                     arrow = arrow(length = unit(0.02, "npc")))+
+  geom_label_repel(aes(x=PC1, y=PC2))
+
+##---------------------------------------------------------------------------------------------------------------##
+## Clustering of TCGA
+# hclust_genes <- hclust(dist(counts_DESeq_TCGA))
+# clashes
+library(umap)
+counts_DESeq_org_nonorm <- counts_DESeq_org[! (colnames(counts_DESeq_org) %in% c('JBLAB.19950',
+                                                                                 'JBLAB.19953',
+                                                                                 'JBLAB.19952',
+                                                                                 'JBLAB.19954',
+                                                                                 'JBLAB.19955',
+                                                                                 'JBLAB.19951'))]
+joint_counts <- cbind(counts_DESeq_TCGA[match(rownames(counts_DESeq_org_nonorm), rownames(counts_DESeq_TCGA)),],
+                      counts_DESeq_org_nonorm)
+joint_counts <- joint_counts[!apply(joint_counts, 1, function(i) any(is.na(i))),]
+umap_2_with_orgs <- umap(t(joint_counts))
+prcomp_with_orgs <- prcomp(t(joint_counts[,]), center = T, scale. = T)
+
+umap_TCGA <- umap(counts_DESeq_TCGA)
+set.seed(1325)
+umap_2 <- umap(t(counts_DESeq_TCGA))
+
+annotation_umap <- cbind.data.frame(Gene=rownames(counts_DESeq_TCGA))
+annotation_umap$replication <- sapply(coding_genes$description, grepl, pattern = 'replication' )[match(rownames(counts_DESeq_TCGA), coding_genes$ensembl_gene_id)]
+annotation_umap$consensusTMB <- (coding_genes$external_gene_name[match(rownames(counts_DESeq_TCGA), coding_genes$ensembl_gene_id)] %in% unique(unlist(ConsensusTMB_OV)))[match(rownames(counts_DESeq_TCGA), coding_genes$ensembl_gene_id)]
+plot_umap(umap_TCGA, factor(annotation_umap$replication, levels=c('FALSE', 'TRUE')))
+plot_umap(umap_TCGA, factor(annotation_umap$consensusTMB))
+
+## from file 0_preparing_files.R
+clinical_tcga <- read.table("../files/clinical.cases_selection.2021-05-12/clinical.tsv", sep = "\t", fill = T, header = T)
+matched_clinical <- clinical_tcga[match(query_GDC$results[[1]]$cases.submitter_id[match(colnames(counts_DESeq_TCGA),
+                                                                                        query_GDC$results[[1]]$id)], clinical_tcga$case_submitter_id),]
+wgd=read.table("../../../../CDA_in_Cancer/data/TCGA_WGD/Haase2019_TCGA.giScores.wgd.txt", header = T)
+matched_wgs <- wgd$wgd[match(query_GDC$results[[1]]$cases.submitter_id[match(colnames(counts_DESeq_TCGA), query_GDC$results[[1]]$id)],
+                                  wgd$patient)]
+exposures_TCGA <- readRDS("../../copy_number_analysis_organoids/data/Export-matrix_OV_Sigs_on_TCGA-OV_12112019.rds")
+#consensusTME
+change_rownames <- function(i){
+  rownames(i) = t2g$external_gene_name[match(gsub("\\..*","",rownames(i)), t2g$ensembl_gene_id)]
+  i
+}
+matched_consensusTME <- ConsensusTME::consensusTMEAnalysis(change_rownames(counts_DESeq_TCGA_raw), cancerType = "OV")
+
+## clinical ov data
+TCGA_genes <- readRDS("../../../../other_repos/cnsigs_Initial_submission/survival_analysis/from_ruben/survival_models/TCGA_OVBRCAonly_Exposures_and_BRCA_Status_plusGene.rds")
+matched_exposures <- exposures_TCGA[match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA), query_GDC$results[[1]]$id)], 1, 12),
+                                          rownames(exposures_TCGA)),]
+
+matched_group_WGD <- cutree(cluster_fig1, k=2)[match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA), query_GDC$results[[1]]$id)], 1, 12),
+                                          names(cutree(cluster_fig1, k=2)))]
+matched_group_genes <- TCGA_genes[match(substring(query_GDC$results[[1]]$cases[match(colnames(counts_DESeq_TCGA), query_GDC$results[[1]]$id)], 1, 12),
+                                        TCGA_genes$Sample)]
+TCGA_genes
+matched_queryGDC <- query_GDC$results[[1]][match(colnames(counts_DESeq_TCGA),
+                                                 query_GDC$results[[1]]$id),]
+table(matched_queryGDC$type) ## only gene expression, as expected
+ggplot(data.frame(umap_TCGA$layout, mean_counts=log(rowMeans(counts_DESeq_TCGA))),
+       aes(x=X1, y=X2, col=mean_counts))+geom_point()
+
+df_umap_2 <- data.frame(umap_2$layout, mean_exprs=log(colMeans(counts_DESeq_TCGA)),
+                        matched_clinical,WGD=matched_wgs,matched_queryGDC,
+                        matched_exposures,
+                        group_clr=matched_group_WGD,
+                        genes=matched_group_genes,
+                        consensusTME=t(matched_consensusTME))
+colnames(df_umap_2)
+
+
+## there seems to be a very clear split by the second umap component
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=type))+geom_point() ## 
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=mean_exprs))+geom_point() ## mostly seems to be due to the average expression
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=vital_status))+geom_point() ## not separated by vital status
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=WGD))+geom_point() ## not separated by WGD
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=age_at_index))+geom_point() ## not separated by age
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=as.numeric(days_to_birth)))+geom_point() ## again, not separate by age
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=as.numeric(days_to_death)))+geom_point() ## not separated by life expectancy
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=race))+geom_point() ## not separated by race
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=race))+geom_point() ## not separated by race
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=group_clr))+geom_point() ## not separated by WGD (clustering by clr)
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=genes.Status))+geom_point() ## not separated by BRCA
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=consensusTME.Immune_Score))+geom_point() ## 
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=consensusTME.B_cells))+geom_point() ## 
+ggplot(df_umap_2,
+       aes(x=X1, y=X2, col=consensusTME.Fibroblasts))+geom_point() ## 
+
+
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA['ENSG00000136997',]),
+       aes(x=X1, y=X2, col=gene))+geom_point() ## not separated by MYC
+
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA['ENSG00000175054',]),
+       aes(x=X1, y=X2, col=gene))+geom_point() ## not separated by ATR
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA['ENSG00000095585',]),
+       aes(x=X1, y=X2, col=gene))+geom_point() ## not separated by BLNK
+to_ens <- function(i){
+  t2g$ensembl_gene_id[match(i, t2g$external_gene_name)]
+}
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[to_ens('ESR1'),]),
+       aes(x=X1, y=X2, col=gene))+geom_point() ## not separated by ER
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[to_ens('PGR'),]),
+       aes(x=X1, y=X2, col=gene))+geom_point() ## not separated by PR
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[to_ens('RECQL'),]),
+       aes(x=X1, y=X2, col=log(gene)))+geom_point() ## not separated by RECQL
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[to_ens('RNVU1-7'),]),
+       aes(x=X1, y=X2, col=log(gene)))+geom_point()
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[to_ens('RNVU1-18'),]),
+       aes(x=X1, y=X2, col=log(gene)))+geom_point()
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[to_ens('AL355075.4'),]),
+       aes(x=X1, y=X2, col=log(gene)))+geom_point()
+ggplot(cbind(df_umap_2, gene=counts_DESeq_TCGA[to_ens('AL355075.4'),]),
+       aes(x=X1, y=X2, col=log(gene)))+geom_point()
+
+ggplot(cbind(df_umap_2),
+       aes(x=X1, y=X2, col=s1))+geom_point() ## not separated by s1
+ggplot(cbind(df_umap_2),
+       aes(x=X1, y=X2, col=s3))+geom_point() ## not separated by s3
+ggplot(cbind(df_umap_2),
+       aes(x=X1, y=X2, col=s4))+geom_point() ## not separated by s4
+
+ggplot(data.frame(umap_2_with_orgs$layout, mean_counts=log(colMeans(joint_counts)),
+                  group =c(rep('TCGA', ncol(counts_DESeq_TCGA)),
+                           rep('Organoid', ncol(counts_DESeq_org_nonorm))),
+                  label=c(rep(NA, ncol(counts_DESeq_TCGA)),
+                          colnames(counts_DESeq_org_nonorm))),
+       aes(x=X1, y=X2,
+           # col=mean_counts
+           col=group,
+           label=label
+       ))+geom_point()+geom_label_repel()
+
+ggplot(data.frame(prcomp_with_orgs$x[,1:2], mean_counts=log(colMeans(joint_counts)),
+           group =c(rep('TCGA', ncol(counts_DESeq_TCGA)),
+                    rep('Organoid', ncol(counts_DESeq_org_nonorm))),
+           label=c(rep(NA, ncol(counts_DESeq_TCGA)),
+                   colnames(counts_DESeq_org_nonorm))), aes(x=PC1, y=PC2, col=group,
+                                                     label=label))+
+  geom_point()+geom_label()
+
+dist_patients <- dist(df_umap_2)
+pheatmap::pheatmap(dist_patients)
+
+grouping_patients <- split(rownames(df_umap_2), f = df_umap_2$X2 < -2)
+
+groups_umap <- cbind.data.frame(row.names=unlist(grouping_patients),
+                 grouping_umap=rep(c('Group1','Group2'), sapply(grouping_patients, length)))
+raw_counts_for_umap <- DESeq2::counts(`~response`)[,match(unlist(grouping_patients), colnames(DESeq2::counts(`~response`)))]
+mat <- DESeqDataSetFromMatrix(countData=raw_counts_for_umap,
+                              colData=groups_umap,
+                              design=~grouping_umap)
+mat <- estimateSizeFactors(mat)
+mat <- suppressMessages(estimateDispersions(mat,fitType="local"))
+results_DE_umap0 <- nbinomWaldTest(mat)
+results_DE_umap <- DESeq2::results(results_DE_umap0, c("grouping_umap", "Group1", "Group2"),
+                                      alpha = 0.05, format = "DataFrame")
+results_DE_umap
+results_DE_umap = cbind(t2g[match(gsub("\\..*","",rownames(raw_counts_for_umap)), t2g$ensembl_gene_id),], results_DE_umap)
+
+vlcano(results_DE_umap)
+table(results_DE_umap$padj < 0.00000001)
+head(results_DE_umap[order(results_DE_umap$padj, decreasing = F),])
+top_umap_DE <- change_rownames((DESeq2::counts(mat, normalized=F)[which(results_DE_umap$padj < 0.000000001),]))
+pheatmap::pheatmap(top_umap_DE,
+                   annotation_col = groups_umap, cluster_cols = T, scale = "row",
+                   main = 'Genes with adjusted p-value < 0.05', show_colnames = FALSE)
+top_umap_DE2 <- change_rownames(head(DESeq2::counts(mat, normalized=T)[order(results_DE_umap$padj),], n=35))
+pheatmap::pheatmap(log(top_umap_DE2+0.001),
+                   annotation_col = groups_umap, cluster_cols = F, scale = "row",
+                   main = 'Genes with adjusted p-value < 0.05', show_colnames = FALSE)
+
+pc1_loadings <- prcomp_with_orgs$rotation[,1]
+pc12_loadings <- cbind.data.frame(PC1_loading=prcomp_with_orgs$rotation[,1],
+                                  PC2_loading=prcomp_with_orgs$rotation[,2],
+                                  ensembl=names(pc1_loadings),
+                                  gene=t2g$external_gene_name[match(names(pc1_loadings),
+                                                                    t2g$ensembl_gene_id)])
+pc12_loadings$mostly_y = (abs(pc12_loadings$PC1_loading) > 0.011)
+pc12_loadings$mostly_y_v2 = (abs(pc12_loadings$PC1_loading) > 0.012)
+
+give_goterm_list_of_genes_general <- function(i, allgenes, nomenclature_subset='ensemble', nomeclature_all='entrez'){
+  require(topGO)
+  .x = i
+  if(nomenclature_subset == 'ensemble'){
+    .xentrez = t2g[match(.x, t2g$ensembl_gene_id),'entrezgene_id']
+    .xentrez = .xentrez[!is.na(.xentrez)]
+  }
+  
+  if(nomenclature_subset == 'ensemble'){
+    allgenes = t2g[match(allgenes, t2g$ensembl_gene_id),'entrezgene_id']
+    allgenes = as.character(allgenes[!is.na(allgenes)])
+  }
+  
+  .xres_gosimenrich = GOSim::GOenrichment(genesOfInterest = as.character(.xentrez), allgenes = allgenes)
+  .xres_gosim = GOSim::getGOInfo(.xentrez)
+  .xres_gosimenrich
+}
+
+pc1_topgo <- give_goterm_list_of_genes_general(i = pc12_loadings[pc12_loadings$mostly_y_v2,]$ensembl,
+                                               allgenes = pc12_loadings$ensembl,
+                                               nomenclature_subset ='ensemble',
+                                               nomeclature_all = 'ensemble')
+
+ggplot(pc12_loadings)+geom_segment(aes(x = 0, xend=PC1_loading,
+                                       y=0, yend=PC2_loading,
+                                       col=mostly_y))
+
+
+plot(log(rowMeans(counts_DESeq_org_nonorm)),
+     log(rowMeans(counts_DESeq_TCGA[match(rownames(counts_DESeq_org_nonorm), rownames(counts_DESeq_TCGA)),])))
+
+changes_average_genes <- cbind.data.frame(logmean_org=log(rowMeans(counts_DESeq_org_nonorm)),
+                                          logmean_TCGA=log(rowMeans(counts_DESeq_TCGA[match(rownames(counts_DESeq_org_nonorm), rownames(counts_DESeq_TCGA)),])),
+                                          ensemble=rownames(counts_DESeq_org_nonorm))
+changes_average_genes$gene=t2g$external_gene_name[match(changes_average_genes$ensemble, t2g$ensembl_gene_id)]
+changes_average_genes$difference = changes_average_genes$logmean_org - changes_average_genes$logmean_TCGA
+
+changes_average_genes[duplicated(changes_average_genes$gene),]
+
+ggplot(changes_average_genes, aes(x=factor(ensemble, levels=changes_average_genes$ensemble[order(changes_average_genes$difference)]),
+                                  y=difference))+
+  geom_point()
+
+## DE between WGD and non-WGD (for organoids)
+## but this is including the three samples with 3' bias
+## also removing PDO17	xPDO17	JBLAB-19916
+cluster_fig1 <- readRDS("../../copy_number_analysis_organoids/robjects/dendrograminputclr_tree.RDS")
+t(t(cutree(cluster_fig1, k=2)[grepl('PDO', cluster_fig1$labels)]))
+group_WGD <- cutree(cluster_fig1, k=2)[grepl('PDO', cluster_fig1$labels)]
+group_WGD
+## run 1_run_DE for analysis. This is the output file:
+
+load("../objects/deaObjectFile_organoids_cluster")
+DE_cluster = `~cluster`
+results_DE_cluster <- DESeq2::results(DE_cluster, c("cluster", "1", "2"),
+                                      alpha = 0.05, format = "DataFrame")
+results_DE_cluster
+results_DE_cluster = cbind(t2g[match(rownames(DESeq2::counts(DE_cluster)), t2g$ensembl_gene_id),], results_DE_cluster)
+
+pdf("../figures/other_DE/DE_clusterWGD_org_volcano.pdf", height = 8, width = 8)
+vlcano(results_DE_cluster)#+lims(y=c(0, 0.0001))
+dev.off()
+
+
+counts_DE_cluster <- DESeq2::counts(DE_cluster)
+counts_DE_cluster[which(results_DE_cluster$padj < 0.05),]
+results_DE_cluster[which(results_DE_cluster$padj < 0.05),]
+hist(results_DE_cluster$pvalue)  
+
+renaming <- readxl::read_excel("../files/PDOnameProperSample_sWGS_RNAseq.xlsx")
+groups_cluster <- read.table("files/sample_sheet_organoids_cluster.csv",sep = ',', header = T)
+colnames(counts_DE_cluster) <- renaming$PDO[match(colnames(counts_DE_cluster), renaming$sampleNameRNAseq)]
+rownames(counts_DE_cluster) <- t2g$external_gene_name[match(rownames(counts_DE_cluster), t2g$ensembl_gene_id)]
+groups_cluster$sample <- renaming$PDO[match(groups_cluster$sample, renaming$sampleNameRNAseq)]
+rownames(groups_cluster) = groups_cluster$sample; groups_cluster$sample <- NULL
+
+counts_DE_cluster <- counts_DE_cluster[,match(rownames(groups_cluster)[order(groups_cluster$cluster)], colnames(counts_DE_cluster))]
+pdf("../figures/other_DE/DE_clusterWGD_org_highlyDE.pdf")
+pheatmap::pheatmap(counts_DE_cluster[which(results_DE_cluster$padj < 0.05),],
+                   annotation_col = groups_cluster, cluster_cols = F, scale = "row",
+                   main = 'Genes with adjusted p-value < 0.05')
+dev.off()
 
 

@@ -1,0 +1,79 @@
+
+
+\documentclass[11pt,a4paper,roman]{article}  
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[scale=0.75]{geometry}
+
+\begin{document}
+
+
+\author{Lena Morrill Gavarr\'o}
+\title{Sensitivity to imputation in dendrogram of organoid and primary tissue exposures}
+\date{\today}
+
+
+\maketitle
+
+
+I tackle the two claims that we make 
+\begin{itemize}
+\item That organoids are spread everywhere in the dendrogram, more or less
+\item (quoting) There are three small subclusters of signature exposures observed in primary tissue which are underrepresented in the organoids: those presenting a lack of s2 and s4, a lack of s2 and s3, and a lack of s3 together with high s4. 
+\end{itemize}
+
+\section{How different are the dendrograms when we change the imputed value?}
+I use 30 imputation values from $10^{-3}$ to $10^{-1}$, with equidistant splits in $\log_{10}$ scale. I create the dendrogram as in the paper -- with Aitchison's distance (euclidean distance in $clr$ space) and with a complete linkage function. I compare the trees that I get as I vary the imputation value (see Fig~\ref{nye}) using the Nye similarity metric. The results show that if the imputation value is low ($<0.01$), most trees are quite similar, and that, moreover, when the imputation values are intermediate ($>0.01$ and $<0.024$) they are also quite similar to each other, although not so much to trees with very low imputation values (see the two squares of purple).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3in]{../../../copy_number_analysis_organoids/figures/nyesimilarities_dendrogram_imputation_maximput_char01.pdf}
+\caption{Nye distances of trees with distinct imputation values\label{nye}}
+\end{figure}
+
+Remember that the value of 0.01 is the one I chose for the paper.
+
+\section{Organoids are still everywhere in the dendrogram, regardless of imputation}
+In Figure~\ref{metrics} I show several metrics that indicate how well organoids cluster with primary tissue samples, i.e. that they are representative of primary tissue samples. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{../../../copy_number_analysis_organoids/figures/metrics_dendrogram_imputation_maximput_char01.pdf}
+\caption{Several metrics for how organoids cluster with primary tissue samples\label{metrics}}
+\end{figure}
+
+These are the metrics that I report on:
+\begin{enumerate}
+\item The ratio of the mean distance of organoids among themselves, to the mean distance of the organoids with primary tissue samples. Higher values indicate that organoids are very admixed with primary tissue samples. There is a minimum around 0.01, where it seems that organoids are much more similar to each other than they are to primary tissue samples (so \textbf{it looks like in the paper we are looking at a worst-case scenario}!)
+\item The same ratio, but now we look at the median, and not mean, of the distance. There are two minima indicating imputation values that give trees where organoids and primary tissue samples are mixed. One is at the previous imputation value, around 0.01. The other one is lower.
+\item The ratio of the maximum distance between organoids to the maximum distance from organoids to primary tissue. Around 0.015 there is a maximum, indicating the imputation value where the maximum distance between two organoids is highest compared to the maximum distance between an organoid and a primary tissue sample (could represent the scenario where an organoid is the outgroup)
+\item The ratio of the minimum distance, this time, indicates that the situation where organoids are closest together -- probably immediately next to each other -- is when the imputation values are slightly higher than 0.01. \textbf{This is interesting because we expect six organoids (those that come from the same patients) to pair up}.
+\item Size of the largest clade in the first binary split (doesn't say anything about the clustering of organoids and primary \emph{per se}). This value fluctuates a lot, indicating different binary splits.
+\item I report the number of organoids in the largest clade of the first binary split  (doesn't say anything about the clustering of organoids and primary \emph{per se}). The value fluctuates quite a lot, although it seems to increase slightly.
+\item Size of the first clade without organoids: I recursively split the tree from the root and report the size (in number of samples) of the first clade that doesn't contain any organoids.  This value fluctuates a lot.
+\end{enumerate}
+
+\textbf{Conclusion} Although imputation changes the dendrograms quite a lot, it appears that the imputation value of 0.01 gives one of the dendrograms in which organoids are generally closest to one another (i.e. our reporting that organoids are representative of primary tissue holds, and if anything the dendrogram is conservative). There are no clear indications of \emph{how} it changes the dendrogram, however, by looking at the last 3 plots in Figure~\ref{metrics}.
+
+\section{What exposures are not found in clades with organoids, as imputation changes?}
+First, for each tree created given an imputation value, I split it into 30 clades (starting from the root; using the \emph{cutree} function). Then I explore the exposures of the samples that belong to the clades which are devoid of organoids, i.e. the underrepresented samples.
+
+There is a group of samples that is constantly excluded from the clades that contain organoids, regardless of imputation value: it is the first red fringe in Figure~\ref{depleted}, in which, for each sample (row) and imputation value (column), I say whether it belongs to a clade that doesn't contain any organoids (red) or to a clade that contains organoids (blue). There is a second set of samples that, with moderately high imputation values, almost never contains organoids: it is the smaller section on the bottom right part of the plot.
+\begin{figure}[h]
+\centering
+\includegraphics[width=.25\textwidth]{../../../copy_number_analysis_organoids/figures/samples_in_empty_clades_bool_maximput_char01.pdf}\\
+\includegraphics[width=.85\textwidth]{../../../copy_number_analysis_organoids/figures/constantly_underrepresented_samples_tree_maximput_char01.pdf}
+\caption{Above: matrix showing whether each sample is part of a clade that contains no organoids (red) or a clade that contains organoids (blue). Below: selecting those samples that in most ($>=20/30$) imputation values belong to a red clade with no organoids. We note the same groups that we had found in the paper. These plot is made using the same imputation value of 0.01 than in the paper. \label{depleted}}
+\end{figure}
+
+Then I select the samples that are in these red regions (those in underrepresented clades in at least 20/30 imputation values, amounting to 395 samples; see their exposures in Figure~\ref{depleted}). By looking at the exposures we can see how our conclusions still stand:
+
+\begin{itemize}
+\item lack of s2 and s4: present
+\item a lack of s2 and s3: present
+\item lack of s3 together with high s4: present
+\end{itemize}
+
+\textbf{Conclusion} The groups that are underrepresented are really robust to imputation values, which you can see most clearly in the matrix in~\ref{depleted}.
+
+\end{document}

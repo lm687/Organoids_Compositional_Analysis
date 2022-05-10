@@ -195,6 +195,13 @@ theme_classic() +
 geom_smooth(method=lm, se=FALSE)
 cor.test(PDS_PDO$auc_ll5.org, PDS_PDO$auc_ll5.sph, method = "pearson", conf.level = 0.95)
 
+sapply(unique(PDS_PDO$sample), function(i){
+  .x <- cor.test(PDS_PDO %>% filter(sample==i) %>%  select(auc_ll5.org) %>% unlist(),
+           PDS_PDO %>% filter(sample==i) %>%  select(auc_ll5.sph) %>% unlist(),
+           method = "pearson", conf.level = 0.95)
+  cbind.data.frame(as.character(i), .x$estimate, .x$p.value)
+})
+
 plot(PDS_PDO.plot)
 saveRDS(PDS_PDO, "../robjects/fig4_PDS_PDO.RDS")
 ```

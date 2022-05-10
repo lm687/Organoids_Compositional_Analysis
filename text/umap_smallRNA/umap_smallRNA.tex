@@ -1,0 +1,191 @@
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{array}
+\usepackage{graphicx}
+
+\title{Small nucleolar RNA in HGSOC TCGA data}
+\author{Lena Morrill}
+\date{June 2021}
+
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{-0.1in}
+\setlength{\textheight}{8.9in}
+\setlength{\topmargin}{-0.4in}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+\begin{document}
+
+\maketitle
+
+%\textbf{TDLR}; The whole signal is gone when I remove the nonaligned entries (\verb|\_\_no_feature|, \verb|\_\_ambiguous|, \verb|\_\_alignment_not_unique|) in the transcripts. Maybe an interesting thing to look at is repeated elements ovarian cancer, as it seems it was the \verb|\_\_alignment_not_unique| entries that made a difference and that were correlated with the small nucleolar RNAs
+
+
+\section{The UMAP}
+When creating a UMAP of the transcriptomics of HGSOC samples in TCGA, we always get this pattern below: it looks as though on the left there is a bifurcation, and then samples are split into two. The upper branch is messier - less linear, but the one below is an almost-perfect curve.
+
+An option is that this pattern represents TME-hot and TME-cold samples. This is not the case. In fact, when colouring the samples by several covariates, you can see how there is no difference between the two groups for most candidate covariates:
+
+\begin{table}[h]
+\begin{tabular}{R{3in}|c}
+Covariate & Explains split into two branches\\\hline
+Vital status & No\\
+WGD & No\\
+Age & No\\
+Life expectancy & No\\
+Race & No\\
+WGD (clustering by clr) & No\\
+BRCA status & No\\
+consensusTME Immune Score, consensusTME B cells, consensusTME Fibroblasts)) & No\\
+MYC & No\\
+ATR & No\\
+BLNK & No\\
+ER & No\\
+PR & No\\
+ECQL & No\\
+s1, s3,s4 & No\\
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{../../RNASeq_DE_resistant_sensitive/figures/figures_umap/genes_gradient_umap.pdf}
+\caption{Expression of genes which seem to be highly correlated with the umap gradient}
+\end{figure}
+
+\section{DESeq2 DE with upper and lower groups in UMAP}
+% latex table generated in R 4.0.3 by xtable 1.8-4 package
+% Mon Jun  7 16:51:22 2021
+\begin{table}[ht]
+\centering
+\begin{tabular}{rlrr}
+  \hline
+ & external\_gene\_name & log2FoldChange & padj \\ 
+  \hline
+19649 & RNVU1-7 & -4.90 & 0.00 \\ 
+  NA.2164 &  & -1.19 & 0.00 \\ 
+  20097 & SNORD15B & -4.55 & 0.00 \\ 
+  39991 & AL355075.4 & -3.99 & 0.00 \\ 
+  36088 & SCARNA6 & -3.94 & 0.00 \\ 
+  46569 & RN7SL2 & -3.49 & 0.00 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{../../RNASeq_DE_resistant_sensitive/figures/figures_umap/top_DE_genes_branches.pdf}
+\caption{Top differentially abundant genes between the two branches of the UMAP}
+\end{figure}
+
+\begin{itemize}
+\item RNU genes are RNA genes. So are RNVU, and are associated with the snRNA class.
+\item The majority of vertebrate snoRNA genes are encoded in the introns of genes encoding proteins involved in ribosome synthesis or translation.
+\item AL355075.4 is a component of a ribonuclease.
+\end{itemize}
+
+All these genes are very abundant in one group and depleted in the other
+
+The correlation of these genes DE between the two branches is shown in Figure~\ref{fig:cor_two_branches}.
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{../../RNASeq_DE_resistant_sensitive/figures/figures_umap/top_DE_genes_branches_cor.pdf}
+\caption{Correlation of top 100 DE genes\label{fig:cor_two_branches}}
+\end{figure}
+
+\clearpage
+
+\subsection{UMAP with TPM}
+Because the gradient seems to correspond quite well with the total number of DESeq2 counts in a sample, I compute the normalised TPM counts, and create its umap. Reassuringly, the umap is very similar and the same gradients of nucleolar RNA is found. The upper branch has more structure than it did in the DESeq2 counts umap, but overall the picture is very similar.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{../../RNASeq_DE_resistant_sensitive/figures/figures_umap/genes_gradient_umapTPM.pdf}
+%\includegraphics[width=.3\textwidth]{../../RNASeq_DE_resistant_sensitive/figures/figures_umap/genes_gradient_umapTPM_AL355075_4.pdf}
+%\caption{AL355075.4 expression in TPM UMAP}
+\end{figure}
+
+
+\subsection{Genes in gradient in both branches when keeping all genes}
+Next I investigate which genes; gradient have a night correlation with the order in the two UMAP branches.
+
+Although there are strong correlations at the bottom branch, at the upper branch there are none.
+
+NA is \emph{alignment not unique} -- repeated elements, perhaps?
+\begin{center}
+\begin{minipage}{.35\textwidth}
+%\begin{table}[ht]
+%\centering
+\begin{tabular}{rr}
+  \hline
+ & Correlation \\ 
+  \hline
+NA. & 0.97 \\ 
+  AL355075.4 & 0.66 \\ 
+  X7SK & 0.64 \\ 
+  RN7SKP90 & 0.62 \\ 
+  RN7SKP203 & 0.62 \\ 
+  RN7SL2 & 0.61 \\ 
+  H1.4 & 0.61 \\ 
+  SNORA73B & 0.61 \\ 
+  RN7SKP255 & 0.60 \\ 
+  SNORA7B & 0.60 \\ 
+  RMRP & 0.60 \\ 
+  RN7SKP71 & 0.58 \\ 
+  RN7SKP230 & 0.57 \\ 
+  RNVU1.7 & 0.57 \\ 
+  RNU1.134P & 0.57 \\ 
+  SCARNA21 & 0.57 \\ 
+  SNORD89 & 0.56 \\ 
+  RN7SKP9 & 0.56 \\ 
+  SCARNA6 & 0.56 \\ 
+  RNU1.42P & 0.56 \\ 
+   \hline
+\end{tabular}
+\\\textbf{Bottom branch}
+\end{minipage}\begin{minipage}{.35\textwidth}
+%\end{table}
+% latex table generated in R 4.0.3 by xtable 1.8-4 package
+% Fri Jun 11 10:23:17 2021
+%\begin{table}[ht]
+%\centering
+\begin{tabular}{rr}
+  \hline
+ & Correlation \\ 
+  \hline
+TLCD4-RWDD3 & 0.30 \\ 
+  RN7SL526P & 0.28 \\ 
+  AL138733.2 & 0.27 \\ 
+  ALMS1 & 0.26 \\ 
+  USP37 & 0.26 \\ 
+  AC096582.1 & 0.25 \\ 
+  CCP110 & 0.25 \\ 
+  AL365273.1 & 0.25 \\ 
+  AC091286.1 & 0.25 \\ 
+  VN1R35P & 0.25 \\ 
+  IFNNP1 & 0.25 \\ 
+  TOB2P1 & 0.25 \\ 
+  AC114781.3 & 0.25 \\ 
+  TVP23C-CDRT4 & 0.25 \\ 
+  AC103778.1 & 0.24 \\ 
+  TCAF1P1 & 0.24 \\ 
+  ZSCAN23 & 0.24 \\ 
+  BTN2A3P & 0.24 \\ 
+  KLHL11 & 0.24 \\ 
+  SETP11 & 0.24 \\ 
+   \hline
+\end{tabular}
+\\\textbf{Upper branch}
+%\end{table}
+\end{minipage}
+\end{center}
+
+alignment_not_unique_and_RNVU1_7.pdf
+
+L1 Retrotransposon Heterogeneity in Ovarian Tumor Cell Evolution
+
+Small Nucleolar RNAs: Insight Into Their Function in Cancer \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6629867/}
+
+\url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5769367/}
+
+\end{document}
