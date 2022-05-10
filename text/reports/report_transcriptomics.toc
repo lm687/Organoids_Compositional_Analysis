@@ -15,3 +15,4 @@
 \contentsline {paragraph}{Row 2, Column 2}{9}{section*.5}% 
 \contentsline {paragraph}{Row 3, Column 1}{9}{section*.6}% 
 \contentsline {paragraph}{Row 3, Column 2}{9}{section*.7}% 
+\contentsline {section}{\numberline {4}PCA}{11}{section.4}% 

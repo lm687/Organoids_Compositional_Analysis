@@ -1,0 +1,84 @@
+---
+title: "organoids"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(survival)
+library(survminer)
+library(readxl)
+```
+
+
+```{r}
+
+OrganoidTODO <- read_excel("../data/OrganoidCulturesSurvival_091117OR.xlsx")
+# View(OrganoidTODO)
+ggplot(data = OrganoidTODO) + 
+  geom_bar(mapping = aes(x = CulturedTime))
+ggplot(data = OrganoidTODO) + 
+  geom_bar(mapping = aes(x = PassageNumber))
+
+```
+
+```{r}
+as_tibble(OrganoidTODO)
+
+
+
+```
+
+```{r}
+ggplot(data = OrganoidTODO) +
+  geom_bar(mapping = aes(x = PassageNumber, fill = Tissue))
+```
+
+```{r}
+ggplot(data = OrganoidTODO, mapping = aes(x = Tissue, y = PassageNumber)) +     geom_boxplot()
+```
+survival
+```{r}
+survfit(formula=Surv(CulturedTime, Death==1)~1, data=OrganoidTODO)
+```
+survival for all
+```{r}
+km.as.one <- survfit(formula=Surv(CulturedTime, Death==1) ~ 1, data = OrganoidTODO, conf.type = "log-log")
+ggsurvplot(km.as.one, conf=TRUE, risk.table = TRUE, risk.table.height = 0.3)
+```
+survival depending on tissue origin
+```{r}
+ km.as.one <- survfit(formula=Surv(CulturedTime, Death==1) ~Tissue, data = OrganoidTODO, conf.type = "log-log")
+ggsurvplot(km.as.one, conf=TRUE, risk.table = TRUE, risk.table.height = 0.3)
+
+```
+
+
+Survival only for those grown in fallopian tube media
+
+
+```{r}
+
+#Based on different media types
+
+mediasurv <- survfit(formula=Surv(CulturedTime, Death==1) ~Media, data = OrganoidTODO, conf.type = "log-log")
+ggsurvplot(mediasurv, conf=TRUE, risk.table = TRUE, risk.table.height = 0.3)
+
+```
+```{r}
+survivalFTm<-subset(OrganoidTODO, Media =="fallopian_tube")
+mediasurvFT <- survfit(formula=Surv(CulturedTime, Death==1) ~ Tissue, data = survivalFTm, conf.type = "log-log")
+ggsurvplot(mediasurvFT, conf=TRUE, risk.table = TRUE, risk.table.height = 0.3)
+```
+
+```{r}
+survivalCleversOvCam<-subset(OrganoidTODO, Media =="Clevers-OvCa")
+mediasurvCle <- survfit(formula=Surv(CulturedTime, Death==1) ~ Tissue, data = survivalCleversOvCam, conf.type = "log-log")
+ggsurvplot(mediasurvCle, conf=TRUE, risk.table = TRUE, risk.table.height = 0.3)
+```
+
+```{r}
+ km.as.one <- survfit(formula=Surv(CulturedTime, Death==1) ~From, data = OrganoidTODO, conf.type = "log-log")
+ggsurvplot(km.as.one, conf=TRUE, risk.table = TRUE, risk.table.height = 0.3)
+```
+

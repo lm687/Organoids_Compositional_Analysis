@@ -1,0 +1,14 @@
+hi Lena, I was adding more data to the Tamseq results and realised that some of the BRCA mutation on the table are classified as benign (eg they won't cause any deleterious pehontype) so might be worth revising this on Wednesday.
+	- check table in google drive. keep only pathogenic ones
+	- she will also update the table for germline
+
+pending lena
+- text rnaseq
+- morning Lena Morrill, I have a curiosity.... when I did my own analysis on super amplified genes in each organoid individually I found that PDO5 and PDO6 both from the same patient had a gene called ZWINT and PDO14 had ERBB2 amplified, are these ones coming out in your analysis? thank you (see attached file)	DONE
+	- check scDNA and RNASeq
+
+flip axis of fig 3 DONE
+put more genes and check if they are all in chrom 12	DONE
+check the top annotated genes; check scatterplots	DONE
+
+HI Lena, just quick reminder if you are going to change figure 3 with Carolin suggestion to also add a b c d thanks	DONE
