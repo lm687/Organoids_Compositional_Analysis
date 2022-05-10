@@ -359,28 +359,29 @@ gr_CN0 = as(absCnDf$X, "GRanges")
 gr_genes = gr_genes[seqnames(gr_genes) %in% seqnames(gr_CN0),] ## no genes for sex chromosomes
 
 # org_it = 'X119025org'
-CN_averages = mclapply(colnames(absCnDf)[-1], function(org_it){
+give_CN_per_gene <- function(org_it, GR_bins){
+  ## in this case GR_bins is gr_genes
   
   gr_CN = gr_CN0
   values(gr_CN) = absCnDf[,org_it]
-
+  
   ## do per organoid
   gr_CN_org = gr_CN
   seqlevels(gr_CN) ## necessary for mcolAsRleList
   seqlengths(gr_CN) = as.numeric(as.vector(chromlens$Length[match(seqlevels(gr_CN), gsub("chr", "", chromlens$Chrom))])) ## necessary for mcolAsRleList
-  seqlevels(gr_genes) = seqlevels(gr_CN) ## necessary for mcolAsRleList
-  seqlengths(gr_genes) = seqlengths(gr_CN) ## necessary for mcolAsRleList
+  seqlevels(GR_bins) = seqlevels(gr_CN) ## necessary for mcolAsRleList
+  seqlengths(GR_bins) = seqlengths(gr_CN) ## necessary for mcolAsRleList
   
-  gr_genes <- trim(gr_genes)
+  GR_bins <- trim(GR_bins)
   gr_CN <- trim(gr_CN)
   
-  full_GR <- c(gr_genes, gr_CN_org)
+  full_GR <- c(GR_bins, gr_CN_org)
   disjoint_gr <- GenomicRanges::disjoin(full_GR, with.revmap=TRUE, ignore.strand=TRUE)
   
   disjoint_gr_revmap_first = sapply(disjoint_gr$revmap, function(i) i[1])
   
   ## keep only those in which there is an overlap with a gene, i.e. revmap has to include the idxs 1:length(gr_genes)
-  disjoint_gr = disjoint_gr[disjoint_gr_revmap_first %in% 1:length(gr_genes),]
+  disjoint_gr = disjoint_gr[disjoint_gr_revmap_first %in% 1:length(GR_bins),]
   disjoint_gr_revmap_first = sapply(disjoint_gr$revmap, function(i) i[1])
   disjoint_gr_revmap_second = sapply(disjoint_gr$revmap, function(i) i[2])
   table(is.na(disjoint_gr_revmap_second))
@@ -389,10 +390,10 @@ CN_averages = mclapply(colnames(absCnDf)[-1], function(org_it){
   disjoint_gr[is.na(disjoint_gr_revmap_second),]
   
   ## get the idx of the copy number segments
-  idx_gr = disjoint_gr_revmap_second-length(gr_genes)
+  idx_gr = disjoint_gr_revmap_second-length(GR_bins)
   is.na(idx_gr)
   
-  idx_gr[idx_gr < 0 ] = NA
+  idx_gr[idx_gr <= 0 ] = NA
   
   ## there are instances of overlaps between genes
   # dontkeep_disjoint = ( (idx_gr < 0) | is.na(idx_gr) )
@@ -408,17 +409,19 @@ CN_averages = mclapply(colnames(absCnDf)[-1], function(org_it){
   disjoint_gr$revmap = disjoint_gr_revmap_first
   seqlevels(disjoint_gr) = as.character(unique(seqnames(disjoint_gr)))
   seqlengths(disjoint_gr) = as.numeric(as.vector(chromlens$Length[match(seqlevels(disjoint_gr), gsub("chr", "", chromlens$Chrom))]))
-  seqlevels(gr_genes) = seqlevels(disjoint_gr)
-  seqlengths(gr_genes) = seqlengths(disjoint_gr)
+  seqlevels(GR_bins) = seqlevels(disjoint_gr)
+  seqlengths(GR_bins) = seqlengths(disjoint_gr)
   
   CN_RleList = mcolAsRleList(disjoint_gr, "CN_val") ## that takes forever even when length(disjoint_gr) is a VERY low value
-  averageCN = binnedAverage(bins = gr_genes, numvar = CN_RleList, varname = "CN_bin_averaged")
+  averageCN = binnedAverage(bins = GR_bins, numvar = CN_RleList, varname = "CN_bin_averaged")
   
   return(averageCN)
-})
+}
+CN_averages = mclapply(colnames(absCnDf)[-1], give_CN_per_gene, GR_bins=gr_genes)
 names(CN_averages) = colnames(absCnDf)[-1]
 
-saveRDS(CN_averages, file = paste0("../robjects/CN_averages_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
+saveRDS(CN_averages, file = paste0("output/output_GRCh37/CN_averages_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
+# CN_averages <- readRDS(file = paste0("output/output_GRCh37/CN_averages_TPM_20210414211320.RDS"))
 
 averaged_CN_df = lapply(CN_averages, function(i) cbind.data.frame(gene_name=i$gene_name, CN=i$CN_bin_averaged))
 names(averaged_CN_df) = names(CN_averages)
@@ -444,7 +447,7 @@ joint_counts_CN = cbind.data.frame(counts=tpmMat_melt[match(paste0(averaged_CN_d
 paste0(tpmMat_melt$Var1, tpmMat_melt$Var2)),], CN=averaged_CN_df_melt)
 
 joint_counts_CN$counts.value = as.numeric(as.character(joint_counts_CN$counts.value))
-saveRDS(joint_counts_CN, file = paste0("../robjects/joint_counts_CN_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
+saveRDS(joint_counts_CN, file = paste0("output/output_GRCh37/joint_counts_CN_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
 
 ggplot(joint_counts_CN, aes(y=(counts.value), x=CN.value, label=CN.L1))+geom_point(aes(col=CN.gene_name))+geom_label_repel()
 
@@ -476,4 +479,60 @@ ggplot(joint_counts_CN %>% filter(CN.L1 == '119025org' ), aes(x=CN.value, y=coun
 # 
 # CN_and_counts = cbind.data.frame(averaged_CN[match(tpmMat$gene_name, averaged_CN$gene_name),], tpmMat)
 
+joint_counts_CN0 = readRDS("output/output_GRCh37/joint_counts_CN_TPM_20210506104217.RDS")
+dcast_joint_counts_CN0 <- joint_counts_CN0[,c('CN.gene_name', 'CN.value', 'CN.L1')]
 
+variable_genes <- dcast_joint_counts_CN0 %>% group_by(CN.gene_name) %>% dplyr::summarise(length(unique(CN.value)))
+dcast_joint_counts_CN0 <- dcast_joint_counts_CN0[dcast_joint_counts_CN0$CN.gene_name %in% unlist(variable_genes[variable_genes$`length(unique(CN.value))` > 1,1]),]
+## select only some chrom 17 genes
+# selected_genes <- ag[ag$seq_name == "17",'gene_name'][1:100]
+# dcast_joint_counts_CN0 <- dcast_joint_counts_CN0[dcast_joint_counts_CN0$CN.gene_name %in% selected_genes,]
+dcast_joint_counts_CN0 <- dcast_joint_counts_CN0[order(dcast_joint_counts_CN0$CN.gene_name),]
+dcast_joint_counts_CN_cor = outer(unique(dcast_joint_counts_CN0$CN.gene_name),
+                               unique(dcast_joint_counts_CN0$CN.gene_name),
+                               Vectorize(function(i,j){
+                                 if(as.numeric(i)>as.numeric(j)){
+                                 .x1 <- dcast_joint_counts_CN0 %>% filter(CN.gene_name == i)# %>% dplyr::select(CN.value)
+                                 .x2 <- dcast_joint_counts_CN0 %>% filter(CN.gene_name == j)# %>% dplyr::select(CN.value)
+                                 return(cor(x = .x2[,2], y = .x1[match((.x2[,3]), (.x1[,3])),2]))
+                                 }else{
+                                   return(NA)
+                                 }
+                               }))
+dcast_joint_counts_CN_cor[is.na(dcast_joint_counts_CN_cor)] = 0
+## sort by genomic position
+# ag
+# selected_genes
+# stop()
+## still needs to be implemented
+
+pheatmap(dcast_joint_counts_CN_cor, cluster_rows = F, cluster_cols = F)
+
+chromlens_noXY = chromlens[!(chromlens$Chrom %in% c('chrX', 'chrY')),]
+gr_entire_chroms = as(paste0(gsub('chr', '', chromlens_noXY[,1]), ':', 1, '-', as.numeric(as.character(chromlens_noXY[,2]))), "GRanges")
+CN_averages_perchrom = lapply(colnames(absCnDf)[-1], give_CN_per_gene, GR_bins=gr_entire_chroms)
+saveRDS(CN_averages_perchrom, file = paste0("output/output_GRCh37/CN_averages_perchrom_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
+
+bins_genome_1000MB <- sapply(as.numeric(as.character(chromlens_noXY[,2])), function(i) seq(from=1, to=i, by=1000000))
+gr_1000MB = as(paste0(gsub('chr', '', rep(chromlens_noXY[,1], sapply(bins_genome_1000MB, length))), ':',
+                      unlist(sapply(bins_genome_1000MB, function(i) i[-length(i)])), '-',
+                      unlist(sapply(bins_genome_1000MB, function(i) i[-1]))-1),
+               "GRanges")
+CN_averages_1000MB = lapply(colnames(absCnDf)[-1], give_CN_per_gene, GR_bins=gr_1000MB)
+saveRDS(CN_averages_1000MB, file = paste0("output/output_GRCh37/CN_averages_1000MB_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
+
+CN_averages_perchrom_mat <- sapply(CN_averages_perchrom, function(i) i$CN_bin_averaged)
+CN_averages_perchrom_cors <- outer(1:nrow(CN_averages_perchrom_mat), 1:nrow(CN_averages_perchrom_mat), Vectorize(function(i,j){
+  cor(CN_averages_perchrom_mat[i,], CN_averages_perchrom_mat[j,])
+}))
+
+pheatmap(CN_averages_perchrom_cors, cluster_rows = F, cluster_cols = F)
+
+CN_averages_per1000MB_mat <- sapply(CN_averages_1000MB, function(i) i$CN_bin_averaged)
+CN_averages_per1000MB_cors <- outer(1:nrow(CN_averages_per1000MB_mat), 1:nrow(CN_averages_per1000MB_mat), Vectorize(function(i,j){
+  cor(CN_averages_per1000MB_mat[i,], CN_averages_per1000MB_mat[j,])
+}))
+saveRDS(CN_averages_per1000MB_cors, file = paste0("output/output_GRCh37/CN_averages_per1000MB_cors_", type_counts, "_", gsub("-|:| ", "", Sys.time()), ".RDS"))
+pdf("output/output_GRCh37/CN_averages_per1000MB_cors.pdf")
+pheatmap(CN_averages_per1000MB_cors, cluster_rows = F, cluster_cols = F)
+dev.off()
