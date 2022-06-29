@@ -140,6 +140,7 @@ I would run the files in the order they appear above.
 - rnaseqRpkg: internal CRUK RNA-Seq pipeline package. Send me (`lm687 at cam.ac.uk`) an email about it
 
 ### General R packages
+```
 library(AnnotationHub) ## Bioconductor
 library(Biobase) ## Bioconductor
 library(biomaRt) ## Bioconductor
@@ -177,4 +178,25 @@ library(readxl) ## CRAN
 library(reshape2) ## CRAN
 library(tidyverse) ## CRAN
 library(viridis) ## CRAN
+```
 
+## Scripts that create each figure
+### Main figures
+Main figures are assembled in the `figures/` folder
+	- Figure 1: `figures/fig1.R`
+	- 
+	
+### Supplementary figures
+	- Supplementary Figure 1 Sample collection workflow and survival analysis. `survival_analysis/code/organoid_survival2.rmd`
+	- Supplementary Figure 2 Clinical data. Carolin's script
+	- Supplementary Figure 3 Orthotopic implantation of PDOs. No code.
+	- Supplementary Figure 4 PDOs and patient samples mutation analysis. No code.
+	- Supplementary Figure 5 Tissue and PDOs morphological structures and p53 status. No code.
+	- Supplementary Figure 6 `compare_to_shWGS.R`
+	- Supplementary Figure 7 PDOs genome-wide absolute copy number alteration analysis `figures/supplementary_figures/suppl7.R`
+	- Supplementary Figure 8 Genomic features comparison between tumours and PDOs `copy_number_analysis_organoids/copy_number_analysis_organoids.Rmd`
+	- Supplementary Figure 9 Absolute gene copy number in PDOs `RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/scripts/analyse_joint_counts/.R`
+	- Supplementary Figure 10 Whole genome correlation between absolute gene copy number and expression `RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/scripts/analyse_joint_counts/.R`
+	- Supplementary Figure 11 Drug sensitivity curves `survival_analysis/code/response_drugs.R`
+	- Supplementary Figure 12 Subclonal heterogeneity ribbon plot `subclonal_structure.R`
+	- Supplementary Figure 13 Single cell clade analyses of CN `figures/supplementary_figures/supp_clades_scDNA.R`, from data created in `subclonal_structure.R`
