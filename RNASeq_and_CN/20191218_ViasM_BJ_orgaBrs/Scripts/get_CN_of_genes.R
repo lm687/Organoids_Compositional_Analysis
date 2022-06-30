@@ -10,6 +10,7 @@ R.version
 library(GenomicRanges, lib.loc = "/mnt/scratcha/fmlab/morril01/software/miniconda3/envs/vias_cor/lib/R/library/")
 library(ensembldb, lib.loc = "/mnt/scratcha/fmlab/morril01/software/miniconda3/envs/vias_cor/lib/R/library/")
 library(parallel, lib.loc = "/mnt/scratcha/fmlab/morril01/software/miniconda3/envs/vias_cor/lib/R/library/")
+source("../../../copy_number_analysis_organoids/helper_functions_granges.R")
 
 gtf.file <- file.path("../Data/", "Homo_sapiens.GRCh37.87.gtf.gz")
 sqlite_file <- 'Homo_sapiens.GRCh37.87.sqlite'
@@ -40,60 +41,6 @@ levels(seqnames(gr_genes))
 seqnames(gr_genes) <- droplevels(seqnames(gr_genes))
 levels(seqnames(gr_genes))
 unique(seqnames(gr_genes))
-
-give_CN_per_gene <- function(segment_arg){
-  ## in this case GR_bins is gr_genes
-  
-  GR_bins <- gr_genes
-  gr_CN = as(data.frame(segment_arg), "GRanges")
-  GR_bins <- trim(GR_bins)
-  gr_CN <- trim(gr_CN)
-  
-  values(gr_CN) = segment_arg[,'segVal']
-  
-  ## do per sample
-  gr_CN_org = gr_CN
-  seqlevels(gr_CN) ## necessary for mcolAsRleList
-  seqlengths(gr_CN) = as.numeric(as.vector(chromlens$Length[match(seqlevels(gr_CN), gsub("chr", "", chromlens$Chrom))])) ## necessary for mcolAsRleList
-  seqlevels(GR_bins) = seqlevels(gr_CN) ## necessary for mcolAsRleList
-  seqlengths(GR_bins) = seqlengths(gr_CN) ## necessary for mcolAsRleList
-  
-  
-  full_GR <- c(GR_bins, gr_CN_org)
-  disjoint_gr <- GenomicRanges::disjoin(full_GR, with.revmap=TRUE, ignore.strand=TRUE)
-  disjoint_gr <- trim(disjoint_gr)
-  
-  disjoint_gr_revmap_first = sapply(disjoint_gr$revmap, function(i) i[1])
-  
-  ## keep only those in which there is an overlap with a gene, i.e. revmap has to include the idxs 1:length(gr_genes)
-  disjoint_gr = disjoint_gr[disjoint_gr_revmap_first %in% 1:length(GR_bins),]
-  disjoint_gr_revmap_first = sapply(disjoint_gr$revmap, function(i) i[1])
-  disjoint_gr_revmap_second = sapply(disjoint_gr$revmap, function(i) i[2])
-  table(is.na(disjoint_gr_revmap_second))
-  
-  ## remove sections which only contain non-genes
-  disjoint_gr[is.na(disjoint_gr_revmap_second),]
-
-  ## get the idx of the copy number segments
-  idx_gr = disjoint_gr_revmap_second-length(GR_bins)
-  is.na(idx_gr)
-  
-  idx_gr[idx_gr <= 0 ] = NA
-  
-  disjoint_gr$CN_val = gr_CN_org$X[idx_gr]
-  disjoint_gr$CN_val[is.na(disjoint_gr$CN_val)] = 2
-  
-  disjoint_gr$revmap = disjoint_gr_revmap_first
-  seqlevels(disjoint_gr) = as.character(unique(seqnames(disjoint_gr)))
-  seqlengths(disjoint_gr) = as.numeric(as.vector(chromlens$Length[match(seqlevels(disjoint_gr), gsub("chr", "", chromlens$Chrom))]))
-  seqlevels(GR_bins) = seqlevels(disjoint_gr)
-  seqlengths(GR_bins) = seqlengths(disjoint_gr)
-  
-  CN_RleList = mcolAsRleList(disjoint_gr, "CN_val") ## that takes forever even when length(disjoint_gr) is a VERY low value
-  averageCN = binnedAverage(bins = GR_bins, numvar = CN_RleList, varname = "CN_bin_averaged")
-  
-  return(averageCN)
-}
 
 ## get segments from the unified version created in copy_number_analysis_organoids.Rmd
 segments_Britroc <- readRDS("../../../copy_number_analysis_organoids/data/clean_segtables/segtables_BriTROC_absolute_copynumber.RDS")

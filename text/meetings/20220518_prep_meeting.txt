@@ -1,0 +1,13 @@
+## for meeting 20220518
+
+- Update on mix-up of labels of organoids
+	- Barbara and I agree
+	- Outstanding problems:
+		- In her ascites-PDO3 the match is with PDO9 (i.e. the twin organoid), without any possible swap. ==> NOT A PROBLEM
+		- In her ascites-PDO6 the match is with PDO5 (i.e. the twin organoid), without any possible swap. ==> NOT A PROBLEM
+		- Problem with sample from PDO11, which comes from whole-sample vial ==> REPLACE THE CURRENT ASCITES WITH PREVIOUS ASCITES (REPRESENTATIVE ONLY OF SPHEROIDS) FROM GEOFF, WHICH GAVE A GOOD MATCH
+		- PDO12 ==> PLOIDY MUST BE REVIEWED. Hopefully the conclusion is not that the organoid's ploidy was incorrect (otherwise the whole paper would have to be reviewed)
+
+- Clade comparison of organoid exposures
+	- What about PDO2 (which contains only two clades)
+	- Do I just call exposures on the segments as they are?

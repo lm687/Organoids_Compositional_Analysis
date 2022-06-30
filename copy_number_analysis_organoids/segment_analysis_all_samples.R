@@ -1,6 +1,7 @@
 rm(list = ls())
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
+### files in  all_CN_states_per_gene/ created using script get_CN_of_genes.R
 
 # library(tsne)
 library(umap)
@@ -21,11 +22,11 @@ if(!file.exists(sqlite_path)) {
   ## generate the SQLite database file
   ensembldb::ensDbFromGtf(gtf=gtf.file, path = '', outfile=sqlite_file)
 }
-EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_path)
+# EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_path)
+EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_file)
 # Genes, used to annotated the TPM matrix to send to Maria
 ag <- ensembldb::genes(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
 ag_subsetchrom <- ag[!(ag$seq_name %in% c("MT", "X", "Y")) & !grepl("GL",ag$seq_name),]
-
 
 flder <- "/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/all_CN_states_per_gene/"
 fles <- list.files(flder, full.names = T)
@@ -71,6 +72,10 @@ min(all_cn) ## there shouldn't be any negative values!
 # head(gene_CN[[1]])
 # gene_CN
 
+#------------------------------------------------------------------------#
+#------------------------------------------------------------------------#
+## UMAP
+
 # umap_res <- umap(t(all_cn_var[1:2000,]))
 umap_res <- umap(t(all_cn_var))
 dev.off()
@@ -107,6 +112,8 @@ ggplot(df_umap,
   theme_bw()
 ggsave("figures/umap_segmentsMYC.pdf", width = 6.2, height = 5)
 
+saveRDS(df_umap, "robjects/umap_ploidy_genes.RDS")
+
 df_umap[df_umap$`1` > 80,]
 
 ggplot(df_umap,
@@ -120,6 +127,14 @@ ggplot(df_umap,
   geom_point( alpha=0.4, aes( color=clade, size=CCNE1))+
   theme_bw()
 ggsave("figures/umap_segmentsCCNE1.pdf", width = 6.2, height = 5)
+
+tikzDevice::tikz("figures/umap_segmentsCCNE1.tex", width = 4.2, height = 4)
+ggplot(df_umap,
+       aes(x=`1`, y=`2`, label=sample, shape=dataset))+
+  geom_point( alpha=0.4, aes( color=clade, size=CCNE1))+
+  labs(shape='Dataset', size='CCNE1', col='', x='UMAP 1', y='UMAP 2')+
+  theme_bw()+theme(legend.position = "bottom",legend.box="vertical", legend.margin=margin())
+dev.off()
 
 ggplot(df_umap,
        aes(x=`1`, y=`2`, label=sample, shape=dataset))+
@@ -345,6 +360,17 @@ genes_ttest_clades <- cbind.data.frame(tstat=unlist(ttests_between_groups[1,]),
 ggplot(genes_ttest_clades, aes(x=factor(chrom, level=gtools::mixedsort(unique(chrom))), y=minlogpvaladj))+
   geom_boxplot()+geom_jitter(alpha=0.2)+theme_bw()+
   geom_hline(yintercept = -log10(0.05), lty='dashed', col='blue')
+ggsave(filename = "figures/ttest_two_groups_per_chrom.pdf", width = 7)
+
+ggplot(genes_ttest_clades,
+       aes(x=tstat, y=minlogpvaladj, col=chrom,
+           label=ifelse( gene %in% genes_ttest_clades[order(genes_ttest_clades$minlogpvaladj, decreasing = T)[1:10],'gene'],
+                         yes = gene, no = NA)))+
+       # aes(x=tstat, y=minlogpvaladj, col=chrom, label=ifelse(tstat<-26, gene, NA)))+
+       # aes(x=tstat, y=minlogpvaladj, col=chrom, label=ifelse(gene == "TP53", gene, NA)))+
+  geom_point()+theme_bw()+
+  geom_label_repel(max.overlaps = 100)
+ggsave("figures/ttest_two_groups_volcano.pdf", width = 10)
 
 head(melt(all_cn_var, measure.vars = NULL))
 
@@ -381,7 +407,8 @@ all_cn_var_df_summary2
 # plot(umap_genes$layout, xlim(-100, 100))
 # plot(umap_genes$layout, xlim = c(-20, 20),  ylim = c(-20, 20), pch=19, cex=0.1) ## not very interesting
 
-
+#------------------------------------------------------------------------#
+#------------------------------------------------------------------------#
 ## primary and relapse
 ## read in relapse/primary information
 load("../../../other_repos/britroc-1/data/britroc_30kb_signature_data.rds")
@@ -446,8 +473,9 @@ for(cln in colnames(df_umap_britroc_rel_arx)){
 }
 dev.off()
 
-patients_both_samples <- unique(df_umap_britroc_rel_arx$patient)[which(sapply(unique(df_umap_britroc_rel_arx$patient), function(i) all(c('arx', 'rlps') %in% df_umap_britroc_rel_arx$group[df_umap_britroc_rel_arx$patient == i])))]
-patients_both_samples <- patients_both_samples[!is.na(patients_both_samples)]
+# patients_both_samples <- unique(df_umap_britroc_rel_arx$patient)[which(sapply(unique(df_umap_britroc_rel_arx$patient), function(i) all(c('arx', 'rlps') %in% df_umap_britroc_rel_arx$group[df_umap_britroc_rel_arx$patient == i])))]
+# patients_both_samples <- patients_both_samples[!is.na(patients_both_samples)]
+patients_both_samples <- as.character(unique(patient.meta$PATIENT_ID)[which(sapply(unique(patient.meta$PATIENT_ID), function(i) all(c('arx', 'rlps') %in% patient.meta$group[patient.meta$PATIENT_ID == i])))])
 
 df_umap_britroc_rel_arx$patient_only_matched <- ifelse( (df_umap_britroc_rel_arx$patient %in% patients_both_samples),
                                                        yes = as.character(df_umap_britroc_rel_arx$patient),
@@ -470,7 +498,8 @@ df_umap_britroc_rel_arx <- df_umap_britroc_rel_arx[order(df_umap_britroc_rel_arx
 df_umap_britroc_rel_arx <- df_umap_britroc_rel_arx[with(df_umap_britroc_rel_arx, order(patient, group)), ]
 
 ## change_name_for_multisample_patients
-new_patient_name <- lapply(unique(df_umap_britroc_rel_arx$patient), function(patient_it){
+# new_patient_name <- lapply(unique(df_umap_britroc_rel_arx$patient), function(patient_it){
+new_patient_name <- lapply(patients_both_samples, function(patient_it){
   combinations_list= c()
   ct = 1
   for(arx_it in which(patient.meta[patient.meta_subset$PATIENT_ID == patient_it,'group'] == "arx")){
@@ -502,6 +531,19 @@ ggplot()+
   labs(col='', shape='')+guides(col=guide_legend(ncol=3))
 ggsave("figures/umap_britroc_arx_rlps_2.pdf", width = 6.5, height = 6)
 
+
+tikzDevice::tikz("figures/umap_britroc_arx_rlps_2.tex", width = 4.2, height = 3.5)
+ggplot()+
+  geom_point(data = df_umap, aes(x=`1`, y=`2`), alpha=0.02, size=5)+
+  geom_point(data = df_umap_britroc_rel_arx, aes(x=`1`, y=`2`, shape=group))+
+  theme_bw()+
+  geom_path(data = df_umap_britroc_rel_arx[!is.na(df_umap_britroc_rel_arx$patient_only_matched),],
+            aes(x=`1`, y=`2`,group=patient, colour=group ), arrow = arrow(length=unit(0.15,"cm"), ends="first"))+
+  labs(col='', shape='', x='UMAP 1', y='UMAP 2')+guides(col=guide_legend(ncol=3))+
+  theme(legend.position = "bottom")
+dev.off()
+
+
 ggplot()+
   geom_point(data = df_umap, aes(x=`1`, y=`2`), alpha=0.02, size=5)+
   geom_point(data = change_name_for_multisample_patients, aes(x=`1`, y=`2`, shape=group))+
@@ -516,6 +558,10 @@ change_name_for_multisample_patients$interesting_pairs <- as.character(sapply((c
   .x <- change_name_for_multisample_patients[which(change_name_for_multisample_patients$pair_specific_patients == i),]
   (.x[.x$group == "arx", 2] > 2) & (.x[.x$group == "rlps", 2] < 2)
 }))
+change_name_for_multisample_patients$interesting_pairsINV <- as.character(sapply((change_name_for_multisample_patients$pair_specific_patients), function(i){
+  .x <- change_name_for_multisample_patients[which(change_name_for_multisample_patients$pair_specific_patients == i),]
+  (.x[.x$group == "arx", 2] < 0) & (.x[.x$group == "rlps", 2] > 2)
+}))
 change_name_for_multisample_patients$interesting_pairs = (change_name_for_multisample_patients$interesting_pairs == "TRUE")
 change_name_for_multisample_patients$interesting_pairs
 # change_name_for_multisample_patients$pair_specific_patients[change_name_for_multisample_patients$patient %in% ]
@@ -528,15 +574,37 @@ ggplot()+
   geom_path(data = change_name_for_multisample_patients[change_name_for_multisample_patients$interesting_pairs,],
             aes(x=`1`, y=`2`,group=pair, colour=group ), arrow = arrow(length=unit(0.15,"cm"), ends="first"))+
   # labs(col='', shape='', x='UMAP dim 1', y='UMAP dim 2')+guides(col=guide_legend(ncol=3))+facet_wrap(.~pair)
-  labs(col='', shape='', x='UMAP dim 1', y='UMAP dim 2')+guides(col=guide_legend(ncol=3))+facet_wrap(.~patient, nrow=2)
+  labs(col='', shape='', x='UMAP dim 1', y='UMAP dim 2')+guides(col=guide_legend(ncol=3))+
+  facet_wrap(.~factor(patient, levels=gtools::mixedsort(as.character(unique(patient)))), nrow=2)
 ggsave("figures/umap_britroc_arx_rlps_3_facet.pdf", width = 7.5, height = 6)
 
+patients_with_change <- change_name_for_multisample_patients[change_name_for_multisample_patients$interesting_pairs,]
+patients_with_change <- patients_with_change[order(patients_with_change$patient),]
+table(patients_with_change$patient)
+View(patients_with_change)
+
+## patient who has WGD in arx but not rlps
+# change_name_for_multisample_patients[(change_name_for_multisample_patients$`1` < 0) & (change_name_for_multisample_patients$`2` > 0),]
+change_name_for_multisample_patients[which(change_name_for_multisample_patients$interesting_pairsINV == "TRUE"),]
+## BRITROC-67
 
 dim(df_umap_britroc_rel_arx[!is.na(df_umap_britroc_rel_arx$patient_only_matched),])
 
 table(sapply(unique(df_umap_britroc_rel_arx$patient), function(i){
   all(c('arx', 'rlps') %in% df_umap_britroc_rel_arx$group[df_umap_britroc_rel_arx$patient == i])
 }))
+
+
+### Are there differences in the patients who undergo WGD?
+patients_who_undergo_WGD <- (unique(change_name_for_multisample_patients[change_name_for_multisample_patients$interesting_pairs,]$patient))
+patients_who_dont_undergo_WGD <- unique(df_umap_britroc_rel_arx$patient[!(df_umap_britroc_rel_arx$patient %in% patients_who_undergo_WGD)])
+clinbrit_patients_who_undergo_WGD <- clinbrit[match(gsub("BRITROC-", "", patients_who_undergo_WGD), clinbrit$britroc_number),]
+clinbrit_patients_who_dont_undergo_WGD <- clinbrit[match(gsub("BRITROC-", "", patients_who_dont_undergo_WGD), clinbrit$britroc_number),]
+
+## need to compare patients who undergo WGD to patients who remain without WGD
+
+boxplot(list(clinbrit_patients_who_undergo_WGD$age,
+             clinbrit_patients_who_dont_undergo_WGD$age))
 
 table(sapply(unique(patient.meta$PATIENT_ID), function(i){
   all(c('arx', 'rlps') %in% patient.meta$group[patient.meta$PATIENT_ID == i])
@@ -808,6 +876,21 @@ changes_in_losses_thresh2 <- lapply(patients_both_samples, function(patient_it){
   }
   return(losses_list)
 })
+changes_in_losses_thresh3 <- lapply(patients_both_samples, function(patient_it){
+  ct = 1
+  losses_list= list()
+  for(arx_it in which(patient.meta_subset[patient.meta_subset$PATIENT_ID == patient_it,'group'] == "arx")){
+    for(rlps_it in which(patient.meta_subset[patient.meta_subset$PATIENT_ID == patient_it,'group'] == "rlps")){
+      sam_arx <- paste0(patient.meta_subset[patient.meta_subset$PATIENT_ID == patient_it,][arx_it,'SAMPLE_ID'], 'PS')
+      sam_rlps <- paste0(patient.meta_subset[patient.meta_subset$PATIENT_ID == patient_it,][rlps_it,'SAMPLE_ID'], 'PS')
+      cat(paste0('sam_arx= "', sam_arx, '"; sam_rlps="', sam_rlps, '"\n'))
+      losses_list[[paste0(sam_arx, '/', sam_rlps)]]= apply(cbind((all_cn[,as.character(sam_arx)] < 1.2) & (all_cn[,as.character(sam_arx)] > 0.8),
+                                                                 (all_cn[,as.character(sam_rlps)] < 1.2) & (all_cn[,as.character(sam_rlps)] > 0.8) ), 1, paste0, collapse='')
+      ct = ct+1
+    }
+  }
+  return(losses_list)
+})
 changes_in_CN_gene <- lapply(patients_both_samples, function(patient_it){
   ct = 1
   losses_list= list()
@@ -907,6 +990,7 @@ dim(stats_gene_CN_changes_WGDsamples)
 table(sapply(changes_in_losses, length))
 changes_in_losses_lists <- do.call('c', changes_in_losses)
 changes_in_losses_thresh2_lists <- do.call('c', changes_in_losses_thresh2)
+changes_in_losses_thresh3_lists <- do.call('c', changes_in_losses_thresh3)
 changes_in_CN_gene_lists <- do.call('c', changes_in_CN_gene)
 changes_in_CN_gene_log_lists <- do.call('c', changes_in_CN_gene_log)
 CN_arx_gene_lists <- do.call('c', CN_arx_gene)
@@ -916,6 +1000,7 @@ length(changes_in_losses)
 
 changes_in_losses_lists <- do.call('rbind', changes_in_losses_lists)
 changes_in_losses_thresh2_lists <- do.call('rbind', changes_in_losses_thresh2_lists)
+changes_in_losses_thresh3_lists <- do.call('rbind', changes_in_losses_thresh3_lists)
 
 changes_in_losses_lists_equal <- (apply(changes_in_losses_lists, 2, function(i) (i == "FALSEFALSE") | (i == "TRUETRUE") ))
 dim(changes_in_losses_lists_equal)
@@ -944,9 +1029,16 @@ hist(changes_in_CN_gene_lists[[1]])
 changes_in_losses_thresh2_lists_table <- apply(changes_in_losses_thresh2_lists, 1, function(i){
   table(factor(i, levels=c('TRUETRUE', 'FALSETRUE', 'TRUEFALSE', 'FALSEFALSE')))
 })
+changes_in_losses_thresh3_lists_table <- apply(changes_in_losses_thresh3_lists, 1, function(i){
+  table(factor(i, levels=c('TRUETRUE', 'FALSETRUE', 'TRUEFALSE', 'FALSEFALSE')))
+})
 changes_in_losses_thresh2_lists_table[,1:5]
 pdf("figures/genes_lower1p2CN.pdf", width = 12.5, height = 6)
 print(pheatmap::pheatmap(sweep(changes_in_losses_thresh2_lists_table, 2, colSums(changes_in_losses_thresh2_lists_table), '/')))
+dev.off()
+
+pdf("figures/genes_roughly1.pdf", width = 12.5, height = 6)
+print(pheatmap::pheatmap(sweep(changes_in_losses_thresh3_lists_table, 2, colSums(changes_in_losses_thresh3_lists_table), '/')))
 dev.off()
 
 ## so, what are the genes with a tendency to lose LoH from early to late?
@@ -1015,4 +1107,162 @@ ggplot(stats_gene_CN_changes_WGDsamples, )
 
 
 stats_gene_CN_changes_nonWGDsamples
+
+length(changes_in_losses_lists)
+library(igraph)
+
+table_to_graph <- function(tab, ...){
+  adj <- matrix(0, ncol=5, nrow=5)
+  colnames(adj) <- rownames(adj) <- c('diploid', 'arx loss', 'arx no loss', 'rlps loss', 'rlps no loss')
+  adj['diploid','arx loss'] <- sum(tab[grepl('^TRUE', names(tab))])
+  adj['diploid','arx no loss'] <- sum(tab[grepl('^FALSE', names(tab))])
+  adj['arx loss', 'rlps loss'] <- sum(tab[grepl('^TRUETRUE', names(tab))])
+  adj['arx no loss', 'rlps loss'] <- sum(tab[grepl('^FALSETRUE', names(tab))])
+  adj['arx loss', 'rlps no loss'] <- sum(tab[grepl('^TRUEFALSE', names(tab))])
+  adj['arx no loss', 'rlps no loss'] <- sum(tab[grepl('^FALSEFALSE', names(tab))])
+  adj <- sweep(adj, 1, rowSums(adj), '/')
+  adj[is.na(adj)] <- 0
+  # for(i in 1:5){for(j in 1:i){adj[i,j] = adj[j,i]}}
+  NodeList <- cbind(x=c(1,1,3,2,3), y=c(0,2.5,2.5,6,0))
+  graph <- igraph::graph_from_adjacency_matrix(adj, weighted = T, mode = "directed")
+  # LO = layout_nicely(graph); LO[,1] <- LO[,1]+3; LO[,2] <- LO[,2]+3
+  plot(graph, edge.width=igraph::E(graph)$weight*6, layout=NodeList,
+       edge.label = paste0('  ', round(igraph::E(graph)$weight, 2), '        '), ...)
+}
+table(changes_in_losses_lists[1,])
+
+table_to_graph(table(changes_in_losses_lists[1,]))
+
+##' first cluster samples according to the type of changes that they undergo, and then
+##' create this adjacency matrix and graph for each of the sample subgroups
+
+## compositional
+tree_changes_in_losses_lists_table <- (hclust(dist(compositions::clr(t(changes_in_losses_lists_table)))))
+plot(tree_changes_in_losses_lists_table) ## 3 groups
+tree_changes_in_losses_thresh2_lists_table <- (hclust(dist(compositions::clr(t(changes_in_losses_thresh2_lists_table)))))
+plot(tree_changes_in_losses_thresh2_lists_table) ## 2 groups
+tree_changes_in_losses_thresh3_lists_table <- (hclust(dist(compositions::clr(t(changes_in_losses_thresh3_lists_table)))))
+plot(tree_changes_in_losses_thresh3_lists_table) ## 3 groups (including one outlier)
+tree_changes_in_losses_lists_table_cutree <- cutree(tree_changes_in_losses_lists_table, k=3)
+tree_changes_in_losses_thresh2_lists_table_cutree <- cutree(tree_changes_in_losses_thresh2_lists_table, k=2)
+tree_changes_in_losses_thresh3_lists_table_cutree <- cutree(tree_changes_in_losses_thresh3_lists_table, k=3)
+tree_changes_in_losses_lists_table$labels == names(tree_changes_in_losses_lists_table_cutree)
+tree_changes_in_losses_lists_table$labels = (tree_changes_in_losses_lists_table_cutree)
+plot(tree_changes_in_losses_lists_table)
+
+dev.off()
+
+pdf("figures/loss_graph_stratify.pdf", width = 12.5, height = 4)
+par(mfrow=c(1,3))
+for(k_it in 1:3){
+  subset_clustering_loss <- tree_changes_in_losses_lists_table_cutree[(tree_changes_in_losses_lists_table_cutree == k_it)]
+  table_to_graph(table(as.vector(changes_in_losses_lists[names(subset_clustering_loss),])),
+                 main=paste0('Sample group ', k_it, ' (', length(subset_clustering_loss), ')'),
+                 vertex.size=40, vertex.label.color = "black", vertex.color = "white",
+                 edge.label.family='mono', vertex.label.family='mono', edge.color='black')
+}
+dev.off()
+
+pdf("figures/loss_graph_stratify_thresh1p2.pdf", width = 12, height = 7)
+par(mfrow=c(1,2))
+for(k_it in 1:2){
+  subset_clustering_loss <- tree_changes_in_losses_thresh2_lists_table_cutree[(tree_changes_in_losses_thresh2_lists_table_cutree == k_it)]
+  table_to_graph(table(as.vector(changes_in_losses_thresh2_lists[names(subset_clustering_loss),])),
+                 main=paste0('Sample group ', k_it, ' (', length(subset_clustering_loss), ')'),
+                 vertex.size=40, vertex.label.color = "black", vertex.color = "white",
+                 edge.label.family='mono', vertex.label.family='mono', edge.color='black')
+}
+dev.off()
+
+pdf("figures/loss_graph_stratify_roughly1.pdf", width = 12, height = 7)
+par(mfrow=c(1,2))
+for(k_it in 1:2){
+  subset_clustering_loss <- tree_changes_in_losses_thresh3_lists_table_cutree[(tree_changes_in_losses_thresh3_lists_table_cutree == k_it)]
+  table_to_graph(table(as.vector(changes_in_losses_thresh3_lists[names(subset_clustering_loss),])),
+                 main=paste0('Sample group ', k_it, ' (', length(subset_clustering_loss), ')'),
+                 vertex.size=40, vertex.label.color = "black", vertex.color = "white",
+                 edge.label.family='mono', vertex.label.family='mono', edge.color='black')
+}
+dev.off()
+
+table(changes_in_losses_thresh3[[2]][[1]] ==   changes_in_losses_thresh3[[1]][[1]])
+
+##-------------------------------------------------------------------------------------##
+## Question: is there genes of consitent increase/decrease from primary to relapse?
+
+##' data (computed above): difference in CN between archival and relapse (relapse - archival)
+##' for any archival-relapse pair, including the same sample multiple times if they are multi-sample
+
+changes_in_CN_gene_df <- do.call('rbind', changes_in_CN_gene_lists)
+
+rownames(changes_in_CN_gene_df) <- names(changes_in_CN_gene_lists)
+colnames(changes_in_CN_gene_df) <- rownames(all_cn)
+
+colmeans_difference_genes <- colMeans(changes_in_CN_gene_df)
+sort(colmeans_difference_genes)
+
+colmeans_difference_genes_df <- data.frame(colmeans_difference_genes=colmeans_difference_genes,
+                                           colmedians_difference_genes= apply(changes_in_CN_gene_df, 2, median),
+                                           gene=colnames(changes_in_CN_gene_df))
+
+head(colmeans_difference_genes_df)
+
+library(viridis)
+library(jcolors)
+library(RColorBrewer)
+ggplot(colmeans_difference_genes_df, aes(x= colmeans_difference_genes, col=(colmeans_difference_genes),
+                                         label=ifelse(abs(colmeans_difference_genes)>0.5, gene, NA)))+
+  geom_density()+
+  geom_label_repel(aes(y=0), size=2, max.overlaps = Inf, box.padding = .4, nudge_y = 1)+theme_bw()+
+  labs(x='Average difference in CN between archival and relapse',
+       y='Density')+guides(col=F)+
+  # scale_color_viridis() +
+  scale_color_jcolors_contin(palette = "pal3")
+ggsave("figures/most_extreme_differences_archival_relapse.pdf", width = 5, height = 4)
+
+changes_in_CN_gene_df[,grepl('ERBB2', colnames(changes_in_CN_gene_df))]
+boxplot(changes_in_CN_gene_df[,which(colnames(changes_in_CN_gene_df) == 'ERBB2')]) ## one extreme case
+
+colnames(changes_in_CN_gene_df)[grepl('ERBB2', colnames(changes_in_CN_gene_df))]
+
+View(colmeans_difference_genes_df[abs(colmeans_difference_genes_df$colmeans_difference_genes) > 0.5, ] %>% dplyr::arrange(colmeans_difference_genes))
+
+colmeans_difference_genes_df$chrom = ag$seq_name[match(colmeans_difference_genes_df$gene, ag$gene_name)]
+table(colmeans_difference_genes_df$chrom)
+
+colmeans_difference_genes_df$chrom <- factor(as.numeric(colmeans_difference_genes_df$chrom ))
+ggplot(colmeans_difference_genes_df, aes(x=colmeans_difference_genes, y=colmedians_difference_genes,
+                                         col=factor(as.numeric(chrom)),
+                                         label=ifelse(abs(colmedians_difference_genes) > 0.18, gene, NA)
+       ))+geom_point(shape=1)+geom_label_repel(max.overlaps = Inf, size=2)+theme_bw()+
+  scale_color_manual(values = colorRampPalette(brewer.pal(12, "Accent"))(24))+
+  labs(col='Chromosome', x='Mean CN difference',  y='Median CN difference')
+ggsave("figures/most_extreme_differences_archival_relapse_mean_median.pdf", width = 5, height = 4)
+
+ggplot(colmeans_difference_genes_df, aes(x=colmeans_difference_genes, y=colmedians_difference_genes,
+                                         col=chrom,
+                                         label=ifelse(abs(colmedians_difference_genes) > 0.18, gene, NA)
+))+geom_vline(xintercept = 0, lty='dashed')+geom_hline(yintercept = 0, lty='dashed')+
+  geom_point(shape=1)+geom_label_repel(max.overlaps = Inf, size=2)+theme_bw()+
+  scale_color_manual(values = colorRampPalette(brewer.pal(12, "Accent"))(24))+
+  labs(col='Chromosome', x='Mean CN difference',  y='Median CN difference')+facet_wrap(.~chrom)
+ggsave("figures/most_extreme_differences_archival_relapse_mean_median_facet.pdf", width = 8, height = 8)
+
+ggplot(colmeans_difference_genes_df[which(colmeans_difference_genes_df$chrom == 17),], aes(x=colmeans_difference_genes, y=colmedians_difference_genes,
+                                         col=chrom,
+                                         label=ifelse(abs(colmedians_difference_genes) > 0.15, gene, NA)
+))+geom_vline(xintercept = 0, lty='dashed')+geom_hline(yintercept = 0, lty='dashed')+
+  geom_point(shape=1)+geom_label_repel(max.overlaps = Inf, size=2)+theme_bw()+
+  scale_color_manual(values = colorRampPalette(brewer.pal(12, "Accent"))(24))+
+  labs(col='Chromosome', x='Mean CN difference',  y='Median CN difference')+facet_wrap(.~chrom)
+
+
+# selected_chrom17 <- colmeans_difference_genes_df[colmeans_difference_genes_df$chrom == 17,][order(colmeans_difference_genes_df[colmeans_difference_genes_df$chrom == 17,]$colmedians_difference_genes)[1:10],'gene']
+selected_chrom17 <- c(colmeans_difference_genes_df[colmeans_difference_genes_df$chrom == 17,][order(colmeans_difference_genes_df[colmeans_difference_genes_df$chrom == 17,]$colmedians_difference_genes, decreasing = T)[1:10],'gene'])
+ggplot(melt(changes_in_CN_gene_df[,which(colnames(changes_in_CN_gene_df) %in% selected_chrom17)]),
+       aes(x=Var2, y=value))+geom_boxplot()+geom_jitter()+theme_bw()+
+  theme(axis.text.x=element_text(angle = 45, hjust = 1, vjust=1))
+  
+
+heatmap(changes_in_CN_gene_df)
 

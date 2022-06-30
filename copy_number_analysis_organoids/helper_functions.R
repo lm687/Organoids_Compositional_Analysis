@@ -272,7 +272,8 @@ give_distance_from_imputation <- function(impute_VALUE){
   dist(as(compositions::clr(impute(all_natgen[[which_natgen]], impute_VALUE)), 'matrix'))
 }
 
-give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL, return_grob=F, expand_vec=c(0.5, 0, 0.05, 0), ...){
+give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL, return_grob=F,
+                                            expand_vec=c(0.5, 0, 0.05, 0), ...){
   
   if(!plot & return_grob){
     stop('You cannot have plot=F and return_grob=T')
@@ -281,6 +282,9 @@ give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL
   if(is.null(exposures)){
     .exposures <- all_natgen[[which_natgen]]
   }else{
+    if(is.null(rownames(exposures))){
+      stop('Row names of <exposures> should not be null\n')
+    }
     .exposures <- exposures
   }
   
@@ -312,7 +316,7 @@ give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL
     ## here there used  to be a problem in that I used "labels", but now using "label" the order needs to be changed
     heatmap_dendrogram_df_inputclr0004 = t(.exposures[rownames(.exposures)[match(gsub("Organoid ", "", label(dendroimputclr_all_lowerinput)[dendroimputclr_all_lowerinput$order]),rownames(.exposures))],])
     
-    p2_inputclr_0004 = ggplot(melt(heatmap_dendrogram_df_inputclr0004), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+    p2_inputclr_0004 = ggplot(reshape2::melt(heatmap_dendrogram_df_inputclr0004), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
       theme(axis.title.x=element_blank(),  legend.title=element_blank(),
             legend.text=element_text(size=10),
             axis.text.x=element_blank(),
@@ -426,4 +430,96 @@ give_pca = function(data_matrix, center = T, title='', names, names_bool=T, give
     a
     
   }
+}
+
+
+give_heatmap_and_dendro <- function(dendrogram_arg, exposures_arg, extra_expand = .040, extra_expand_v2 = .040){
+  dend_data_inputclr <- dendro_data(dendrogram_arg, type = "rectangle")
+  dend_data_inputclr$labels$label = as.character(dend_data_inputclr$labels$label)
+  dend_data_inputclr$labels$label[!grepl('PDO', dend_data_inputclr$labels$label)] = ""
+  
+  p_v2 <- ggplot(dend_data_inputclr$segments) +
+    geom_segment(aes(x = x, y = y, xend = xend, yend = yend))+
+    geom_label_repel(data = dend_data_inputclr$labels, aes(x, y, label = gsub('Organoid ', '', label)),
+                     hjust = 0, size = 3, vjust=0, nudge_y = -2)+
+    ylim(-3, 15)+
+    theme_bw()+
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank(),
+          panel.grid = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank())+
+    scale_x_continuous(expand = c(extra_expand, extra_expand))+
+    scale_y_continuous(expand = c(0.05, 0, 0.05, 0))
+  # print(p)
+  
+  heatmap_dendrogram_df_inputclr = t(exposures_arg[rownames(exposures_arg)[match(labels(dendrogram_arg),rownames(exposures_arg))],])
+  
+  p2_inputclr = ggplot(melt(heatmap_dendrogram_df_inputclr), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+    theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+          legend.text=element_text(size=10),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank(),  legend.position = "bottom",
+          panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.border = element_blank())+
+    scale_fill_brewer(palette="Dark2")+
+    scale_x_discrete(expand = c(extra_expand_v2, extra_expand_v2))+
+    guides(fill = guide_legend(nrow = 1))
+  
+  # p2_inputclr_with_ticks = ggplot(melt(heatmap_dendrogram_df_inputclr), aes(x=Var2, y=value, fill=Var1))+geom_bar(stat='identity')+theme_bw()+
+  #   theme(axis.title.x=element_blank(),  legend.title=element_blank(),
+  #         legend.text=element_text(size=10),
+  #         axis.text.x=element_blank(),
+  #         axis.ticks.x=element_blank(),
+  #         legend.position = "bottom",
+  #         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  #         panel.border = element_blank())+
+  #   scale_fill_brewer(palette="Dark2")+
+  #   scale_x_discrete(expand = c(0, extra_expand_v2))+
+  #   guides(fill = guide_legend(nrow = 1))
+  
+  grid.arrange(p_v2, p2_inputclr, heights=c(2,1))
+}
+
+wrapper_give_heatmap <- function(arg_exposures, imputation_value = 1e-2){
+  .dendro = give_dendrogram_generalised(as(compositions::clr(impute(arg_exposures, imputation_value)), 'matrix'),
+                                        modify_labels=F, keep_only_PDO = F)
+  give_heatmap_and_dendro(dendrogram_arg = .dendro, exposures_arg = arg_exposures,
+                          extra_expand = 0, extra_expand_v2 = 0)
+}
+
+give_amalgamation <- function(i, list_amalgamations){
+  new_mat = sapply(list_amalgamations, function(j){
+    grouped_exp <- i[,colnames(i) %in% j]
+    if(!is.null(ncol(grouped_exp))){
+      rowSums(grouped_exp)
+    }else{
+      grouped_exp
+    }
+  })
+  new_mat
+}
+
+
+give_annotation_from_names <- function(i){
+  sapply(i, function(j){
+    if(grepl('^TCGA', j)){
+      'TCGA'
+    }else if(grepl('^IM', j)){
+      'BriTROC-1'
+    }else if(grepl('^JBLAB', j)){
+      'BriTROC-1'
+    }else if(grepl('^PDO', j)){
+      'organoid'
+    }else{
+      'ICGC'
+    }
+  })
 }

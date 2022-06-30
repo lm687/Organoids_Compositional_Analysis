@@ -1,0 +1,72 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Oblique;\f1\fswiss\fcharset0 Helvetica;\f2\fswiss\fcharset0 Helvetica-Bold;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww16340\viewh12720\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\i\fs24 \cf0 ## from meeting 20220518\
+\
+- barbara: send PDO2 -- Done\
+- get unrounded CN from Barbara and get exposures -- Done\
+
+\f1\i0 - remove one of the organoids (PDO3) because of low quality\
+
+\f0\i - get PDO11 correct ascites -- Replaced by previous ascites\
+
+\f1\i0 - add genes CN clonal analysis to manuscript, possibly\
+- chromosome 8 is the chromosome with chromothripsis\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f2\b\fs38 \cf0 ### Topics
+\f1\b0\fs24 \
+- Where we are with the paper\
+- Whether clade-specific signatures are necessary, and if so whether we should for for the bam-pseudobulk approach\
+- State of ascites/organoids match of patient 413 (PDO11)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f2\b\fs38 \cf0 ## Progress made
+\f1\b0\fs24 \
+\
+
+\f2\b ### Matching ascites and organoids\
+
+\f1\b0 	1.  I replaced the ascites for 413 by the ascites for this patient that Geoff derived a couple of years ago\
+	2. I removed PDO3 (\cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 466 (1)\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 ) from the comparison\
+\
+{{\NeXTGraphic barplot_all_ascites_2_latest.pdf \width8640 \height7200 \appleattachmentpadding0 \appleembedtype0 \appleaqc
+}¬}\
+\
+\
+
+\f2\b ### Exposures for clades
+\f1\b0 \
+Using Barbara's unified segments\
+\
+Segments of organoids and clades are fundamentally different). See B\'e1rbara's explanation below\
+\
+{{\NeXTGraphic PDO2_subclonal_exposures.pdf \width5840 \height4320 \appleattachmentpadding0 \appleembedtype0 \appleaqc
+}¬}\
+{{\NeXTGraphic PDO3_subclonal_exposures.pdf \width5840 \height4320 \appleattachmentpadding0 \appleembedtype0 \appleaqc
+}¬}\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 {{\NeXTGraphic PDO6_subclonal_exposures.pdf \width5840 \height4320 \appleattachmentpadding0 \appleembedtype0 \appleaqc
+}¬}\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+According to her "We need to discuss this in the meeting, but I don\'92t think you should use this unified segments for doing CNSigs calling because, for example, the segment size feature will be the same for all clades and maybe we are losing differences in the mutational processes driving to the evolution of these clades."\
+	is the solution to \
+\
+Differences between this pseudobulk and normal sWGS\
+	- cells need to be merged\
+	- 20kb bins in scDNA vs 30kb bins in sWGS\
+	- additional segmentation or joining of segments is needed after aggregating cells\
+\
+\
+- Good suggestion from Phil: for pseudobulk we should just merge the bam files! and then carry out the sWGS pipeline as normal\
+}

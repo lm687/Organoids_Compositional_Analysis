@@ -9,6 +9,7 @@ copy_number_analysis_organoids/copy_number_analysis_organoids_files/
 #copy_number_analysis_organoids/data
 copy_number_analysis_organoids/figures/*
 copy_number_analysis_organoids/robjects/*
+copy_number_analysis_organoids/image_code_WGD_modelling.RData
 
 RNASeq_DE_resistant_sensitive/analysis_scripts/files/Homo_sapiens.GRCh37.87.gff3
 RNASeq_DE_resistant_sensitive/objects/deaObjectFile

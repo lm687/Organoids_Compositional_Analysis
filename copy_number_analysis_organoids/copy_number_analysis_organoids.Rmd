@@ -2478,3 +2478,9 @@ do.call('grid.arrange', c(sapply(plts_AOI_subclonal, `[`, 2), list(nrow=2)))
 ```{r, cn_regions_subclonal4, dependson=c('cn_regions_subclonal2'), eval=FALSE}
 sapply(plts_AOI_subclonal, `[`, 1)
 ```
+
+
+```{r, save_natgen}
+saveRDS(natgen[[2]][grepl('TCGA', rownames(natgen[[2]])),],
+        file = '~/Desktop/TCGA_exposures_12112019.RDS')
+```

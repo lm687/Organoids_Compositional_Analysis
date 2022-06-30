@@ -850,3 +850,5 @@ ggplot(rbind.data.frame(cbind.data.frame(chrom8_PDO3_sc_df[,c('start', 'end', 'C
   # guides(col=F)
 ggsave("../plots/chromothripsis_PDO3.pdf", width = 4.5, height = 3)
 
+## chromosome 8 for PDO9 (twin sample of PDO3)
+absCN_granges_perorg$PDO9[seqnames(absCN_granges_perorg$PDO9) == 8,]

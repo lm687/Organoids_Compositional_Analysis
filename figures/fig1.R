@@ -23,14 +23,7 @@ if(ticks_in_1e){
   heatmapinputclr <- readRDS("../copy_number_analysis_organoids/robjects/heatmapinputclr.RDS")
 }
 
-# rank_nsegs <- readRDS("../copy_number_analysis_organoids/robjects/rank_nsegments.RDS")
-# rank_ploidy <- readRDS("../copy_number_analysis_organoids/robjects/rank_ploidy.RDS")
-rank_nsegs0 <- readRDS("../copy_number_analysis_organoids/robjects/rank_nsegments_df.RDS")
-rank_ploidy0 <- readRDS("../copy_number_analysis_organoids/robjects/rank_ploidy_df.RDS")
-# surv_org <- readRDS("../survival_analysis/robjects/km_as_one.RDS")
-survival <- read.csv("../survival_analysis/data/OrganoidSurvival.csv")
-# OrganoidTODO <- read_excel("../survival_analysis/data/OrganoidCulturesSurvival_091117OR.xlsx")
-OrganoidTODO <- read_excel("../survival_analysis/data/OrganoidCulturesSurvival_091117OR_17082021.xlsx")
+ascites_organoid_exposures <- readRDS("../copy_number_analysis_organoids/robjects/ascites_organoid_exposures.RDS")
 
 size_axis_text <- 8
 size_text <- 12
@@ -39,53 +32,12 @@ size_text_table_surv <- 3.5
 # size_legend_key <- 8
 
 ## survival 2
-km.as.one <- survfit(formula=Surv(CulturedTime, Death==1) ~Tissue, data = OrganoidTODO, conf.type = "log-log")
-a <- ggsurvplot(km.as.one, conf=TRUE, risk.table = TRUE, risk.table.height = 0.3,
-                pval = TRUE,
-                risk.table.fontsize = size_text_table_surv,
-                pval.size=size_text_table_surv, xlab="Time (days)",
-                legend.labs=c("Ascites", "Solid", "Xenograft"))
-coxmodel <- coxph(formula = Surv(CulturedTime, Death == 1) ~ Tissue, data = OrganoidTODO)
-a$plot <- a$plot +
-  ggplot2::annotate(
-    "text",
-    x = Inf, y = Inf,
-    vjust = 3.2, hjust = 1,
-    label = paste0(c('HR Solid/Ascites: ', 'HR Xenograft/Ascites: '), round(coxmodel$coefficients, 2), collapse = "\n"),
-    size = 3.5
-  )
-a+text(cbind(x=c(0,0), y=c(0,0.2), label=paste0(c('HR Solid/Ascites: ', 'HR Xenograft/Ascites: '), round(coxmodel$coefficients, 2))))
-
-# coxmodel <- coxph(formula = Surv(CulturedTime, Death == 1) ~ Tissue, data = survival)
-# a_old <- ggsurvplot(surv_org, conf=TRUE,legend.labs = c("Ascites", "Solid", "Xenograft"), pval = TRUE,
-#                 risk.table = TRUE, risk.table.fontsize = size_text_table_surv, 
-#                 pval.size=size_text_table_surv, xlab="Time (days)")
-# a$plot <- a$plot +
-#   ggplot2::annotate(
-#     "text",
-#     x = Inf, y = Inf,
-#     vjust = 1, hjust = 1,
-#     label = paste0(c('HR Ascites/Solid: ', 'HR Ascites/Xenograph: '), round(coxmodel$coefficients, 2), collapse = "\n"),
-#     size = 3.5
-#   )
-# a+text(cbind(x=c(0,0), y=c(0,0.4), label=paste0(c('HR Ascites/Solid: ', 'HR Ascites/Xenograph: '), round(coxmodel$coefficients, 2))))
-rank_nsegs <- plot_rank(rank_nsegs0, size_labels = 3)
-rank_ploidy <- plot_rank(rank_ploidy0, nudge_scalar=0.02, size_labels = 3)
-rank_nsegs$coordinates$limits$y <-  c(-600, 1500)
-rank_ploidy$coordinates$limits$y <-  c(-10, 15)
-
-b <- rank_nsegs+
-  theme(axis.title.x=element_text(), text = element_text(size=size_text))+
-  labs(y='Number of segments', x='Rank')+guides(fill=F)#+
-  # geom_label_repel(nudge_y=400*1)+lims(x=c())
-  # theme(axis.text.x = element_text(size = size_axis_text), axis.text = element_text(size=size_text), legend.text = element_text(size = size_legend))#, legend.key.size = size_legend_key)
-c <- rank_ploidy+
-  theme(axis.title.x=element_text(), text = element_text(size=size_text))+
-  labs(y='Ploidy', x='Rank')+guides(fill=F)
-d <- createBarplot(exposures, remove_labels = FALSE, order_labels = gsub('Sample ', 'PDO', names(sort(exposures[,1])))) + 
-  scale_fill_brewer(palette="Dark2")+labs(y='Copy number signature activity')+
+a <- createBarplot(exposures, remove_labels = FALSE, order_labels = gsub('Sample ', 'PDO', names(sort(exposures[,1])))) + 
+  theme_bw()+scale_fill_brewer(palette="Dark2")+labs(y='Copy number\nsignature activity')+
+  guides(fill='none')+
   # ggtitle('Exposures for the organoids')+labs(x='')+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        axis.title.x=element_blank())+
   # guides(fill=F)+
   labs(x=NULL)+
   geom_bracket(data = head(melt(exposures)),
@@ -103,6 +55,19 @@ d <- createBarplot(exposures, remove_labels = FALSE, order_labels = gsub('Sample
                y.position = c(1.15), label = c(""),
                tip.length = 0.09
   )+theme(legend.position = "bottom")
+
+ascites_organoid_exposures$label=paste0(gsub( " .*", "", ascites_organoid_exposures$OVO4), ' (', ascites_organoid_exposures$org, ')')
+
+ascites_organoid_exposures$label <- factor(ascites_organoid_exposures$label,
+                                           levels=ascites_organoid_exposures$label[gtools::mixedorder(unique(ascites_organoid_exposures$org))])
+b <- ggplot(ascites_organoid_exposures, aes(x=group, y=value, fill=variable))+
+  geom_bar(stat="identity")+facet_wrap(.~label, nrow=2)+
+  scale_fill_brewer(palette="Dark2")+
+  theme(legend.position = "bottom")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        axis.title.x=element_blank())+
+  guides(fill='none')+
+  labs(y='Copy number signature activity')
 e1 <- dendrograminputclr#+geom_label_repel(label.size = NA)
 e2 <- heatmapinputclr+  theme(axis.title.x=element_text(), axis.title.y=element_text(angle=90))+
   labs(x='Public tumour datasets (TCGA, PCAWG and BriTROC) and organoids', y='Copy number signature activity')
@@ -118,100 +83,22 @@ if(ticks_in_1e){
 e1_v2 <- e1; e1_v2$layers[[2]] = NULL; e1_v2$scales$scales[[2]] <- NULL; e1_v2$theme$plot.margin[3] = unit(0, "cm"); e1_v2 <- e1_v2+scale_y_continuous(expand=c(0,0))
 e1_v2
 e2_v2 <- e2+geom_label_repel(fill='white', col='black',nudge_x = 0, nudge_y = -5,
-                       aes(y=0,label=ifelse(grepl('PDO', Var2) & Var1 == 's1',
-                                        as.character(Var2), NA)))+
-  scale_y_continuous(expand=c(0,0))+lims(y=c(-1.6, 1))
-e2_v2$theme$plot.margin[1] = unit(0, "cm")
-e_v2 <- plot_grid(plot_grid(plot.new(), e1_v2, rel_widths=c(0.1, 5), rel_heights = c(3,5)),
-                  e2_v2, nrow = 2, labels = c('e'))
-
-# pdf("fig1.pdf", height = 13, width = 9)
-# plot_grid(plot_grid(plot_grid(ggplotGrob(a$plot), ggplotGrob(a$table), nrow=2, rel_heights = c(7,3.5)),
-#                     d, labels = c('a', 'b')),
-#           plot_grid(b, c, labels = c('c', 'd')), e, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(1,.9,1.1))
-# dev.off()
-
-pdf("fig1.pdf", height = 13, width = 9)
-plot_grid(plot_grid(plot_grid(ggplotGrob(a$plot), ggplotGrob(a$table), nrow=2, rel_heights = c(7,3.5)),
-                    d, labels = c('a', 'b')),
-          plot_grid(b, c, labels = c('c', 'd')), e_v2, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(1,.9,1.1))
-dev.off()
-
-e_v2_b <- plot_grid(e2+geom_label_repel(fill='white', col='black',nudge_x = 0, nudge_y = -5,
-                                        aes(y=0,label=ifelse(grepl('PDO', Var2) & Var1 == 's1',
-                                                             as.character(Var2), NA)))+
-                      scale_y_continuous(expand=c(0,0))+lims(y=c(-0.3, 1)))
-
-pdf("fig1_clustering_exposures.pdf", height = 4, width = 9)
-e_v2
-dev.off()
-
-e_v2_b$layers[[1]]$position
-pdf("fig1_clustering_exposures.pdf", height = 4, width = 9)
-e_v2_b
-dev.off()
-
-## changing the ratio of the dendrogram and barplot
-
-e1_v2_c <- e1; e1_v2_c$layers[[2]] = NULL; e1_v2_c$scales$scales[[2]] <- NULL
-e1_v2_c$theme$plot.margin[3] = unit(0, "cm")
-e1_v2_c <- e1_v2_c+scale_y_continuous(expand=c(0,0))
-e1_v2_c
-
-
-e2_v2_c <- e2+geom_label_repel(fill='white', col='black',nudge_x = 0, nudge_y = -.5,
                              aes(y=0,label=ifelse(grepl('PDO', Var2) & Var1 == 's1',
                                                   as.character(Var2), NA)))+
   scale_y_continuous(expand=c(0,0))+lims(y=c(-0.6, 1))
-e2_v2_c$theme$plot.margin[1] = unit(0, "cm")
+e2_v2$theme$plot.margin[1] = unit(0, "cm")
+e1_v2$theme$plot.margin[2] = unit(0, "cm")
+e1_v2$theme$plot.margin[3] = unit(0, "cm")
+e1_v2$theme$plot.margin[4] = unit(0, "cm")
 
-if(ticks_in_1e){
-  e_v2_c <- plot_grid(plot_grid(plot.new(), e1_v2_c, rel_widths=c(0.11, 5), rel_heights = c(3,5)),
-                      plot_grid(e2_v2_c,plot.new(), rel_widths=c(5, 0.18)), nrow = 2, labels = c('e'), rel_heights = c(1.5,5))
-  
-}else{
-  e_v2_c <- plot_grid(plot_grid(plot.new(), e1_v2_c, rel_widths=c(0.1, 5), rel_heights = c(3,5)),
-                      e2_v2_c, nrow = 2, labels = c('e'), rel_heights = c(1.5,5))
-}
-e_v2_c
+e_v2 <- plot_grid(plot_grid(plot.new(), e1_v2, plot.new(), nrow=1, rel_widths=c(0.085, 5, 0.00)),
+                  plot_grid(plot.new(), e2_v2, plot.new(), nrow=1, rel_widths=c(0.13, 5, 0.315)),
+                  nrow = 2, labels = c('c'), rel_heights = c(2,5))
 
-
-pdf("fig1.pdf", height = 13, width = 9)
-plot_grid(plot_grid(plot_grid(ggplotGrob(a$plot), ggplotGrob(a$table), nrow=2, rel_heights = c(7,3.5)),
-                    d, labels = c('a', 'b')),
-          plot_grid(b, c, labels = c('c', 'd')), e_v2_c, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(1,.9,1.1))
+pdf("fig1.pdf", height = 10, width = 10, onefile = F)
+plot_grid(plot_grid(a, labels='a'),
+          plot_grid(plot.new(), b, labels='b', ncol=1, rel_heights = c(0.0, 0.9), vjust = -.1),
+                    e_v2, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(.4,0.5,0.8))
 dev.off()
 
-plot_rank2 <- function(df_rank, nudge_scalar=1, size_labels=10){
-  df_rank$value = as.numeric(df_rank$value)
-  # df_rank = df_rank[(df_rank$Var1),]
-  df_rank$L1= factor(df_rank$L1, levels = c('BriTROC', 'organoids', 'pcawg', 'tcga'))
-  df_rank$labels = ifelse(as.character(df_rank$L1) == 'organoids', as.character(df_rank$Var1), NA)
-  
-  df_rank = cbind.data.frame(df_rank, organoids= grepl("organoids", df_rank$L1))
-  ggplot(df_rank)+
-    geom_bar(stat = "identity", aes( fill= organoids, x=factor(Var1, as.character(Var1)[order(value)]),
-                                     y=value, label=labels), width=0.5)+
-    geom_bar(data = df_rank[df_rank$L1 == "organoids",], stat = "identity",
-             aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                 y=value, label=labels, width=5), width=100)+
-    lims(y=c(-max(df_rank$value)*0.3, 2+max(df_rank$value)))+
-    geom_label_repel(data=df_rank[c(T,F),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                                                y=value/2, label=labels), nudge_y=400*nudge_scalar, size=size_labels)+
-    geom_label_repel(data=df_rank[c(F,T),], aes(x=factor(Var1, as.character(Var1)[order(value)]),
-                                                y=value/2, label=labels), nudge_y=-400*nudge_scalar, size=size_labels)+
-    scale_x_discrete(expand = c(.05, 0, .05, 0))+
-    scale_fill_manual(values = c("#f2a5a5", "black"))+
-    geom_density(data = df_rank, aes(x=value, col=L1, y=..count..))+
-    theme_cowplot()+
-    theme(legend.position = "bottom", axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-  
-}
-plot_rank2(rank_nsegs0, size_labels = 3)
-
-
-table(OrganoidTODO %>% dplyr::filter(PassageNumber > 0) %>% dplyr::select(PassageNumber) <= 4)
-sum((OrganoidTODO$PassageNumber > 0) & (OrganoidTODO$PassageNumber <= 4))
 
