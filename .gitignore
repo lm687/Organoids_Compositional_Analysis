@@ -38,6 +38,7 @@ pushall
 
 data/absolute_profiles
 
+copy_number_analysis_organoids/Homo_sapiens.GRCh37.87.sqlite
 
 *.*~
 *.DS_Store
