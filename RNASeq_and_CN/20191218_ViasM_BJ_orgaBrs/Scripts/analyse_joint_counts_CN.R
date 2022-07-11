@@ -72,6 +72,8 @@ if(include_14_orgs){
                                                 design = ~ Group)
   renormalised_counts_obj <- DESeq2::estimateSizeFactors(renormalised_counts_obj)
   saveRDS(renormalised_counts_obj, "../../20191218_ViasM_BJ_orgaBrs/output/fig3_renormalised_counts_obj_11orgs.RDS")
+  write.table(raw_counts0, "../../../for_submission/GEO/RNASeq/ViasMorrill_RNASeq_raw_counts.txt",
+              quote = F, sep = "\t", col.names = NA, row.names = TRUE)
   renormalised_counts <- DESeq2::counts(renormalised_counts_obj, normalized=T)
   deseq_counts_renormalised0 <- renormalised_counts
   deseq_counts <- deseq_counts_renormalised0
