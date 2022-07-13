@@ -274,7 +274,7 @@ give_distance_from_imputation <- function(impute_VALUE){
 
 give_dendrogram_from_imputation <- function(impute_VALUE, plot=T, exposures=NULL, return_grob=F,
                                             expand_vec=c(0.5, 0, 0.05, 0), ...){
-  
+
   if(!plot & return_grob){
     stop('You cannot have plot=F and return_grob=T')
   }

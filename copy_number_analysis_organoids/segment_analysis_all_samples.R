@@ -22,8 +22,8 @@ if(!file.exists(sqlite_path)) {
   ## generate the SQLite database file
   ensembldb::ensDbFromGtf(gtf=gtf.file, path = '', outfile=sqlite_file)
 }
-# EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_path)
 EnsDb.Hsapiens.v87 <- ensembldb::EnsDb(sqlite_file)
+
 # Genes, used to annotated the TPM matrix to send to Maria
 ag <- ensembldb::genes(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame") 
 ag_subsetchrom <- ag[!(ag$seq_name %in% c("MT", "X", "Y")) & !grepl("GL",ag$seq_name),]
@@ -75,7 +75,6 @@ min(all_cn) ## there shouldn't be any negative values!
 #------------------------------------------------------------------------#
 #------------------------------------------------------------------------#
 ## UMAP
-
 # umap_res <- umap(t(all_cn_var[1:2000,]))
 umap_res <- umap(t(all_cn_var))
 dev.off()
@@ -500,7 +499,8 @@ df_umap_britroc_rel_arx <- df_umap_britroc_rel_arx[with(df_umap_britroc_rel_arx,
 ## change_name_for_multisample_patients
 # new_patient_name <- lapply(unique(df_umap_britroc_rel_arx$patient), function(patient_it){
 new_patient_name <- lapply(patients_both_samples, function(patient_it){
-  combinations_list= c()
+
+combinations_list= c()
   ct = 1
   for(arx_it in which(patient.meta[patient.meta_subset$PATIENT_ID == patient_it,'group'] == "arx")){
     for(rlps_it in which(patient.meta_subset[patient.meta_subset$PATIENT_ID == patient_it,'group'] == "rlps")){

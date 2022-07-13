@@ -150,6 +150,9 @@ for(org_it in organoid_list){
   saveRDS(ph, paste0("../robjects/fig2_subclonal_hclust", org_it, ".RDS"))
   saveRDS(ph_nosexchrom, paste0("../robjects/fig2_subclonal_hclust_nosexchrom", org_it, ".RDS"))
 
+  # ph$gtable$grobs[[1]]$gp <- gpar(lwd = 5)
+  # ph$gtable$grobs[[2]]$gp <- gpar(col = 'blue')
+  
   plot(as.dendrogram(ph$tree_row))
 
   pdf(paste0("../plots/subclonal_hclust", org_it, ".pdf"))
@@ -855,7 +858,6 @@ order_first_by_second_column <- function(i) i[order(i[,2]),1]
 
 #-------------------------------------------------------------------------#
 
-
 ggplot(melt(list(apply(data_orgs[[1]], 1, var),
      apply(data_orgs[[2]], 1, var),
      apply(data_orgs[[3]], 1, var))), aes(x=value, col=L1, group=L1))+geom_density()
@@ -1436,4 +1438,3 @@ tiled_ecDNA_table_absCNscDNA_PDO2_cladeA_1_all_bool_na <- apply(tiled_ecDNA_tabl
 image(tiled_ecDNA_table_absCNscDNA_PDO2_cladeA_1_all[rowSums(tiled_ecDNA_table_absCNscDNA_PDO2_cladeA_1_all_bool_na)<ncol(tiled_ecDNA_table_absCNscDNA_PDO2_cladeA_1_all_bool_na),])
 
 example_tile[!is.na(example_tile$gene),]
-

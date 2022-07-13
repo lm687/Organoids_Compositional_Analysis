@@ -66,6 +66,7 @@ heatmap_data
 heatmap_data$WGD <- ifelse(heatmap_data$WGD, 'WGD', 'non-WGD')
 
 tikzDevice::tikz("../copy_number_analysis_organoids/figures/WGD_exposures_tikz.tex", height = 3, width = 2.5)
+
 ggplot(heatmap_data, aes(x=Var2, fill=Var1, y=value))+geom_bar(stat = "identity")+
   scale_fill_brewer(palette="Dark2")+facet_wrap(.~WGD, nrow=2)+
   theme(axis.title.x=element_blank(),
@@ -536,5 +537,4 @@ lapply(c("BRITROC-23", "BRITROC-209", "BRITROC-216", "BRITROC-241", "BRITROC-267
   c(unique(as.character(clr_britroc_arx_pred[give_samples_from_patient(pat, "arx")])),
     unique(as.character(clr_britroc_rlps_pred[give_samples_from_patient(pat, "rlps")])))
 }) ## samples that SVM finds diploid in relapse, but UMAP detects a change
-
 

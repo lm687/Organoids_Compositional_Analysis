@@ -51,6 +51,7 @@ bias3prime = read_xlsx("../files/PDOnameProperSample_sWGS_RNAseq_3bias.xlsx")
 #--------------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------------#
+## Including 3' bias samples (which will be corrected later on)
 prcomp_normalisedcounts = prcomp(t(normalised_counts), scale. = TRUE, center = TRUE)
 eigs_normalisedcounts <- prcomp_normalisedcounts$sdev^2
 round(eigs_normalisedcounts/sum(eigs_normalisedcounts)*100)
@@ -80,7 +81,8 @@ colnames(raw_counts0) <- renaming1$PDO[match(gsub('[.]', '-', colnames(raw_count
 raw_counts0 = raw_counts0[,!(colnames(raw_counts0) %in% c('PDO14', 'PDO16', 'PDO18',
                                                                             'PDO13', 'PDO4', 'PDO9',
                                                                             'PDO17'))]
-## in CN/GE script we have already re-derived the normalised DESeq2 counts with non-3' bias samples (PDO and FT)
+##' in CN/GE script we have already re-derived the normalised DESeq2 counts with non-3' 
+##' bias samples (PDO and FT). Now there are 14 samples, 11 of which are organoids
 renormalised_counts <- readRDS("../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/fig3_renormalised_counts_obj_11orgs.RDS")
 renormalised_counts <- DESeq2::counts(renormalised_counts, normalized=T)
 ## keeping only PDO
@@ -99,14 +101,14 @@ normalised_counts <- renormalised_counts
 
 #--------------------------------------------------------------------------------#
 ## Removing samples with 3' bias
-
-## subset done above
-# normalised_counts = normalised_counts[,!(colnames(normalised_counts) %in% c('PDO14', 'PDO16', 'PDO18',
-#                                                                             'PDO13', 'PDO4', 'PDO9',
-#                                                                             'PDO17'))]
 normalised_counts = normalised_counts[rowSums(normalised_counts)>0,]
 saveRDS(normalised_counts, "../objects/normalised_counts_RNASeq.RDS")
 prcomp_normalisedcounts = prcomp(t(normalised_counts), scale. = TRUE, center = TRUE)
+
+## Checking normality of counts, or of log-transformed counts, to assess how the PCA would be best created
+pairs(normalised_counts)
+pairs(log2(normalised_counts))
+
 #--------------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------------#

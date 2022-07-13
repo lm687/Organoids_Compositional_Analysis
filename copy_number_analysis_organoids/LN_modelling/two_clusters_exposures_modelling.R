@@ -42,7 +42,6 @@ cluster_fig1
 #------------------------------------------------------------------#
 #---------------------------- plotting ----------------------------#
 #------------------------------------------------------------------#
-
 dendrograminputclr <- readRDS("../../copy_number_analysis_organoids/robjects/dendrograminputclr.RDS")
 heatmapinputclr <- readRDS("../../copy_number_analysis_organoids/robjects/heatmapinputclr_with_ticks.RDS")
 
@@ -55,6 +54,7 @@ e2_v2 <- e2#+geom_label_repel(fill='white', col='black',nudge_x = 0, nudge_y = -
            #                  aes(y=0,label=ifelse(grepl('PDO', Var2) & Var1 == 's1',
            #                                       as.character(Var2), NA)))+
   # scale_y_continuous(expand=c(0,0))+lims(y=c(-1.6, 1))
+
 e1_v2 <- e1; e1_v2$layers[[2]] = NULL; e1_v2$scales$scales[[2]] <- NULL
 e1_v2$theme$plot.margin[3] = unit(0.0, "cm")
 e1_v2$theme$plot.margin[2] = unit(-25, "points")
@@ -190,6 +190,7 @@ ggsave("../figures/LN_clusters_exposures_WGD/clades_fitted_zeros.pdf", width = 3
 
 fitted_probs = t(fitted_vals[c(which(TMB_data_zeros$x[,2] == 0)[1],
                                which(TMB_data_zeros$x[,2] == 1)[1]),]); colnames(fitted_probs) = c('clade_Hs3', 'clade_Hs4')
+
 ## fitted probability of zero vs actual fraction of zeros
 comparison_probs = (dcast(melt(list(fraction_zeros=fraction_zeros,
                                     fitted_probs=fitted_probs), measure.vars=c('L1')), Var1+Var2~L1))
@@ -342,6 +343,7 @@ dev.off()
 # }
 
 fitted_logR_partialILR <- TMB_data_partialILR$x %*% matrix(results_ILR$par.fixed[grepl('beta', names(results_ILR$par.fixed))], nrow=2)
+
 fitted_vals_partialILR = apply(cbind(fitted_logR_partialILR, 0), 2, function(i) exp(i)/(1+exp(i)) ) ## transform to probabilities
 colnames(fitted_vals_partialILR) = colnames(exposures_fig1) #paste0('ILR', 1:ncol(partialILR))
 colnames(exposures_fig1)
@@ -1033,4 +1035,3 @@ dev.off()
 table(give_annotation_from_names(rownames(exposures_fig1)))
 
 save.image("../image_code_WGD_modelling.RData")
-

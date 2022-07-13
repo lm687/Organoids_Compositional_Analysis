@@ -429,6 +429,7 @@ all_metadata <- lapply(natgen_metadata, function(i) rbind(i, organoid_metadata))
 
 <!-- ```{r, dendrogram_aitchisondistance_implementation,echo=FALSE, eval=TRUE, warning=FALSE, echo=FALSE, dependson=c('dendrogram_aitchisondistance_function')} -->
 
+
 <!-- dendro_UpdatedExposures = give_dendrogram('UpdatedExposures') -->
 <!-- plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures') -->
 <!-- plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures', which_label="not_symbol") -->
@@ -2310,7 +2311,6 @@ ggplot(ascites_df, aes(x=bool_ascites, y=value, fill=variable))+geom_bar(stat = 
   guides(fill=guide_legend(nrow=1))
 
 ```
-
 
 ```{r, ternary_plots, echo=F}
 library(Ternary)

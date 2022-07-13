@@ -86,6 +86,8 @@ if(previous_match){
   ## using my final matching
   add_to_figs <- '_latest'
   ascc <- readxl::read_excel("data/matching_ascites_samples_Lena.xlsx")
+  stopifnot(max(table(paste0(ascc$sWGS_SLX, ascc$sWGS_barcode))) == 1)
+  stopifnot(max(table(ascc$Derived_organoid)) == 1)
   organoidsMatched <- ascc$Derived_organoid[match(rownames(sigs_ascites), paste0(ascc$sWGS_SLX, '.', ascc$sWGS_barcode))]
   
 }
