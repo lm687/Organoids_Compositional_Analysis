@@ -418,6 +418,7 @@ all_cn_var_df_summary2
 
 #------------------------------------------------------------------------#
 #------------------------------------------------------------------------#
+
 ## primary and relapse
 ## read in relapse/primary information
 load("../../../other_repos/britroc-1/data/britroc_30kb_signature_data.rds")
@@ -603,7 +604,6 @@ dim(df_umap_britroc_rel_arx[!is.na(df_umap_britroc_rel_arx$patient_only_matched)
 table(sapply(unique(df_umap_britroc_rel_arx$patient), function(i){
   all(c('arx', 'rlps') %in% df_umap_britroc_rel_arx$group[df_umap_britroc_rel_arx$patient == i])
 }))
-
 
 ### Are there differences in the patients who undergo WGD?
 patients_who_undergo_WGD <- (unique(change_name_for_multisample_patients[change_name_for_multisample_patients$interesting_pairs,]$patient))

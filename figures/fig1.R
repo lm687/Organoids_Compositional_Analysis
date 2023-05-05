@@ -39,6 +39,7 @@ a <- createBarplot(exposures, remove_labels = FALSE, order_labels = gsub('Sample
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         axis.title.x=element_blank())+
 
+
   # guides(fill=F)+
   labs(x=NULL)+
   geom_bracket(data = head(melt(exposures)),
@@ -78,6 +79,7 @@ b_onerow <- ggplot(ascites_organoid_exposures, aes(x=group, y=value, fill=variab
         axis.title.x=element_blank())+
   guides(fill='none')+
   labs(y='Copy number signature activity')
+
 
 e1 <- dendrograminputclr#+geom_label_repel(label.size = NA)
 e2 <- heatmapinputclr+  theme(axis.title.x=element_text(), axis.title.y=element_text(angle=90))+
@@ -138,3 +140,4 @@ dev.off()
 #           plot_grid(plot.new(), b, labels='b', ncol=1, rel_heights = c(0.0, 0.9), vjust = -.1),
 #           e_v2, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(.4,0.5,0.8))
 # dev.off()
+

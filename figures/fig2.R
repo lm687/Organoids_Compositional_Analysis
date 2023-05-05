@@ -38,8 +38,6 @@ e <- ggplotify::as.grob(PDO6scDNA)#give_plot(PDO6scDNA, "PDO6", PDO6abs)
 f <- cowplot::ggdraw()+draw_image("../copy_number_analysis_organoids/data/absolute_profiles/PDO6_annotated_2.pdf", scale = 1)
 g <- cowplot::ggdraw()+draw_image("fig2_chrom_annotation_crop_nosexchrom.png", scale = 1)
 
-
-
 # pdf("fig2_old.pdf", height = 9, width = 9)
 # plot_grid(plot_grid(a, b), plot_grid(c, d), plot_grid(e, f), g, nrow=4, labels = c('a', '', 'b', '', 'c', ''), rel_heights = c(4,4,4,1))
 # dev.off()

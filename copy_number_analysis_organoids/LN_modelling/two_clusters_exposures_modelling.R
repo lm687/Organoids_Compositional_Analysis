@@ -173,6 +173,7 @@ xtable::xtable(do.call('rbind', lapply(split_rows(df = TMB_data_zeros$Y,
                                                   f = TMB_data_zeros$x[,2]), colMeans)))
 
 fitted_logR <- TMB_data_zeros$x %*% matrix(results_zeros$par.fixed, nrow=2)
+
 fitted_vals = apply(fitted_logR, 2, function(i) exp(i)/(1+exp(i)) ) ## transform to probabilities
 colnames(fitted_vals) = colnames(exposures_zeros)
 rownames(fitted_vals) = rownames(exposures_zeros)
@@ -190,6 +191,7 @@ ggsave("../figures/LN_clusters_exposures_WGD/clades_fitted_zeros.pdf", width = 3
 
 fitted_probs = t(fitted_vals[c(which(TMB_data_zeros$x[,2] == 0)[1],
                                which(TMB_data_zeros$x[,2] == 1)[1]),]); colnames(fitted_probs) = c('clade_Hs3', 'clade_Hs4')
+
 
 ## fitted probability of zero vs actual fraction of zeros
 comparison_probs = (dcast(melt(list(fraction_zeros=fraction_zeros,
@@ -228,6 +230,7 @@ lapply(split_exposures_per_cohort, min)
 #--------------------------- model (ILR) --------------------------#
 #------------------------------------------------------------------#
 
+
 partialILR = give_partial_irl(exposures_fig1)
 as(compositions::ilr(exposures_fig1), 'matrix')
 partialILR
@@ -265,6 +268,7 @@ dev.off()
 ## s5, s7: unclear
 
 exp(python_like_select_rownames(summary(results_ILR), 'logsd')[,1])
+
 
 colMeans(exposures_fig1 == 0)
 colMeans(partialILR == 0)
@@ -343,6 +347,7 @@ dev.off()
 # }
 
 fitted_logR_partialILR <- TMB_data_partialILR$x %*% matrix(results_ILR$par.fixed[grepl('beta', names(results_ILR$par.fixed))], nrow=2)
+
 
 fitted_vals_partialILR = apply(cbind(fitted_logR_partialILR, 0), 2, function(i) exp(i)/(1+exp(i)) ) ## transform to probabilities
 colnames(fitted_vals_partialILR) = colnames(exposures_fig1) #paste0('ILR', 1:ncol(partialILR))

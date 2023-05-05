@@ -367,8 +367,7 @@ ggsave(filename = "figures/pca_tcga.pdf", plot = pca_tcga)
 <!-- Signatures 3 and 6 seem to be quite important for the underrepresented groups -->
 
 
-```{r, princomp_clr_implementation, eval=TRUE, dependson=c('princomp_clr'), warning=FALSE, echo=FALSE}
-all_natgen = lapply(natgen, function(i) rbind(i, org))
+<<!-- ## Dendrogram based on the signatures -->
 # natgen_clr = lapply(natgen, function(i) as(clr(i), 'matrix'))
 # names(natgen_clr) = names(natgen)
 organoid_metadata <- cbind.data.frame(study=rep('organoids', nrow(org_clr_robustzeroes)), age=NA, age.cat=NA)
@@ -420,14 +419,14 @@ all_metadata <- lapply(natgen_metadata, function(i) rbind(i, organoid_metadata))
 <!--   } -->
 <!-- } -->
 <!-- ``` -->
-
+<<<<<<< HEAD
 <!-- ```{r, dendrogram_aitchisondistance_implementation,echo=FALSE, eval=TRUE, warning=FALSE, echo=FALSE, dependson=c('dendrogram_aitchisondistance_function')} -->
 
-
+=======
 <!-- dendro_UpdatedExposures = give_dendrogram('UpdatedExposures') -->
 <!-- plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures') -->
 <!-- plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures', which_label="not_symbol") -->
-
+<<<<<<< HEAD
 <!-- pdf("figures/dendrogram.pdf", width = 5, height = 4) -->
 <!-- plot_dendro(dendro_UpdatedExposures, which_natgen = 'UpdatedExposures') -->
 <!-- dev.off() -->
@@ -551,7 +550,8 @@ all_metadata <- lapply(natgen_metadata, function(i) rbind(i, organoid_metadata))
 <!-- brnch_underrepresented = all_clr$UpdatedExposures[underrepresented_labels,] -->
 <!-- brnch_represented = all_clr$UpdatedExposures[! (rownames(all_clr$UpdatedExposures) %in% underrepresented_labels),] -->
 
-<!-- cat('Number of organoids in underrepresented and represented split:' , -->
+=======
+d and represented split:' , -->
 <!-- c(sum(grepl('Organoid', rownames(brnch_underrepresented))), -->
 <!--   sum(grepl('Organoid', rownames(brnch_represented))))) -->
 <!-- ``` -->
@@ -1089,7 +1089,7 @@ saveRDS(all_natgen[[which_natgen]], file = paste0("robjects/allnatgen_", which_n
 
 ```
 
-What is the extent of heterogeneity across the PDOs?
+<<<<<<< HEAD
 ```{r, heterogeneity_in_cluster, fig.width=4}
 
 remove_labels_tree <- function(hclust_obj){
@@ -1128,7 +1128,8 @@ organoids_in_subtrees(20)
 # plot(xxxxx)
 ```
 
-```{r, pca_for_two_groups}
+=======
+
 
 cluster_clades <- cutree(dendroimputclr_all, k=2)[match(rownames(all_natgen[[which_natgen]]),
                                                       names(cutree(dendroimputclr_all, k=2)))]
@@ -2372,7 +2373,8 @@ ggplot(ascites_df, aes(x=bool_ascites, y=value, fill=variable))+geom_bar(stat = 
 
 ```
 
-```{r, ternary_plots, echo=F}
+=======
+
 library(Ternary)
 
 amalgamation = cbind(rowSums(all_natgen[[which_natgen]][,-c(1,3)]),

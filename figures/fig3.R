@@ -264,3 +264,8 @@ plot_grid(plot_grid(a, b, d, rel_widths=c(3,2,2), ncol=3, labels=c('a', 'b', 'c'
                                                                                           ncol=2, rel_widths=c(1.8,2.6)),
           nrow=2, rel_heights = c(1.8, 2))
 dev.off()
+
+pdf("fig3_v5.pdf", width = 10, height = 6.5)
+plot_grid(plot_grid(a, b0, b, rel_widths=c(3,2,2), ncol=3, labels=c('a', 'b')), plot_grid(d, conlyboxplot, e_composite, labels=c('c', 'd', 'e'), ncol=3, rel_widths=c(1.6,1.8,2.5)), nrow=2, rel_heights = c(1.8, 2))
+dev.off()
+

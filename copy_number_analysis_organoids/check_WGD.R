@@ -29,6 +29,7 @@ source("../copy_number_analysis_organoids/helper_functions.R")
 source("../../../other_repos/britroc-1/code/models/helper/functions.R")
 
 
+
 exposures <- readRDS("../copy_number_analysis_organoids/robjects/exposures.RDS")
 dendrograminputclr <- readRDS("../copy_number_analysis_organoids/robjects/dendrograminputclr.RDS")
 heatmapinputclr <- readRDS("../copy_number_analysis_organoids/robjects/heatmapinputclr.RDS")
@@ -66,6 +67,7 @@ heatmap_data
 heatmap_data$WGD <- ifelse(heatmap_data$WGD, 'WGD', 'non-WGD')
 
 tikzDevice::tikz("../copy_number_analysis_organoids/figures/WGD_exposures_tikz.tex", height = 3, width = 2.5)
+
 
 ggplot(heatmap_data, aes(x=Var2, fill=Var1, y=value))+geom_bar(stat = "identity")+
   scale_fill_brewer(palette="Dark2")+facet_wrap(.~WGD, nrow=2)+

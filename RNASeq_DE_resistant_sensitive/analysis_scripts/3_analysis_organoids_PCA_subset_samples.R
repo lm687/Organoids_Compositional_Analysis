@@ -117,6 +117,11 @@ saveRDS(hclust_rnaseq, "../objects/hclust_rnaseq.RDS")
 #--------------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------------#
+hclust_rnaseq <- (hclust(dist(t(normalised_counts))))
+saveRDS(hclust_rnaseq, "../objects/hclust_rnaseq.RDS")
+#--------------------------------------------------------------------------------#
+
+#--------------------------------------------------------------------------------#
 ## TAMSeq
 TAMSeq = read_xlsx("../files/SupplementaryTable1.xlsx")
 TAMSeq[,'org'] = renaming1$PDO[match(TAMSeq$name, renaming1$ID)]
@@ -898,3 +903,4 @@ ggsave("../figures/pca_cnfeatures_cor3.png", height = 2, width = 2)
 ggplot(data.frame(pca_correlation), aes(x=pca2, y=ploidy))+geom_point()+geom_smooth(method = "lm")+theme_bw()+
   labs(x='PC2', y='Ploidy')
 ggsave("../figures/pca_cnfeatures_cor4.png", height = 2, width = 2)
+

@@ -44,6 +44,7 @@ unique(seqnames(gr_genes))
 
 ## get segments from the unified version created in copy_number_analysis_organoids.Rmd
 segments_organoids <- readRDS("../../../copy_number_analysis_organoids/data/clean_segtables/segtables_organoids_absolute_copynumber.RDS") ## 20220728
+
 segments_Britroc <- readRDS("../../../copy_number_analysis_organoids/data/clean_segtables/segtables_BriTROC_absolute_copynumber.RDS")
 segments_ICGCAU <- readRDS("../../../copy_number_analysis_organoids/data/clean_segtables/segtables_ICGC_absolute_copynumber_AU.RDS")
 segments_ICGCUS <- readRDS("../../../copy_number_analysis_organoids/data/clean_segtables/segtables_ICGC_absolute_copynumber_US.RDS")

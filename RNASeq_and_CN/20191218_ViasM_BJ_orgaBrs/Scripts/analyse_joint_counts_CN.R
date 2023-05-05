@@ -272,6 +272,7 @@ plot(r2_centered$r2, r2_raw_DESeq2$r2)
 
 ##------------------------------------------------------------------------------------------------------------##
 
+
 logCN = joint_counts_CN_subset %>% group_by(PDO) %>% summarise(mean=mean(log(CN.value)))
 
 # example_centering = joint_counts_CN_normalised %>% filter(counts.Var2 == 'NOC2L') %>% dplyr::select(scaled_centered_weighted_CN)
@@ -2164,3 +2165,4 @@ ggplot(cbind.data.frame(d3=df_average_bottomCN$average_comparison_CN_DESeq,
   geom_density_2d()+theme_bw()+labs(x='Average GE of lowest three organoids',
                                     y='Average GE of lowest four organoids')
 ggsave("../../figures_GRCh37/bottom3_vs_bottom4.png", height = 3)
+
