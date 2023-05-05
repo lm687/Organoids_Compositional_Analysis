@@ -1,4 +1,4 @@
-# This is a github repo for the analyses of the paper "High grade serous ovarian cancer organoids as models of chromosomal instability" (Vias and Morrill et al, eLife 2023)
+# Code for the analyses of the paper "High grade serous ovarian cancer organoids as models of chromosomal instability" (Vias and Morrill et al, eLife 2023)
 
 ## Summary of paper
 There are four main figures. All the figures are created using the scripts inside the folder `figures`.
