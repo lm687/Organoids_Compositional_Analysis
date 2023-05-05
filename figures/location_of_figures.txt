@@ -1,0 +1,10 @@
+S6	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/chromothripsis_PDO3_onlyWGD.pdf
+S7	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/figures/supplementary_figures/suppl7.pdf
+S8	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/figures/supplementary_figures/suppl8.pdf
+S9A	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/RNASeq_and_CN/figures_GRCh37/genes_of_interest_CN_log2.pdf
+S9B	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/RNASeq_and_CN/figures_GRCh37/most_highly_amplified.pdf
+S10A	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/RNASeq_and_CN/figures_GRCh37/fig3d_chromosomes.pdf
+S10B	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/RNASeq_and_CN/figures_GRCh37/fig3d_chromosomes_highlyvarsubset.pdf
+S11	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/survival_analysis/figures/drugs_AUC_all_lineplot_4drugs.pdf
+S12	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/figures/supplementary_figures/supp_clades_scDNA.pdf
+S13	/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_hclust_CI_across_genome_3_test.pdf

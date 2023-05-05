@@ -68,7 +68,7 @@ give_CN_per_gene_v2 <- function(segment_arg, gr_genes=gr_genes, transform_segmen
   gr_CN <- trim(gr_CN)
   
   values(gr_CN) = segment_arg[,name_val_col]
-
+  
   ## do per sample
   gr_CN_org = gr_CN
   seqlevels(gr_CN) ## necessary for mcolAsRleList
@@ -89,7 +89,7 @@ give_CN_per_gene_v2 <- function(segment_arg, gr_genes=gr_genes, transform_segmen
   disjoint_gr <- GenomicRanges::disjoin(full_GR, with.revmap=TRUE, ignore.strand=TRUE)
   print(length(disjoint_gr))
   # disjoint_gr <- trim(disjoint_gr) ## commented out 20220527
-
+  
   disjoint_gr_revmap_first = sapply(disjoint_gr$revmap, function(i) i[1])
   # disjoint_gr_revmap_length = sapply(disjoint_gr$revmap, length)
   # disjoint_gr[disjoint_gr_revmap_length > 1]
@@ -119,22 +119,23 @@ give_CN_per_gene_v2 <- function(segment_arg, gr_genes=gr_genes, transform_segmen
   if(length(overlaps) > 300){
     warning('This is going to take a long time\n')
   }
-  additional_split_overlaps <- do.call('c', sapply(1:length(overlaps), function(idx){
-    i = overlaps[idx,]
-    ## get which indices are from genes, and which from annotated regions
-    which_genes = which(i$revmap[[1]] <= length(GR_bins))
-    which_not_genes = which(i$revmap[[1]] > length(GR_bins))
-    do.call('c', sapply(which_genes, function(j){
-      .x <- i
-      sapply(which_not_genes, function(idx_not_genes){
-        .x$revmap[[1]] <- c(.x$revmap[[1]][j], .x$revmap[[1]][which_not_genes])
-        .x
-      })
+  if(length(overlaps)>0){
+    additional_split_overlaps <- do.call('c', sapply(1:length(overlaps), function(idx){
+      i = overlaps[idx,]
+      ## get which indices are from genes, and which from annotated regions
+      which_genes = which(i$revmap[[1]] <= length(GR_bins))
+      which_not_genes = which(i$revmap[[1]] > length(GR_bins))
+      do.call('c', sapply(which_genes, function(j){
+        .x <- i
+        sapply(which_not_genes, function(idx_not_genes){
+          .x$revmap[[1]] <- c(.x$revmap[[1]][j], .x$revmap[[1]][which_not_genes])
+          .x
+        })
+      }))
     }))
-  }))
-  
-  cat('Concatenaning non-overlapped segments and split overlap segments\n')
-  disjoint_gr <- c(disjoint_gr, additional_split_overlaps)
+    cat('Concatenaning non-overlapped segments and split overlap segments\n')
+    disjoint_gr <- c(disjoint_gr, additional_split_overlaps)
+  }
   
   disjoint_gr_revmap_first = sapply(disjoint_gr$revmap, function(i) i[1])
   
@@ -197,9 +198,9 @@ give_CN_per_gene_v2 <- function(segment_arg, gr_genes=gr_genes, transform_segmen
           (sum(width(disjoint_gr[disjoint_gr$revmap == i,])))})
     }else{
       averageCN2 <- cbind.data.frame(gene=GR_bins$names[unique(disjoint_gr$revmap)],
-            averageCN=sapply(unique(disjoint_gr$revmap), function(i){
-              sum(width(disjoint_gr[disjoint_gr$revmap == i,]) * disjoint_gr[disjoint_gr$revmap == i,]$CN_val)/
-                (sum(width(disjoint_gr[disjoint_gr$revmap == i,])))}))
+                                     averageCN=sapply(unique(disjoint_gr$revmap), function(i){
+                                       sum(width(disjoint_gr[disjoint_gr$revmap == i,]) * disjoint_gr[disjoint_gr$revmap == i,]$CN_val)/
+                                         (sum(width(disjoint_gr[disjoint_gr$revmap == i,])))}))
     }
   }else{
     ## we do not want to compute any average
@@ -207,7 +208,7 @@ give_CN_per_gene_v2 <- function(segment_arg, gr_genes=gr_genes, transform_segmen
     averageCN2 = disjoint_gr
     
   }
-
+  
   return(averageCN2)
 }
 

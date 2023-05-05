@@ -1335,16 +1335,18 @@ ggsave("../../figures_GRCh37/scatterplot_alltop20genes.pdf", width = 13, height 
 ## use the original joint_counts_CN, as we want to keep all samples
 joint_counts_CN0$chrom = ag$seq_name[match(joint_counts_CN0$CN.gene_name, ag$gene_name)]
 
-most_highly_amplified = joint_counts_CN0 %>% group_by(CN.gene_name) %>% summarise(mean_CN_org= mean(CN.value))
+most_highly_amplified = joint_counts_CN0 %>% group_by(CN.gene_name) %>% dplyr::summarise(mean_CN_org= mean(CN.value))
 most_highly_amplified <- most_highly_amplified[order(most_highly_amplified$mean_CN_org, decreasing = T),]
 
 most_highly_amplified_genes_list <- most_highly_amplified$CN.gene_name[1:20]
 joint_counts_CN0$PDO = renaming$PDO[match(joint_counts_CN0$CN.L1, renaming$ID)] ## because PDO was created with RNASeq data, so if there's none we didn't have the PDO name
-joint_counts_CN0_MHA = joint_counts_CN0 %>% filter(CN.gene_name %in% most_highly_amplified_genes_list)
+joint_counts_CN0_MHA = joint_counts_CN0 %>% dplyr::filter(CN.gene_name %in% most_highly_amplified_genes_list)
 give_order_colsums <- function(f){
   unlist(f[order(f[,2], decreasing = T),1])
 }
 
+saveRDS(joint_counts_CN0_MHA, "../output/output_GRCh37_with_14_orgs/joint_counts_CN0_MHA.RDS")
+saveRDS(most_highly_amplified_genes_list, "../output/output_GRCh37_with_14_orgs/most_highly_amplified_genes_list.RDS")
 ggplot(joint_counts_CN0_MHA,
        aes(y=log2(CN.value), x=factor(CN.gene_name, levels=rev(most_highly_amplified_genes_list)),
            fill=factor(chrom, levels=sort(as.numeric(unique(chrom))))))+
@@ -1390,14 +1392,17 @@ ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
   geom_hline(yintercept = 2, lty='dashed', col='blue')+theme_bw()
 ggsave("../../figures_GRCh37/genes_of_interest_CN.pdf", width = 7)
 
-ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest),
+## saving for replotting for manuscript
+saveRDS(joint_counts_CN0, "../output/output_GRCh37_with_14_orgs/joint_counts_CN0_added_cols.RDS")
+saveRDS(subset_genes_of_interest, "../output/output_GRCh37_with_14_orgs/subset_genes_of_interest.RDS")
+saveRDS(col_vector, "../output/output_GRCh37_with_14_orgs/col_vector.RDS")
+
+ggplot(joint_counts_CN0 %>% dplyr::filter(CN.gene_name %in% subset_genes_of_interest),
        aes(x=CN.gene_name, y=log2(CN.value)))+geom_violin()+
   geom_jitter(aes(col=PDO))+
-  # geom_label(aes(label=PDO))+
   facet_wrap(.~CN.gene_name, scales = "free")+
   scale_colour_manual(values = col_vector)+
   geom_hline(yintercept = log2(2), lty='dashed', col='blue')+theme_bw()
-  # scale_y_continuous(trans = "log2")
 ggsave("../../figures_GRCh37/genes_of_interest_CN_log2.pdf", width = 7)
 
 GOI_summary <- joint_counts_CN0 %>% filter(CN.gene_name %in% subset_genes_of_interest) %>%
@@ -1919,3 +1924,243 @@ ggsave("../../figures_GRCh37/counts_persample_TPM.pdf", width=10, height=10)
 
 ggplot(joint_counts_CN0, aes(x=PDO, y=counts.value))+geom_boxplot()
 ggsave("../../figures_GRCh37/counts_persample_TPM_2.pdf", width=10, height=10)
+
+##-------------------------------------------------------
+ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% 'MYC'),
+       aes(x=CN.gene_name, y=(CN.value)))+geom_violin()+
+  geom_jitter(aes(col=PDO))+
+  geom_label_repel(aes(label=PDO, col=factor(CN.value>8)))+
+  facet_wrap(.~CN.gene_name, scales = "free")+
+  scale_colour_manual(values = col_vector)+
+  geom_hline(yintercept = 2, lty='dashed', col='blue')+theme_bw()+
+  scale_y_continuous(trans = "log2")
+
+ggplot(joint_counts_CN0 %>% filter(CN.gene_name %in% 'CCNE1'),
+       aes(x=CN.gene_name, y=(CN.value)))+geom_violin()+
+  geom_jitter(aes(col=PDO))+
+  geom_label_repel(aes(label=PDO, col=factor(CN.value>8)))+
+  facet_wrap(.~CN.gene_name, scales = "free")+
+  scale_colour_manual(values = col_vector)+
+  geom_hline(yintercept = 2, lty='dashed', col='blue')+theme_bw()+
+  scale_y_continuous(trans = "log2")
+
+joint_counts_CN0 %>% filter(CN.gene_name %in% 'MYC')%>% filter(PDO == 'PDO1')
+
+length(unique(joint_counts_CN0$PDO))
+
+##-------------------------------------------------------
+
+##-------------------------------------------------------
+## ecDNA
+##-------------------------------------------------------
+library(pheatmap)
+
+ecDNA <- joint_counts_CN0 %>% filter(CN.value > 8)
+length(unique(ecDNA$PDO))
+
+ecDNAdcast <- dcast(ecDNA, CN.gene_name~PDO, value.var='CN.value')
+
+pdo_no_ecDNA <- unique(joint_counts_CN0$PDO)[!(unique(joint_counts_CN0$PDO) %in% unique(ecDNA$PDO))]
+ecDNAdcast <- cbind(ecDNAdcast, matrix(NA, nrow=nrow(ecDNAdcast), ncol=length(pdo_no_ecDNA)))
+
+colnames(ecDNAdcast) <- c(colnames(ecDNAdcast)[1:(18-length(pdo_no_ecDNA)+1)],
+                          as.character(pdo_no_ecDNA))
+
+NA_for_zero <- function(i){
+  i[is.na(i)] <- 0
+  i
+}
+
+rownames(ecDNAdcast) <- ecDNAdcast$CN.gene_name
+ecDNAdcast$CN.gene_name <- NULL
+
+pheatmap::pheatmap(log(NA_for_zero(ecDNAdcast)+1),
+                   cluster_rows = T, cluster_cols = T)
+
+rownames(ecDNAdcast)
+genes_interest_ecdna <- c('AGO2', 'AKT2', 'AMIGO2',
+                          'ARID2', 'CCNE1', 'CCNE2', 'CNOT2', 'EGFR', 'ERBB2', 'ESRP1', 'FOXA2',
+                          'FOXH1', 'GAPDHS', 'HSF1', 'IGF2BP2', 'IL8', 'LIPH', 'MDM2', 'MECOM',
+                          'MYC', 'NFKBIB', 'OPTN', 'POLB', 'PROSER2', 'TOP1MT', 'ZWINT')
+
+ecDNAdcast2 <- ecDNAdcast
+rownames(ecDNAdcast2)[!(rownames(ecDNAdcast2) %in% genes_interest_ecdna)] = make.names(rep('.', nrow(ecDNAdcast2)-length(genes_interest_ecdna)), unique = T)
+
+pdf("../../figures_GRCh37/ecDNA_all_orgs.pdf", height = 9, width = 4)
+print(pheatmap::pheatmap(log(NA_for_zero(ecDNAdcast2)+1),
+                   cluster_rows = T, cluster_cols = T))
+dev.off()
+
+phall_ecdna <- pheatmap::pheatmap(log(NA_for_zero(ecDNAdcast2)+1),
+                   cluster_rows = T, cluster_cols = T)
+ecDNAdcast2_forggplot <- (melt(as(log(NA_for_zero(ecDNAdcast2)+1), 'matrix')))
+ecDNAdcast2_forggplot$Var1 <- factor(ecDNAdcast2_forggplot$Var1, levels=ecDNAdcast2_forggplot$Var1[phall_ecdna$tree_row$order])
+ecDNAdcast2_forggplot$Var2 <- factor(ecDNAdcast2_forggplot$Var2, levels=unique(ecDNAdcast2_forggplot$Var2)[phall_ecdna$tree_col$order])
+# ecDNAdcast2_forggplot$Var1[grepl("[.][.]*", ecDNAdcast2_forggplot$Var1)] = NA
+
+ecDNAdcast2_forggplotlabels <- cbind.data.frame(Var1=genes_interest_ecdna, Var2=0.5, value=NA)
+ecDNAdcast2_forggplotlabels$Var2 <- sapply(ecDNAdcast2_forggplotlabels$Var1, function(i) (ecDNAdcast2_forggplot[ecDNAdcast2_forggplot$Var1 == i,]) %>% arrange(desc(value)) %>% filter(row_number()==1) %>% dplyr::select(Var2) %>% unlist %>% as.character())
+ggplot(ecDNAdcast2_forggplot)+
+  geom_tile(aes(x=Var1, y=Var2, fill=value))+
+  scale_fill_viridis_b()+
+  geom_point(data = ecDNAdcast2_forggplotlabels,
+                   aes(x=Var1, y=Var2))+
+  geom_label_repel(data = ecDNAdcast2_forggplotlabels,# nudge_y = -3,
+                   aes(x=Var1, y=Var2, label=Var1))+
+  theme(axis.text.x=element_blank(), axis.ticks = element_blank(), axis.line.x.bottom =element_blank(), legend.position = "bottom")+
+  scale_y_discrete(
+    expand=c(.05, 0, 0, 0))+labs(fill='ln((abs CN)+1)', x='Region of high CN', y='PDO')
+ggsave("../../figures_GRCh37/ecDNA_all_orgs_ggplot.pdf", height = 7, width = 10)
+
+ggplot(ecDNAdcast2_forggplot[ecDNAdcast2_forggplot$Var1 %in% genes_interest_ecdna,])+
+  geom_tile(aes(x=Var1, y=Var2, fill=value))+
+  scale_fill_viridis_b()+
+  geom_point(data = ecDNAdcast2_forggplotlabels,
+             aes(x=Var1, y=Var2))+
+  geom_label_repel(data = ecDNAdcast2_forggplotlabels,# nudge_y = -3,
+                   aes(x=Var1, y=Var2, label=Var1))+
+  theme(axis.text.x=element_blank(), axis.ticks = element_blank(), axis.line.x.bottom =element_blank(), legend.position = "bottom")+
+  scale_y_discrete(
+    expand=c(.05, 0, 0, 0))+labs(fill='ln((abs CN)+1)', x='Region of high CN', y='PDO')
+ggsave("../../figures_GRCh37/ecDNA_all_orgs_ggplot_selected_genes.pdf", height = 7, width = 10)
+
+pdf("../../figures_GRCh37/ecDNA_all_orgs_selected_genes.pdf", height = 5, width = 4)
+print(pheatmap::pheatmap(log(NA_for_zero(ecDNAdcast2[genes_interest_ecdna,])+1),
+                   cluster_rows = T, cluster_cols = T))
+dev.off()
+
+pdf("../../figures_GRCh37/ecDNA_cor_organoids.pdf", height = 4, width = 5)
+print(pheatmap::pheatmap(NA_for_zero(cor((log(NA_for_zero(ecDNAdcast)+1)), use="pairwise.complete.obs"))))
+dev.off()
+
+pheatmap::pheatmap(cor(t(log(NA_for_zero(ecDNAdcast)+1))))
+pheatmap::pheatmap(cor(t(log(NA_for_zero(ecDNAdcast2)+1))))
+
+EnsDb.Hsapiens.v87 <- ensembldb::EnsDb("../../../scDNAseq-Organoids/code/Homo_sapiens.GRCh37.87.sqlite")
+ag <- ensembldb::genes(EnsDb.Hsapiens.v87, filter=list(AnnotationFilter::GeneBiotypeFilter('protein_coding')), return.type="DataFrame")
+ag <- ag[ag$seq_name %in% 1:22,]
+
+max_chroms <- sapply(gtools::mixedsort(unique(ag$seq_name)), function(chr) max(ag$gene_seq_end[ag$seq_name == chr]))
+cumsum_max_chroms <- cumsum(as.numeric(max_chroms))
+names(max_chroms) <- gtools::mixedsort(unique(ag$seq_name))
+ecDNA_with_position <- cbind.data.frame(ecDNA, ag[match((ecDNA$CN.gene_name), ag$gene_name),c('gene_seq_start', 'seq_name', 'gene_seq_end')])[,c('CN.gene_name', 'CN.value', 'PDO', 'gene_seq_start', 'gene_seq_end', 'seq_name')]
+ecDNA_with_position <- rbind.data.frame(ecDNA_with_position, data.frame(gene_seq_start=max_chroms, gene_seq_end = max_chroms, seq_name=gtools::mixedsort(unique(ag$seq_name)), CN.gene_name=NA, CN.value=NA, PDO=NA))
+ecDNA_with_position$seq_name <- factor(ecDNA_with_position$seq_name, levels=gtools::mixedsort(unique(ecDNA_with_position$seq_name)))
+ecDNA_with_position$PDO <- factor(ecDNA_with_position$PDO)
+ecDNA_with_position$cumposition=apply(ecDNA_with_position, 1, function(i) cumsum_max_chroms[as.numeric(i['seq_name'])]+as.numeric(i['gene_seq_start']))
+
+## add CN of 0 immediately before and after of ecDNA
+# extra_ecDNA_with_position <- do.call('rbind', (lapply(1:nrow(ecDNA_with_position), function(iidx){
+#   i <- ecDNA_with_position[iidx,]
+#   i['CN.value'] <- 0
+#   .x <- i
+#   .x2 <- i
+#   .x['gene_seq_end'] <- as.numeric(.x['gene_seq_start'])
+#   .x['gene_seq_start'] <- as.numeric(.x['gene_seq_start'])-1
+#   .x2['gene_seq_start'] <- as.numeric(.x2['gene_seq_end'])
+#   .x2['gene_seq_end'] <- as.numeric(.x2['gene_seq_end'])+1
+#   rbind(.x, .x2)
+# })))
+# colnames(extra_ecDNA_with_position) <- colnames(ecDNA_with_position)
+# ecDNA_with_position <- rbind.data.frame(ecDNA_with_position, (extra_ecDNA_with_position))
+
+ecDNA_with_position$gene_seq_start <- as.numeric(ecDNA_with_position$gene_seq_start)
+
+# ggplot(ecDNA_with_position, aes(x=gene_seq_start, y=CN.value, col=PDO))+
+#   facet_wrap(.~interaction(seq_name), nrow=1)+geom_point()
+# 
+# ggplot(ecDNA_with_position, aes(x=cumposition, col=PDO, xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value))+
+#   facet_wrap(.~interaction(PDO), ncol=1)+geom_ribbon()+theme(legend.position="bottom")
+# 
+# ggplot(ecDNA_with_position,#[ecDNA_with_position$seq_name == "8",],
+#        aes(x=cumposition, xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value))+
+#   facet_wrap(.~interaction(PDO), scales = "free_y", ncol=1)+geom_ribbon()+theme(legend.position="bottom")
+# ggplot(ecDNA_with_position,#[ecDNA_with_position$seq_name == "8",],
+#        aes(x=cumposition, xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value))+
+#   facet_wrap(.~interaction(PDO), scales = "free_y", ncol=1)+geom_hline()+theme(legend.position="bottom")
+# 
+# ggplot(ecDNA_with_position[ecDNA_with_position$PDO == 'PDO4',],#[ecDNA_with_position$seq_name == "8",],
+#        aes(x=cumposition, fill=PDO, xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value))+
+#   facet_wrap(.~interaction(PDO), ncol=1)+geom_ribbon()+theme(legend.position="bottom")
+# 
+# ggplot(ecDNA_with_position[ecDNA_with_position$PDO == 'PDO4',],#[ecDNA_with_position$seq_name == "8",],
+#        aes(x=cumposition, fill=PDO, xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value))+
+#   facet_wrap(.~interaction(PDO), ncol=1)+geom_rect()+theme(legend.position="bottom")
+# 
+# ggplot(ecDNA_with_position,
+#        aes(x=cumposition, xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value))+
+#   facet_wrap(.~interaction(PDO), scales = "free_y", ncol=1)+geom_rect()+theme(legend.position="bottom")
+
+levels(ecDNA_with_position$PDO)
+ecDNA_with_position$cumposition_end <- ecDNA_with_position$cumposition+ecDNA_with_position$gene_seq_end-ecDNA_with_position$gene_seq_start
+# ggplot(ecDNA_with_position[!is.na(ecDNA_with_position$PDO),],
+#        aes(xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value, col=CN.value))+
+#   facet_wrap(.~interaction(seq_name,PDO), drop=FALSE, ncol=22, scales = "free_y")+geom_rect()+
+#   theme(axis.text.x=element_blank(), axis.line.x.bottom =element_blank())
+
+ecDNA_with_position$PDO <- factor(ecDNA_with_position$PDO, levels= c('PDO3', 'PDO9', 'PDO5', 'PDO6', 'PDO1', 'PDO4', 'PDO15', 'PDO2', 'PDO14', 'PDO17', 'PDO18'))
+ecDNA_with_position$CN.gene_name <- as.character(ecDNA_with_position$CN.gene_name)
+ggplot(ecDNA_with_position[!is.na(ecDNA_with_position$PDO),],
+       aes(xmin=cumposition, xmax=cumposition_end, ymin=0, ymax=CN.value, col=CN.value,
+           label=ifelse(CN.gene_name %in% genes_interest_ecdna, CN.gene_name, NA)))+
+  theme_bw()+
+  geom_label_repel(size=2.5, aes(x=mean(cumposition), y=CN.value))+
+  facet_wrap(.~PDO, drop=FALSE, ncol=1,# scales = "free_y",
+             strip.position="right")+geom_rect()+
+  theme(axis.text.x=element_blank(), axis.line.x.bottom =element_blank())+
+  geom_vline(xintercept = cumsum(as.numeric(max_chroms)), col='blue', lty='solid', alpha=0.2)+
+  labs(x='Position in the genome', y='Absolute CN')
+ggsave("../../figures_GRCh37/ecDNA_all_orgs_genome.pdf", height = 7, width = 9)
+
+ggplot(ecDNA_with_position[(ecDNA_with_position$PDO %in% c('PDO1', 'PDO4', 'PDO15')) & (ecDNA_with_position$seq_name == 8),],
+       aes(xmin=cumposition, xmax=cumposition_end, ymin=0, ymax=CN.value, col=CN.value,
+           label=ifelse(CN.gene_name %in% genes_interest_ecdna, CN.gene_name, NA)))+
+  theme_bw()+
+  geom_label_repel(size=2.5, aes(x=mean(cumposition), y=CN.value))+
+  facet_wrap(.~PDO, ncol=1,# scales = "free_y",
+             strip.position="right")+geom_rect()+
+  theme(axis.text.x=element_blank(), axis.line.x.bottom =element_blank())#+
+  # geom_vline(xintercept = cumsum(as.numeric(max_chroms)), col='blue', lty='solid', alpha=0.2)
+ggsave("../../figures_GRCh37/ecDNA_all_orgs_chr9.pdf", height = 7, width = 9)
+
+# ggplot(ecDNA_with_position[ecDNA_with_position$PDO == 'PDO9',],#[ecDNA_with_position$seq_name == "8",],
+#        aes(x=cumposition, fill=PDO, xmin=gene_seq_start, xmax=gene_seq_end, ymin=0, ymax=CN.value))+
+#   facet_wrap(.~interaction(PDO), ncol=1)+geom_se()+theme(legend.position="bottom")
+
+
+## fraction of amplified and lost genes
+amplost_summary <- joint_counts_CN0 %>% group_by(PDO) %>% summarize(amp=mean(CN.value > 2.2),
+                                                                    lost=mean(CN.value < 1.8),
+                                                                    diploid=mean( (CN.value >= 1.8) & CN.value <= 2.2) )
+ggplot(melt(amplost_summary),
+       aes(x=factor(PDO, levels=amplost_summary$PDO[order(amplost_summary$amp)]),
+           y=value, fill=variable))+
+  geom_bar(stat='identity')+  theme(axis.text.x=element_text(angle = 90, hjust = 0))+labs(x='PDO', y='Fraction', fill='Type of bin')
+ggsave("../../figures_GRCh37/fraction_amplified_lost_genes.pdf", height = 4, width = 5)
+
+plot(sort(joint_counts_CN0[joint_counts_CN0$PDO == "PDO1", 'CN.value']), ylim=c(0, 15), type='l')
+for(i in unique(joint_counts_CN0$PDO)){
+  lines(sort(joint_counts_CN0[joint_counts_CN0$PDO == i, 'CN.value']))
+}
+
+head(joint_counts_CN0[,c('PDO1', 'CN.value')])
+
+#---------------------------------------------------
+
+df_average_bottomCN=readRDS("../../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/output/output_GRCh37/fig3_df_average_bottomCN.RDS")
+df_average_bottomCN
+# View(df_average_bottomCN)
+
+# pairs(df_average_bottomCN[c('average_comparison_CN_DESeq', 'average_comparison_CN_DESeq2', 'average_comparison_CN_DESeq4')])
+
+ggplot(cbind.data.frame(d3=df_average_bottomCN$average_comparison_CN_DESeq,
+                        d2=df_average_bottomCN$average_comparison_CN_DESeq2), aes(x=d3, y=d2))+
+  geom_density_2d()+theme_bw()+labs(x='Average GE of lowest three organoids',
+                                    y='Average GE of lowest two organoids')
+ggsave("../../figures_GRCh37/bottom3_vs_bottom2.png", height = 3)
+
+ggplot(cbind.data.frame(d3=df_average_bottomCN$average_comparison_CN_DESeq,
+                        d4=df_average_bottomCN$average_comparison_CN_DESeq4), aes(x=d3, y=d4))+
+  geom_density_2d()+theme_bw()+labs(x='Average GE of lowest three organoids',
+                                    y='Average GE of lowest four organoids')
+ggsave("../../figures_GRCh37/bottom3_vs_bottom4.png", height = 3)

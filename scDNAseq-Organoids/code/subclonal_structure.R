@@ -189,6 +189,7 @@ for(org_it in names(hclusts_orgs)){
                  color             = col_list,
                  breaks            = mat_breaks, cluster_cols = FALSE,
                  annotation_col = annotation_chroms_nosexchrom, annotation_legend=F, main=org_it)
+  saveRDS(hm2[[org_it]], paste0("../robjects/pheatmap_", org_it, ".RDS"))
 }
 
 pdf(paste0("../plots/subclonal_hclust_dendrograms.pdf"), width = 5, height = 2.5)
@@ -215,6 +216,10 @@ table(cutree(hm2$PDO2$tree_row, k = kclades_pdo2))
 hm2lab <- hm2
 hm2lab$PDO2$tree_row$labels = cutree(hm2[['PDO2']]$tree_row, k = kclades_pdo2)
 hm2lab$PDO2$tree_row$labels[!duplicated(hm2lab$PDO2$tree_row$labels)] = paste0(hm2lab$PDO2$tree_row$labels[!duplicated(hm2lab$PDO2$tree_row$labels)], ' Clade')
+
+saveRDS(dendextend::color_branches(as.dendrogram(hm2lab$PDO2$tree_row),
+                                   clusters = cutree((hm2$PDO2$tree_row), k = kclades_pdo2)[labels(as.dendrogram(hm2$PDO2$tree_row))]),
+        "../robjects/dendextend_clades_PDO2.RDS")
 pdf("../plots/dendrogram_scDNA_PDO2.pdf")
 par(mfrow=c(1,1), mar=c(2,0,0,0))
 plot(dendextend::color_branches(as.dendrogram(hm2lab$PDO2$tree_row),
@@ -330,6 +335,11 @@ plot(dendextend::color_branches(as.dendrogram(hm2$PDO3$tree_row),
 
 hm2lab$PDO3$tree_row$labels = cutree(hm2[['PDO3']]$tree_row, k = kclades_pdo3)
 hm2lab$PDO3$tree_row$labels[!duplicated(hm2lab$PDO3$tree_row$labels)] = paste0(hm2lab$PDO3$tree_row$labels[!duplicated(hm2lab$PDO3$tree_row$labels)], ' Clade')
+
+saveRDS(dendextend::color_branches(as.dendrogram(hm2lab$PDO3$tree_row),
+                                   clusters = cutree((hm2$PDO3$tree_row), k = kclades_pdo3)[labels(as.dendrogram(hm2$PDO3$tree_row))]),
+        "../robjects/dendextend_clades_PDO3.RDS")
+
 pdf("../plots/dendrogram_scDNA_PDO3.pdf")
 par(mfrow=c(1,1), mar=c(3,0,0,0))
 plot(dendextend::color_branches(as.dendrogram(hm2lab$PDO3$tree_row),
@@ -487,6 +497,11 @@ table(cutree(hm2[['PDO6']]$tree_row, k = kclades_pdo6))
 hm2lab$PDO6$tree_row$labels = cutree(hm2[['PDO6']]$tree_row, k = kclades_pdo6)
 # hm2lab$PDO6$tree_row$labels[duplicated(hm2lab$PDO6$tree_row$labels)] = 'hee'
 hm2lab$PDO6$tree_row$labels[!duplicated(hm2lab$PDO6$tree_row$labels)] = paste0(hm2lab$PDO6$tree_row$labels[!duplicated(hm2lab$PDO6$tree_row$labels)], ' Clade')
+
+saveRDS(dendextend::color_branches(as.dendrogram(hm2lab$PDO6$tree_row),
+                                   clusters = cutree((hm2$PDO6$tree_row), k = kclades_pdo6)[labels(as.dendrogram(hm2$PDO6$tree_row))]),
+        "../robjects/dendextend_clades_PDO6.RDS")
+
 pdf("../plots/dendrogram_scDNA_PDO6.pdf")
 par(mfrow=c(1,1), mar=c(2,0,0,0))
 plot(dendextend::color_branches(as.dendrogram(hm2lab$PDO6$tree_row),

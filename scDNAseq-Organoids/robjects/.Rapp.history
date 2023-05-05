@@ -1,0 +1,3 @@
+load("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/robjects/average_CN_per_gene_selected_genes_all_cells.RDS")
+a=readRDS("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/robjects/average_CN_per_gene_selected_genes_all_cells.RDS")
+a

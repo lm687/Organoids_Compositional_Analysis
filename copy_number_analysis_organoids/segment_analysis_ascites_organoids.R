@@ -7,15 +7,20 @@ source("../../../other_repos/britroc-cnsignatures-bfb69cd72c50/helper_functions.
 
 
 ## analysis of segments of ascites and organoids
-ascites_segments <- readRDS("data/20220511BH_ascites_absoluteCN_bestfit.rds")
+# ascites_segments <- readRDS("data/20220511BH_ascites_absoluteCN_bestfit.rds")
+ascites_segments1 <- readRDS("data/20220629BH_ascites_absoluteCN_bestfit.rds")
+ascites_segments2 <- readRDS("data/20220718BH_absoluteCN_bestfit.rds")
+colnames(ascites_segments1@assayData$copynumber)
+colnames(ascites_segments2@assayData$copynumber)
 organoids_segments <- readRDS("data/organoid_absolute_CN.rds")
 
 ## get copy number in bins
-ascites_segments_segtable <- getSegTable(ascites_segments)
-View(ascites_segments_segtable)
+ascites_segments_segtable <- getSegTable(ascites_segments1)
+# View(ascites_segments_segtable)
 organoids_segments_segtable <- getSegTable(organoids_segments)
 
-ascites_segments_assay <- ascites_segments@assayData$copynumber
+ascites_segments_assay <- cbind(ascites_segments1@assayData$copynumber,
+                                ascites_segments2@assayData$copynumber)
 organoids_segments_assay <- organoids_segments@assayData$copynumber
 
 all(rownames(ascites_segments_assay) == rownames(organoids_segments_assay))
@@ -59,3 +64,26 @@ ggplot(cbind.data.frame(name=rownames(pca_segments$x), umap_segments$layout,
   geom_label_repel()+theme_bw()
 ggsave("figures/ascites_organoids_matching_umap.pdf", width = 8, height = 8)
 
+dim(ascites_segments)
+dim(organoids_segments)
+dim(ascites_segments_assay)
+dim(organoids_segments_assay)
+
+organoids_segments_assay <- organoids_segments_assay[,sapply(paste0('PDO', 1:18, '_'), function(i){ 
+  grep(i,(colnames(organoids_segments_assay)))
+  })]
+ascites_segments_assay <- ascites_segments_assay[,sapply(paste0('PDO', 1:18, '_'), function(i){ 
+  grep(i,(colnames(organoids_segments_assay)))
+})]
+
+cbind(colnames(organoids_segments_assay), colnames(ascites_segments_assay))
+  
+j=1
+plts_scatter <- lapply(1:18, function(j) ggplot(data.frame(org=organoids_segments_assay[,j], asc=ascites_segments_assay[,j]),
+       aes(y=org, x=asc))+
+  geom_density_2d_filled()+theme_bw()+#+scale_y_continuous(trans = "log")+scale_x_continuous(trans = "log")
+  geom_smooth(method = "lm")+labs(x='CN in ascites', y='CN in organoid')+ggtitle(paste0('PDO', j))+guides(fill='none'))
+
+pdf("figures/scatter_ascites_organoids.pdf")
+do.call('grid.arrange', plts_scatter)
+dev.off()

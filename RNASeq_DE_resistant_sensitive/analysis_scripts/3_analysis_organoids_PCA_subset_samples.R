@@ -869,3 +869,32 @@ ggplot(pdo7_pdo8, aes(x=PDO7_TPM, y=PDO8_TPM, col=coding))+geom_point(alpha=0.1)
 pdo7_pdo8[!pdo7_pdo8$coding,]
 
 
+#--------------------------------------------------------------------------------#
+## PCA and other features
+num_segments_organoids <- readRDS("../../copy_number_analysis_organoids/robjects/num_segments_organoids.RDS")
+ploidy_organoids <- readRDS("../../copy_number_analysis_organoids/robjects/ploidy_organoids.RDS")
+pca_with_gsva_annotation_NC <- readRDS("../../RNASeq_DE_resistant_sensitive/objects/fig4_pca_with_gsva_annotation_NC.RDS")
+pca_with_gsva_annotation_NC_prcomp <- readRDS("../../RNASeq_DE_resistant_sensitive/objects/fig4_pca_with_gsva_annotation_NC_prcomp.RDS")
+
+
+pca_correlation <- cbind(pca1=pca_with_gsva_annotation_NC_prcomp$x[,1],
+                         pca2=pca_with_gsva_annotation_NC_prcomp$x[,2],
+                         num_segments=num_segments_organoids[rownames(pca_with_gsva_annotation_NC_prcomp$x)],
+                         ploidy=ploidy_organoids[rownames(pca_with_gsva_annotation_NC_prcomp$x)])
+
+plot(pca_with_gsva_annotation_NC_prcomp$x[,1], num_segments_organoids[rownames(pca_with_gsva_annotation_NC_prcomp$x)])
+plot(pca_with_gsva_annotation_NC_prcomp$x[,1], ploidy_organoids[rownames(pca_with_gsva_annotation_NC_prcomp$x)])
+
+ggplot(data.frame(pca_correlation), aes(x=pca1, y=num_segments))+geom_point()+geom_smooth(method = "lm")+theme_bw()+
+  labs(x='PC1', y='Number of segments')
+ggsave("../figures/pca_cnfeatures_cor1.png", height = 2, width = 2)
+ggplot(data.frame(pca_correlation), aes(x=pca1, y=ploidy))+geom_point()+geom_smooth(method = "lm")+theme_bw()+
+  labs(x='PC1', y='Ploidy')
+ggsave("../figures/pca_cnfeatures_cor2.png", height = 2, width = 2)
+
+ggplot(data.frame(pca_correlation), aes(x=pca2, y=num_segments))+geom_point()+geom_smooth(method = "lm")+theme_bw()+
+  labs(x='PC2', y='Number of segments')
+ggsave("../figures/pca_cnfeatures_cor3.png", height = 2, width = 2)
+ggplot(data.frame(pca_correlation), aes(x=pca2, y=ploidy))+geom_point()+geom_smooth(method = "lm")+theme_bw()+
+  labs(x='PC2', y='Ploidy')
+ggsave("../figures/pca_cnfeatures_cor4.png", height = 2, width = 2)

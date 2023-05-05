@@ -69,6 +69,16 @@ all_cn_var <- all_cn_var[,!(colnames(all_cn_var) %in% remove_samples)]
 
 min(all_cn) ## there shouldn't be any negative values!
 
+dim(all_cn)
+
+min_genes <- apply(all_cn, 1, min)
+max_genes <- apply(all_cn, 1, max)
+which_neg <- (min_genes) < 0
+table(which_neg)
+plot(which_neg, type='h')
+plot(min_genes, type='h')
+plot(max_genes, type='h')
+
 # head(gene_CN[[1]])
 # gene_CN
 
@@ -1266,3 +1276,187 @@ ggplot(melt(changes_in_CN_gene_df[,which(colnames(changes_in_CN_gene_df) %in% se
 
 heatmap(changes_in_CN_gene_df)
 
+##---------------
+subset_genes_of_interest = c('MYC', 'CCNE1', 'PIK3CA', 'TERT', 'KRAS', 'PTEN', 'RB1', 'AKT1',
+                             'AKT2', 'PARP1', 'PARP2', 'ATM', 'ATR', 'WEE1', 'TOP1', 'TUBB1',
+                             'AKT3', 'CCND1', 'CCND2', 'CCND3', 'CDKN2A', 'CDKN2B', 'MECOM', 'CDK12')
+
+head(all_cn[,1:2])
+
+NA_for_zero <- function(i){
+  i[is.na(i)] <- 0
+  i
+}
+
+
+cors <- cor(t(all_cn[subset_genes_of_interest,]), use = "pairwise.complete.obs")
+
+pheatmap::pheatmap(log(NA_for_zero(cors)+1))
+
+all_cn[c('CDKN2A', 'CDKN2B'),1:10]
+
+plot(log(sort(unlist(all_cn['MYC',]))))
+abline(h=log(2))
+
+all_cn['MYC',]
+
+#------------
+
+## add organoids segments
+
+average_lower1p5 = colMeans(all_cn < 1.5)
+anyecna = apply(all_cn, 2, function(i) any(i >= 8))
+fractionecna = apply(all_cn, 2, function(i) mean(i >= 8, na.rm=T))
+fraction2or1vicinity= apply(all_cn, 2, function(i) mean( ((i >= 0.8) & (i <= 1.2)) | ((i >= 1.8) & (i <= 2.2)), na.rm=T))
+table(anyecna)
+
+# ??? COPY NUMBER OF -10??
+sort(unlist(all_cn))[1:10]
+quantiles = apply(all_cn, 2, quantile, seq(0, 1, length.out=20), na.rm=T)
+# quantiles <- quantiles[1:10,]
+quantilespca <- prcomp(t(quantiles), scale. = T)
+quantilestsne <- Rtsne::Rtsne(t(quantiles))
+library(ggplot2)
+library(ggrepel)
+ggplot(cbind.data.frame(quantilestsne$Y),
+       aes(x=`1`, y=`2`))+geom_point()+
+  theme_bw()
+
+ggplot(cbind.data.frame(quantilespca$x[,1:2]),
+       aes(x=PC1, y=PC2))+geom_point()+
+  theme_bw()
+
+df_pca <- cbind.data.frame(quantilespca$x[,1:2], averagelow=average_lower1p5,
+                           anyecna=anyecna, fractionecna=fractionecna,
+                           fraction2or1vicinity=fraction2or1vicinity)
+df_tsne <- cbind.data.frame(quantilestsne$Y[,1:2], averagelow=average_lower1p5,
+                            anyecna=anyecna, fractionecna=fractionecna,
+                            fraction2or1vicinity=fraction2or1vicinity)
+
+brcaStatus = readRDS(file.path('../../../other_repos/cnsigs_Initial_submission/survival_analysis/from_ruben/survival_models/TCGA_OVBRCAonly_Exposures_and_BRCA_Status_plusGene.rds'))
+brcaStatus$Sample <- as.character(brcaStatus$Sample)
+brcaStatus$Status <- as.character(brcaStatus$Status)
+brcaStatus$Gene <- as.character(brcaStatus$Gene)
+brcaStatus$Signature <- as.character(brcaStatus$Signature)
+df_tsne$brca = brcaStatus$Status[match(rownames(df_tsne), brcaStatus$Sample)]
+df_tsne$BRCA2 = brcaStatus$Gene[match(rownames(df_tsne), brcaStatus$Sample)] == 'BRCA2'
+df_tsne$Signature = brcaStatus$Signature[match(rownames(df_tsne), brcaStatus$Sample)]
+df_tsne$brca_v2 = df_tsne$brca
+df_tsne$brca_v2[df_tsne$brca_v2 %in% c('LOH in BRCA1/2') ] = NA
+df_tsne$fraction_ecDNA = apply(all_cn, 2, function(i) mean(i>8))
+df_tsne$MYC = unlist(all_cn['MYC',])
+
+library(gridExtra)
+library(reshape2)
+grid.arrange(
+  ggplot(df_pca,
+         aes(x=PC1, y=PC2, col=averagelow))+geom_point()+
+    theme_bw()+lims(x=c(-20, 50), y=c(-10, 10)),
+  ggplot(df_pca,
+         aes(x=PC1, y=PC2, col=anyecna))+geom_point()+
+    theme_bw()+lims(x=c(-20, 50), y=c(-10, 10)),
+  ggplot(df_pca,
+         aes(x=PC1, y=PC2, col=log(fractionecna+0.001)))+geom_point()+
+    theme_bw()+lims(x=c(-20, 50), y=c(-10, 10)),
+  ggplot(df_pca,
+         aes(x=PC1, y=PC2, col=log(fraction2or1vicinity)))+geom_point()+
+    theme_bw()+lims(x=c(-20, 50), y=c(-10, 10)))#+lims(x=c(-5, 10), y=c(-5, 3)))
+
+pdf("figures/tsne_brca_ecdna.pdf", width = 12, height = 2.5)
+cowplot::plot_grid(
+  # ggplot(df_tsne,
+  #      aes(x=`1`, y=`2`, col=averagelow))+geom_point()+
+  # theme_bw(),#+lims(x=c(-20, 50), y=c(-10, 10)),
+  ggplot(df_tsne,
+         aes(x=`1`, y=`2`, col=anyecna))+geom_point()+
+    theme_bw()+#theme(legend.position = "bottom")+
+    labs(col='pecDNA', x='TSNE1', y='TSNE2'),#+lims(x=c(-20, 50), y=c(-10, 10)),
+  # ggplot(df_tsne,
+  #        aes(x=`1`, y=`2`, col=log(fractionecna+0.001)))+geom_point()+
+  #   theme_bw(),#+lims(x=c(-20, 50), y=c(-10, 10)),
+  ggplot(df_tsne,
+         aes(x=`1`, y=`2`, col=log(fraction2or1vicinity)))+geom_point()+
+    theme_bw()+#theme(legend.position = "bottom")+
+    labs(col='Fraction in CN={1,2}', x='TSNE1', y='TSNE2'),#+lims(x=c(-20, 50), y=c(-10, 10)),
+  # ggplot(df_tsne,
+  #        aes(x=`1`, y=`2`, col=factor(brca)))+geom_point()+
+  #   theme_bw(),#+lims(x=c(-20, 50), y=c(-10, 10))
+  ggplot()+
+    geom_point(data=df_tsne[-which(df_tsne$BRCA2),],
+               aes(x=`1`, y=`2`), alpha=0.2, col='grey')+
+    geom_point(data=df_tsne[which(df_tsne$BRCA2),],
+               aes(x=`1`, y=`2`, col=factor(BRCA2), shape=brca_v2))+
+    theme_bw()+labs(col='BRCA2 mut', x='TSNE1', y='TSNE2')  # ggplot(df_tsne,
+  #        aes(x=`1`, y=`2`, col=factor(brca_v2)))+geom_point()+
+  #   theme_bw()+labs(col='BRCA1/2 status', x='TSNE1', y='TSNE2')#+theme(legend.position = "bottom")+
+    #guides(col=guide_legend(nrow=5,byrow=TRUE))
+  , ncol=3, rel_widths = c(2.7, 3,3.2)
+)
+dev.off()
+
+ggplot(df_tsne,
+       aes(x=`1`, y=`2`, col=cut(fraction_ecDNA, 10)))+geom_point()+
+  theme_bw()+facet_wrap(.~cut(fraction_ecDNA, 10))
+  # labs(col='Fraction in CN={1,2}', x='TSNE1', y='TSNE2')
+
+ggplot(df_tsne,
+       aes(x=`1`, y=`2`, col=log(MYC)))+geom_point()+
+  theme_bw()+facet_wrap(.~cut(fraction_ecDNA, 10))
+# labs(col='Fraction in CN={1,2}', x='TSNE1', y='TSNE2')
+
+ggplot(df_tsne,
+       aes(x=`1`, y=`2`, col=(MYC)>8))+geom_point()+
+  theme_bw()+facet_wrap(.~cut(fraction_ecDNA, 10))
+
+ggplot(df_tsne,
+       aes(x=`1`, y=`2`, col=quantilestsne$Y[,1]))+geom_point()+
+  theme_bw()+facet_wrap(.~cut(fraction_ecDNA, 10))
+
+
+pairs(t(quantiles))
+
+ggplot(df_tsne,
+       aes(x=`1`, y=`2`, col=quantiles[9,]))+geom_point()+
+  theme_bw()+facet_wrap(.~cut(fraction_ecDNA, 10))
+
+ggplot(df_tsne,
+       aes(x=`1`, y=`2`, col=Signature))+geom_point()+
+  theme_bw()+#theme(legend.position = "bottom")+
+  labs(col='Fraction in CN={1,2}', x='TSNE1', y='TSNE2')
+
+ggplot(df_pca,
+       aes(x=PC1, y=PC2, col=anyecna))+geom_point()+
+  theme_bw()+lims(x=c(-20, 50), y=c(-10, 10))+facet_wrap(.~anyecna)
+
+ggplot(melt(list(df_pca$averagelow[df_pca$anyecna], df_pca$averagelow[!df_pca$anyecna])),
+       aes(x=L1, group=L1, y=value))+
+  geom_boxplot()+geom_jitter()+theme_bw()
+
+
+hclustquantiles <- hclust(dist(t(quantiles)))
+# hclustquantiles$labels = rep('', length(hclustquantiles$labels))
+plot(hclustquantiles)
+cutree_quantiles <- cutree(hclustquantiles, 10)
+
+df_pca$cutree_quantiles = cutree_quantiles[match(rownames(df_pca), names(cutree_quantiles))]
+
+ggplot(df_pca,
+       aes(x=PC1, y=PC2, col=factor(cutree_quantiles)))+geom_point()+
+  theme_bw()+lims(x=c(-20, 50), y=c(-10, 10))
+
+var_cn = apply(all_cn, 2, var)
+fraction1vicinity= apply(all_cn, 2, function(i) mean( (i >= 0.8) & (i <= 1.2), na.rm=T))
+
+ggplot(df_tsne,
+       aes(x=`1`, y=`2`,
+           # col=quantiles[9,]
+           # col=log(var_cn)
+           col=fraction1vicinity
+           ))+geom_point()+
+  theme_bw()+#theme(legend.position = "bottom")+
+  labs(col='Fraction in CN=1', x='TSNE1', y='TSNE2')
+
+ggplot(melt(quantiles), aes(x=Var1, y=value, group=Var2))+geom_line(alpha=0.2)+
+  theme_bw()#+scale_y_continuous(trans = "log2")
+ggplot(melt(quantiles), aes(x=Var1, y=value, group=Var2))+geom_line(alpha=0.2, col='blue')+
+  theme_bw()+lims(y=c(-5, 10))

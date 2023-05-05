@@ -258,3 +258,9 @@ pdf("fig3_v5.pdf", width = 10, height = 6.5)
 plot_grid(plot_grid(a, b0, b, rel_widths=c(3,2,2), ncol=3, labels=c('a', 'b')), plot_grid(d, conlyboxplot, e_composite, labels=c('c', 'd', 'e'), ncol=3, rel_widths=c(1.6,1.8,2.5)), nrow=2, rel_heights = c(1.8, 2))
 dev.off()
 
+### Recreating a figure that I thought we already had as it was in the manuscript - maybe the one in the manuscript had been manually edited
+pdf("fig3_v6.pdf", width = 10, height = 6.5)
+plot_grid(plot_grid(a, b, d, rel_widths=c(3,2,2), ncol=3, labels=c('a', 'b', 'c')), plot_grid(c, plot_grid(plot.new(), e_composite, plot.new(), nrow=1, rel_widths=c(1,4,1)), labels=c('d', 'e'),
+                                                                                          ncol=2, rel_widths=c(1.8,2.6)),
+          nrow=2, rel_heights = c(1.8, 2))
+dev.off()

@@ -1,60 +1,75 @@
 \documentclass{article}
-\usepackage{graphicx}
+\usepackage[paperheight=9cm, 
+            paperwidth=7.5cm]{geometry}
+            \usepackage{graphicx}
 \usepackage{subfig}
 \usepackage{floatrow}
 \begin{document}
 \captionsetup[subfigure]{labelformat=empty}
+\pagenumbering{gobble}
+\renewcommand{\familydefault}{\sfdefault}
+
+
+\setlength{\marginparwidth}{0pt}
+\setlength{\marginparsep}{0pt}
+%\setlength{\textwidth}{15in}
+%\setlength{\oddsidemargin}{-.8in}
+%\setlength{\evensidemargin}{0in}
+%\setlength{\textheight}{8.6in}
+\setlength{\topmargin}{-1.3in}
+
 
 \large{
 
 \begin{figure}[ht]
 
 %\begin{center}
-\raisebox{-\height}{
+%\raisebox{-\height}{
 \subfloat[PDO2]{
  \includegraphics[width=.25\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/dendrogram_scDNA_PDO2_v2.pdf}
 }
-}
-\hspace{.2in}
-\raisebox{-\height}{
+%}
+\hspace{.1in}
+%\raisebox{-\height}{
 \subfloat[PDO3]{
  \includegraphics[width=.25\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/dendrogram_scDNA_PDO3_v2.pdf}}
-}
-\hspace{.2in}\raisebox{-\height}{
+%}
+\hspace{.1in}
+%\raisebox{-\height}{
  \subfloat[PDO6]{
  {\label{fig:wgd2fitzeros}
-\includegraphics[width=.25\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/dendrogram_scDNA_PDO6_v2.pdf}
+\includegraphics[width=.22\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/dendrogram_scDNA_PDO6_v2.pdf}
 }}
-}
+%}
 
 \vspace*{.3in}
 
 %\raisebox{.4in}{
 %\subfloat[PDO2 (clade A vs clade B)]{
- \includegraphics[width=\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO2_pvals_clade1_4_facet_bar.pdf}
+ \includegraphics[width=1\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO2_pvals_clade1_4_facet_bar.pdf}
 % }
 % }
 %\raisebox{.4in}{
 %\subfloat[PDO3 (clade A vs clade B)]{
- \includegraphics[width=\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO3_pvals_clade3_4_facet_bar.pdf}
+ \includegraphics[width=1\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO3_pvals_clade3_4_facet_bar.pdf}
 % }
 % }
  
 %\raisebox{.4in}{
 %\subfloat[PDO3 (clade A vs clade C)]{
- \includegraphics[width=\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO3_pvals_clade3_6_facet_bar.pdf}
+ \includegraphics[width=1\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO3_pvals_clade3_6_facet_bar.pdf}
 % }
 % }
 
 %\raisebox{.4in}{
 %\subfloat[PDO6 (clade A vs clade B)]{
- \includegraphics[width=\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO6_pvals_clade1_2_facet_bar.pdf}
+ \includegraphics[width=1\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO6_pvals_clade1_2_facet_bar.pdf}
 % }
 % }
 
 %\raisebox{.4in}{
 %\subfloat[PDO6 (clade A vs clade C)]{
- \includegraphics[width=\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO6_pvals_clade1_3_facet_bar.pdf}
+ \includegraphics[width=1\textwidth]{/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/scDNAseq-Organoids/plots/subclonal_clades_cells_PDO6_pvals_clade1_3_facet_bar.pdf}
 % }
 % }
 %\caption*{Supplementary plots for the clade analysis, including dendrograms and genomic regions showing differences between clades.}

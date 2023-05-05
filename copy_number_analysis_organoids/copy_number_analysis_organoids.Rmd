@@ -366,12 +366,6 @@ ggsave(filename = "figures/pca_tcga.pdf", plot = pca_tcga)
 
 <!-- Signatures 3 and 6 seem to be quite important for the underrepresented groups -->
 
-# Dendrograms
-
-<!-- ## Dendrogram based on the signatures -->
-<!-- The colour of the labels shows whether there is any zero exposure in the vector of exposures of the sample. -->
-
-<!-- **This section has been deprecated - we are not using robust cle anymore, we are using imputation.** -->
 
 ```{r, princomp_clr_implementation, eval=TRUE, dependson=c('princomp_clr'), warning=FALSE, echo=FALSE}
 all_natgen = lapply(natgen, function(i) rbind(i, org))
@@ -847,6 +841,12 @@ grid.arrange(give_pca(normalise_rw(cbind(org_rename[,c(1,3,7)], sum=rowSums(org_
                       give_loadings = T), nrow=1)
 ```
 
+General trends in differences between organoids and other samples
+```{r, s5_average}
+# head(all_natgen[[which_natgen]][grepl('PDO', all_natgen[[which_natgen]]),])
+# head(all_natgen[[which_natgen]][!grepl('PDO', all_natgen[[which_natgen]]),])
+
+```
 
 Note: s3 and s4 are consistently shown in the same PC axis, in opposite directions.
 
@@ -923,9 +923,6 @@ give_pca(data_matrix = as(compositions::clr(impute(normalise_rw(cbind(natgen[[wh
 - If the raw values are used (which I think there should be no problem using), there is no big difference either.
 
 
-
-## Hierarchical clustering
-
 ## Plot showing differences in amalgamation ratios
 
 ```{r, amalgamation_ratios_fun, echo=FALSE}
@@ -963,6 +960,23 @@ for(j in 1:7){
   ncol=3, widths=c(0.2, 0.6, 0.2), top=paste0('Signature ', j))
 }
 ```
+
+```{r, proportion_differences_org_primary}
+## looks like natgen[[which_natgen]] already doesn't include any organoids here
+# natgen[[which_natgen]][grepl('^Sample ', rownames(natgen[[which_natgen]])),]
+# head(natgen[[which_natgen]])
+# table(natgen_metadata[[which_natgen]]$study)
+# head(natgen_metadata[[which_natgen]])
+boxplot(list(all=remove_organoids(natgen[[which_natgen]])[,'s5'],
+             orgs=org[,'s5']))
+```
+
+# Dendrograms/ Hierarchical clustering
+
+<!-- ## Dendrogram based on the signatures -->
+<!-- The colour of the labels shows whether there is any zero exposure in the vector of exposures of the sample. -->
+
+<!-- **This section has been deprecated - we are not using robust cle anymore, we are using imputation.** -->
 
 ```{r, hierarchical_compositional_2, dependson=c('hierarchical_compositional'), fig.width=12}
 par(mfrow=c(1,2))
@@ -1073,6 +1087,45 @@ cowplot::plot_grid(give_dendrogram_from_imputation(1/250, plot_dendro=F, return_
 
 saveRDS(all_natgen[[which_natgen]], file = paste0("robjects/allnatgen_", which_natgen, ".RDS"))
 
+```
+
+What is the extent of heterogeneity across the PDOs?
+```{r, heterogeneity_in_cluster, fig.width=4}
+
+remove_labels_tree <- function(hclust_obj){
+  hclust_obj$labels[!grepl("PDO", hclust_obj$labels)] = ''
+  # hclust_obj$labels[grepl("PDO", hclust_obj$labels)] = '*'
+  return(hclust_obj)
+}
+tree_inputclrmin2 <- remove_labels_tree(hclust(dist(as(compositions::clr(impute(all_natgen[[which_natgen]], 1e-2)), 'matrix'))))
+plot(tree_inputclrmin2)
+
+number_subtrees_with_organoids <- function(k){
+  cutree_k <- cutree(tree_inputclrmin2, k=k)
+  cutree_k_org <- cutree_k[grepl('PDO', tree_inputclrmin2$label)] ## selecting the organoids
+  length(unique(cutree_k_org))
+}
+
+organoids_in_subtrees <- function(k){
+  cutree_k <- cutree(tree_inputclrmin2, k=k)
+  sapply(1:k, function(j) gtools::mixedsort(python_like_select(names(cutree_k)[(cutree_k == j)], 'PDO')))
+}
+
+organoids_in_subtrees(3)
+
+plot(1:20, sapply(1:20, number_subtrees_with_organoids), xlab='Number of clades',
+     ylab='Number of clades with organoids', xlim=c(1,20), ylim=c(1,20), type='l')
+abline(coef = c(0,1), lty='dashed')
+
+plot(1:20, sapply(1:20, number_subtrees_with_organoids)/(1:20), xlab='Number of clades',
+     ylab='Fraction of clades with organoids', xlim=c(1,20), ylim=c(0,1), type='l')
+
+organoids_in_subtrees(20)
+
+# xxxxx <- hclust(dist(t(heatmap_dendrogram_df_inputclr)))
+# # xxxxx$labels = ''
+# xxxxx$labels 
+# plot(xxxxx)
 ```
 
 ```{r, pca_for_two_groups}
@@ -1294,6 +1347,9 @@ organoids_CN_features = extractCopynumberFeatures(organoids_absolute_copynumber)
 BriTROC_CN_features = readRDS("data/BriTROC_CN_features.rds")
 ```
 
+```{r, save_renamed_organoid_features}
+saveRDS(organoids_absolute_copynumber, "data/absolute_CN/absoluteCN_organoid.RDS")
+```
 
 The number of segments can be taken either from segsize (first column) or from copynumber (last column). This is just for PCAWG and TCGA! Not for BriTROC. Any idea why this is the case?
 
@@ -1331,6 +1387,10 @@ grid.draw(nsegments_pcawg_plot)
 pdf("figures/feature_distributions.pdf", width = 14, height = 10)
 grid.draw(nsegments_pcawg_plot)
 dev.off()
+```
+
+```{r, nsegments_pcawg_plot_save, dependson=c('nsegments_pcawg_plot')}
+saveRDS(nsegments_pcawg_plot, "robjects/nsegments_pcawg_plot.RDS")
 ```
 
 <!-- ### Tests for equality of means of the distribution of features -->
@@ -2484,3 +2544,65 @@ sapply(plts_AOI_subclonal, `[`, 1)
 saveRDS(natgen[[2]][grepl('TCGA', rownames(natgen[[2]])),],
         file = '~/Desktop/TCGA_exposures_12112019.RDS')
 ```
+
+### Additional plots
+```{r, active_sigs_ploidy, fig.width=4, fig.height=4}
+org
+ploidy_organoids
+sort(ploidy_organoids)
+quantile(org, c(0.05, 0.1))
+apply(org, 1, function(i) mean(i==0))[paste0('PDO', 1:18)]
+ploidy_organoids[paste0('PDO', 1:18)]
+
+table(ploidy_organoids[paste0('PDO', 1:18)] < 2.5,
+      apply(org, 1, function(i) mean(i==0))[paste0('PDO', 1:18)] == 0)
+
+par(mfrow=c(1,2))
+plot(ploidy_organoids[paste0('PDO', 1:18)],
+      apply(org, 1, function(i) mean(i==0))[paste0('PDO', 1:18)])
+
+plot(ploidy_organoids[paste0('PDO', 1:18)] < 2.5,
+      apply(org, 1, function(i) mean(i==0))[paste0('PDO', 1:18)] == 0)
+
+df_ploidy_heterogeneity <- cbind.data.frame(ploidy=ploidy_organoids[paste0('PDO', 1:18)],
+                        fraction_inactive_sigs=7*apply(org, 1, function(i) mean(i==0))[paste0('PDO', 1:18)],
+                        PDO=paste0('PDO', 1:18))
+ggplot(df_ploidy_heterogeneity,
+       aes(x=ploidy, y=fraction_inactive_sigs, label=PDO, group=1))+
+  geom_point()+geom_smooth(method='lm')+geom_label_repel()+labs(x='Ploidy', y='Number of inactive signatures')
+
+
+lm_ploidy_heterogeneity <- lm( (apply(org, 1, function(i) mean(i==0))[paste0('PDO', 1:18)]) ~ ploidy_organoids[paste0('PDO', 1:18)] )
+summary(lm_ploidy_heterogeneity)
+
+summary(lm(fraction_inactive_sigs~ploidy, data = df_ploidy_heterogeneity))
+
+```
+
+```{r}
+names(df_features)
+# df_features$`Segment size`
+# sapply(organoids_CN_features, length)
+num_segments_organoids <- table(organoids_CN_features$segsize$ID)
+num_segments_organoids
+ploidy_organoids
+
+sensitive <- c('PDO1', 'PDO4', 'PDO3', 'PDO2', 'PDO13', 'PDO12', 'PDO11')
+resistant <- c('PDO14', 'PDO8', 'PDO10', 'PDO7', 'PDO9', 'PDO6', 'PDO5')
+
+boxplot(list(as.vector(num_segments_organoids[sensitive]), as.vector(num_segments_organoids[resistant])))
+boxplot(list(as.vector(ploidy_organoids[sensitive]), as.vector(ploidy_organoids[resistant])))
+num_segments_organoids[sensitive]
+num_segments_organoids[resistant]
+ploidy_organoids[sensitive]
+ploidy_organoids[resistant]
+
+t.test(as.vector(num_segments_organoids[sensitive]), as.vector(num_segments_organoids[resistant]))
+t.test(as.vector(ploidy_organoids[sensitive]), as.vector(ploidy_organoids[resistant]))
+
+saveRDS(num_segments_organoids, "robjects/num_segments_organoids.RDS")
+saveRDS(ploidy_organoids, "robjects/ploidy_organoids.RDS")
+
+```
+
+

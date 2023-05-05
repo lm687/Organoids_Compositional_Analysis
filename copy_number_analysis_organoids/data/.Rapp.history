@@ -20,3 +20,6 @@ load("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/copy_number_analysi
 x=readRDS("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/copy_number_analysis_organoids/data/combined.ascat.segments.filt.rds")
 x
 head(x)
+load("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/copy_number_analysis_organoids/data/chrlen.RDS")
+a=readRDS("/Users/morril01/Documents/PhD/other_repos/Vias_Brenton/copy_number_analysis_organoids/data/chrlen.RDS")
+a

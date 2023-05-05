@@ -69,6 +69,15 @@ b <- ggplot(ascites_organoid_exposures, aes(x=group, y=value, fill=variable))+
         axis.title.x=element_blank())+
   guides(fill='none')+
   labs(y='Copy number signature activity')
+ascites_organoid_exposures$label2 = gsub(" ", "\n", ascites_organoid_exposures$label)
+b_onerow <- ggplot(ascites_organoid_exposures, aes(x=group, y=value, fill=variable))+
+  geom_bar(stat="identity")+facet_wrap(.~label2, nrow=1)+
+  scale_fill_brewer(palette="Dark2")+
+  theme(legend.position = "bottom")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        axis.title.x=element_blank())+
+  guides(fill='none')+
+  labs(y='Copy number signature activity')
 
 e1 <- dendrograminputclr#+geom_label_repel(label.size = NA)
 e2 <- heatmapinputclr+  theme(axis.title.x=element_text(), axis.title.y=element_text(angle=90))+
@@ -96,9 +105,36 @@ e1_v2$theme$plot.margin[4] = unit(0, "cm")
 e_v2 <- plot_grid(plot_grid(plot.new(), e1_v2, plot.new(), nrow=1, rel_widths=c(0.085, 5, 0.00)),
                   plot_grid(plot.new(), e2_v2, plot.new(), nrow=1, rel_widths=c(0.13, 5, 0.315)),
                   nrow = 2, labels = c('c'), rel_heights = c(2,5))
+e_v3 <- plot_grid(plot_grid(plot.new(), e1_v2, plot.new(), nrow=1, rel_widths=c(0.085, 5, 0.00)),
+                  plot_grid(plot.new(), e2_v2, plot.new(), nrow=1, rel_widths=c(0.13, 5, 0.315)),
+                  nrow = 2, labels = c('d'), rel_heights = c(2,5))
 
-pdf("fig1.pdf", height = 10, width = 10, onefile = F)
+pdf("fig1_old.pdf", height = 10, width = 10, onefile = F)
 plot_grid(plot_grid(a, labels='a'),
           plot_grid(plot.new(), b, labels='b', ncol=1, rel_heights = c(0.0, 0.9), vjust = -.1),
                     e_v2, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(.4,0.5,0.8))
 dev.off()
+
+## figure about experiment
+# experiment <- cowplot::ggdraw()+draw_image("../figures/additional_files/S01.png", scale = 1)
+experiment <- cowplot::ggdraw()+draw_image("../figures/additional_files/diagram.png", scale = 1)
+
+pdf("fig1.pdf", height = 10, width = 10, onefile = F)
+plot_grid(plot_grid(experiment, labels='a'),
+          plot_grid(a, b, labels=c('b', 'c')),
+          #plot_grid(plot.new(), b, labels='c', ncol=1, rel_heights = c(0.0, 0.9), vjust = -.1),
+          e_v2, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(0.5,0.4,0.5))
+dev.off()
+
+pdf("fig1_v2.pdf", height = 10, width = 10, onefile = F)
+plot_grid(plot_grid(experiment, a, labels=c('a', 'b'), rel_widths = c(2,1)),
+          plot_grid(plot.new(), b_onerow, ncol=2, rel_widths = c(0.03, 0.9), vjust = -.1, labels=c('c')),
+          #plot_grid(plot.new(), b, labels='c', ncol=1, rel_heights = c(0.0, 0.9), vjust = -.1),
+          e_v3, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(0.5,0.2,0.5))
+dev.off()
+
+# png("fig1.png", height = 10, width = 10, res = 30)
+# plot_grid(plot_grid(a, labels='a'),
+#           plot_grid(plot.new(), b, labels='b', ncol=1, rel_heights = c(0.0, 0.9), vjust = -.1),
+#           e_v2, label_size = 12, ncol=1, scale = 0.9, rel_heights = c(.4,0.5,0.8))
+# dev.off()

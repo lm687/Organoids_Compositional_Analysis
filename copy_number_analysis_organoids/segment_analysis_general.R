@@ -10,8 +10,14 @@ tcga_CN_features = readRDS("data/tcga_CN_features.rds")
 BriTROC_absolute_copynumber = readRDS("../../cnsignatures/manuscript_Rmarkdown/data/BriTROC_absolute_copynumber.rds")
 BriTROC2_CN_features = readRDS("data/6_TCGA_Signatures_on_BRITROC/0_BRITROC_absolute_CN.rds")
 
+renaming <- readxl::read_xlsx("data/matching_ascites_samples_Lena.xlsx")
+
 organoids_absolute_copynumber = readRDS("data/organoid_absolute_CN.rds")
 # sampleNames(organoids_absolute_copynumber) = names_orgs$`new name`[match(gsub("org", "", sampleNames(organoids_absolute_copynumber)), names_orgs$`old name`)]
+this_path = "../../../other_repos/britroc-cnsignatures-bfb69cd72c50/"
+organoids_CN_features_segtable = lapply(1:ncol(organoids_absolute_copynumber), function(i) getSegTable(organoids_absolute_copynumber[,i]))
+names(organoids_CN_features_segtable) = renaming$Derived_organoid[match(sampleNames(organoids_absolute_copynumber), paste0(renaming$CInumber, 'org'))]
+saveRDS(organoids_CN_features_segtable, "data/clean_segtables/segtables_organoids_absolute_copynumber.RDS")
 organoids_CN_features = extractCopynumberFeatures(organoids_absolute_copynumber)
 
 BriTROC_CN_features = readRDS("data/BriTROC_CN_features.rds")

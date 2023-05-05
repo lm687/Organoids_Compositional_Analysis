@@ -14,7 +14,8 @@ library(ComplexHeatmap)
 
 renaming <- readxl::read_excel("../RNASeq_DE_resistant_sensitive/files/PDOnameProperSample_sWGS_RNAseq.xlsx")
 renaming_patients <- read.table("../RNASeq_and_CN/20191218_ViasM_BJ_orgaBrs/Input/samples.csv", sep = ";", header = T)
-renaming_ascites <- readxl::read_excel("../copy_number_analysis_organoids/data/Book1_ascites.xlsx")
+# renaming_ascites <- readxl::read_excel("../copy_number_analysis_organoids/data/Book1_ascites.xlsx")
+renaming_ascites <- readxl::read_excel("../copy_number_analysis_organoids/data/matching_ascites_samples_Lena.xlsx")
 ascites = readRDS("../copy_number_analysis_organoids/robjects/fig4_ascites.RDS")
 AUC_all_df = readRDS("../survival_analysis/robjects/AUC_all_df.RDS")
 PDS_PDO = readRDS("../survival_analysis/robjects/fig4_PDS_PDO.RDS")
@@ -24,8 +25,10 @@ fgseaResTidy <- readRDS("../RNASeq_DE_resistant_sensitive/objects/fig4_fgseaResT
 ascites_df <- melt(ascites, id.vars=c('sample', 'bool_ascites', 'sample_paired'))
 
 renaming_ascites
+# ascites_df$patients = renaming_patients$OV04_number[match(renaming$ID[match(ascites_df$sample, renaming$PDO)],
+#                                     renaming_patients$organoid_name)]
 ascites_df$patients = renaming_patients$OV04_number[match(renaming$ID[match(ascites_df$sample, renaming$PDO)],
-                                    renaming_patients$organoid_name)]
+                                                          renaming_patients$organoid_name)]
 ascites_df$patients[c(T,F)] = ascites_df$patients[c(F,T)]
 
 b <- ggplot(ascites_df, aes(x=bool_ascites, y=value, fill=variable))+geom_bar(stat = "identity")+
@@ -200,5 +203,13 @@ plot_grid(plot_grid(a, b, labels = c('a', 'b'), rel_widths = c(2,2)),
           plot_grid(c_subset, plot_grid( grid.grabExpr(draw(d_v2, heatmap_legend_side = "bottom")),
                                   d3, rel_widths = c(.55,1),
                                   labels = c('d', 'e')), labels = c('c'), rel_widths = c(1.8,4)),
+          label_size = 12, ncol=1, scale = 0.9, rel_heights = c(3,2.5))
+dev.off()
+
+### Recreating a figure that I thought we already had as it was in the manuscript - maybe the one in the manuscript had been manually edited
+pdf("fig4_v4.pdf", height = 4, width = 9)
+plot_grid(plot_grid(c, plot_grid( grid.grabExpr(draw(d_v2, heatmap_legend_side = "bottom")),
+                                         d3, rel_widths = c(.55,1),
+                                         labels = c('b', 'c')), labels = c('a'), rel_widths = c(1.8,4)),
           label_size = 12, ncol=1, scale = 0.9, rel_heights = c(3,2.5))
 dev.off()

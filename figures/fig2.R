@@ -24,7 +24,7 @@ dim(PDO2abs)
 dim(PDO3abs)
 dim(PDO6abs)
 
-
+plot(PDO2scDNA$gtable)+annotate('asdsa')
 PDO2scDNA$gtable$grobs[[1]]$label = ""
 PDO2scDNA$gtable$grobs[[1]]$label
 PDO3scDNA$gtable$grobs[[1]]$label = ""
@@ -39,8 +39,28 @@ f <- cowplot::ggdraw()+draw_image("../copy_number_analysis_organoids/data/absolu
 g <- cowplot::ggdraw()+draw_image("fig2_chrom_annotation_crop_nosexchrom.png", scale = 1)
 
 
-pdf("fig2.pdf", height = 9, width = 9)
-plot_grid(plot_grid(a, b), plot_grid(c, d), plot_grid(e, f), g, nrow=4, labels = c('a', '', 'b', '', 'c', ''), rel_heights = c(4,4,4,1))
+
+# pdf("fig2_old.pdf", height = 9, width = 9)
+# plot_grid(plot_grid(a, b), plot_grid(c, d), plot_grid(e, f), g, nrow=4, labels = c('a', '', 'b', '', 'c', ''), rel_heights = c(4,4,4,1))
+# dev.off()
+
+pdf("fig2.pdf", height = 9, width = 9, onefile = F)
+plot_grid(plot_grid(plot.new(), a, plot.new(), b, ncol=4, labels=c('', 'a', '', 'd'), rel_widths = c(0.1, 1, 0.1, 1))+
+            annotate( "text", x = .3, y=.0, label='Chromosome position')+
+            annotate( "text", x = .03, y=.5, label='Cells', angle=90)+
+            annotate( "text", x = .77, y=.08, label='Chromosome position')+
+            annotate( "text", x = .6, y=.5, label='Ploidy', angle=90),
+          plot_grid(plot.new(), c, plot.new(), d, ncol=4, labels=c('', 'b', '', 'e'), rel_widths = c(0.1, 1, 0.1, 1))+
+            annotate( "text", x = .3, y=.0, label='Chromosome position')+
+            annotate( "text", x = .03, y=.5, label='Cells', angle=90)+
+            annotate( "text", x = .77, y=.08, label='Chromosome position')+
+            annotate( "text", x = .6, y=.5, label='Ploidy', angle=90),
+          plot_grid(plot.new(), e, plot.new(), f, ncol=4, labels=c('', 'c', '', 'f'), rel_widths = c(0.1, 1, 0.1, 1))+
+            annotate( "text", x = .3, y=.0, label='Chromosome position')+
+            annotate( "text", x = .03, y=.5, label='Cells', angle=90)+
+            annotate( "text", x = .77, y=.08, label='Chromosome position')+
+            annotate( "text", x = .6, y=.5, label='Ploidy', angle=90),
+          plot.new(), g, nrow=5, rel_heights = c(4,4,4,1,1))
 dev.off()
 
 ## add a specific region for each organoid
